@@ -1423,43 +1423,108 @@ function loadVillageBuildings() {
 }
 
 // ============================================================================
-// PATHFINDING & MOVEMENT (A* ALGORITHM ON TILE GRID)
+// PATHFINDING & MOVEMENT (OPTIMIZED A* WITH ZERO ALLOCATIONS & FREEZE GUARDS)
 // ============================================================================
+function findNearestWalkableTile(gx, gz) {
+  const { width, height } = MAP_CONFIG;
+  const grid = state.grid;
+
+  if (grid[gz] && grid[gz][gx] && grid[gz][gx].walkable) {
+    return { x: gx, z: gz };
+  }
+
+  for (let r = 1; r <= 4; r++) {
+    for (let dz = -r; dz <= r; dz++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.abs(dx) === r || Math.abs(dz) === r) {
+          const nx = gx + dx;
+          const nz = gz + dz;
+          if (nx >= 0 && nx < width && nz >= 0 && nz < height && grid[nz][nx].walkable) {
+            return { x: nx, z: nz };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
 function findPath(startX, startZ, endX, endZ) {
   const { width, height } = MAP_CONFIG;
   const grid = state.grid;
 
-  if (endX < 0 || endX >= width || endZ < 0 || endZ >= height) return [];
-  if (!grid[endZ][endX].walkable) return [];
+  startX = THREE.MathUtils.clamp(startX, 0, width - 1);
+  startZ = THREE.MathUtils.clamp(startZ, 0, height - 1);
+  endX = THREE.MathUtils.clamp(endX, 0, width - 1);
+  endZ = THREE.MathUtils.clamp(endZ, 0, height - 1);
 
-  // A* implementation
-  const startNode = { x: startX, z: startZ, g: 0, h: heuristic(startX, startZ, endX, endZ), parent: null };
+  // If start is blocked, find closest free tile
+  if (!grid[startZ][startX].walkable) {
+    const freeStart = findNearestWalkableTile(startX, startZ);
+    if (!freeStart) return [];
+    startX = freeStart.x;
+    startZ = freeStart.z;
+  }
+
+  // If destination is blocked (clicked building/water/prop), find adjacent free tile
+  if (!grid[endZ][endX].walkable) {
+    const freeEnd = findNearestWalkableTile(endX, endZ);
+    if (!freeEnd) return [];
+    endX = freeEnd.x;
+    endZ = freeEnd.z;
+  }
+
+  if (startX === endX && startZ === endZ) return [];
+
+  const startNode = {
+    x: startX,
+    z: startZ,
+    g: 0,
+    h: heuristic(startX, startZ, endX, endZ),
+    f: 0,
+    parent: null
+  };
+  startNode.f = startNode.g + startNode.h;
+
   const openSet = [startNode];
-  const closedSet = new Set();
+  const closedSet = new Uint8Array(width * height);
   const nodeMap = new Map();
 
-  const key = (x, z) => `${x},${z}`;
-  nodeMap.set(key(startX, startZ), startNode);
+  const keyIdx = (x, z) => z * width + x;
+  nodeMap.set(keyIdx(startX, startZ), startNode);
 
-  while (openSet.length > 0) {
-    // Get lowest f = g + h
-    openSet.sort((a, b) => (a.g + a.h) - (b.g + b.h));
-    const current = openSet.shift();
+  const MAX_STEPS = 500;
+  let steps = 0;
+
+  while (openSet.length > 0 && steps++ < MAX_STEPS) {
+    // Fast linear scan for lowest f
+    let bestIdx = 0;
+    let bestF = openSet[0].f;
+    for (let i = 1; i < openSet.length; i++) {
+      if (openSet[i].f < bestF) {
+        bestF = openSet[i].f;
+        bestIdx = i;
+      }
+    }
+
+    const current = openSet[bestIdx];
+    openSet[bestIdx] = openSet[openSet.length - 1];
+    openSet.pop();
 
     if (current.x === endX && current.z === endZ) {
-      // Reconstruct path
       const path = [];
       let curr = current;
-      while (curr.parent) {
+      let safety = 0;
+      while (curr.parent && safety++ < 120) {
         path.push({ x: curr.x, z: curr.z });
         curr = curr.parent;
       }
       return path.reverse();
     }
 
-    closedSet.add(key(current.x, current.z));
+    const cIdx = keyIdx(current.x, current.z);
+    closedSet[cIdx] = 1;
 
-    // 4 cardinal neighbors
     const neighbors = [
       { x: current.x + 1, z: current.z },
       { x: current.x - 1, z: current.z },
@@ -1467,26 +1532,31 @@ function findPath(startX, startZ, endX, endZ) {
       { x: current.x, z: current.z - 1 }
     ];
 
-    for (const n of neighbors) {
+    for (let i = 0; i < 4; i++) {
+      const n = neighbors[i];
       if (n.x < 0 || n.x >= width || n.z < 0 || n.z >= height) continue;
-      if (closedSet.has(key(n.x, n.z))) continue;
+      const nIdx = keyIdx(n.x, n.z);
+      if (closedSet[nIdx]) continue;
       if (!grid[n.z][n.x].walkable) continue;
 
       const tentativeG = current.g + 1;
-      let neighborNode = nodeMap.get(key(n.x, n.z));
+      let neighborNode = nodeMap.get(nIdx);
 
       if (!neighborNode) {
+        const h = heuristic(n.x, n.z, endX, endZ);
         neighborNode = {
           x: n.x,
           z: n.z,
           g: tentativeG,
-          h: heuristic(n.x, n.z, endX, endZ),
+          h: h,
+          f: tentativeG + h,
           parent: current
         };
-        nodeMap.set(key(n.x, n.z), neighborNode);
+        nodeMap.set(nIdx, neighborNode);
         openSet.push(neighborNode);
       } else if (tentativeG < neighborNode.g) {
         neighborNode.g = tentativeG;
+        neighborNode.f = tentativeG + neighborNode.h;
         neighborNode.parent = current;
       }
     }
@@ -1509,7 +1579,8 @@ function navigateToTile(gridX, gridZ) {
     state.player.isMoving = true;
 
     // Show target marker
-    targetMarkerMesh.position.set(gridX * MAP_CONFIG.tileSize, 0.08, gridZ * MAP_CONFIG.tileSize);
+    const lastStep = path[path.length - 1];
+    targetMarkerMesh.position.set(lastStep.x * MAP_CONFIG.tileSize, 0.08, lastStep.z * MAP_CONFIG.tileSize);
     targetMarkerMesh.visible = true;
   }
 }
@@ -1718,29 +1789,46 @@ function onPointerMove(e) {
 
   raycaster.setFromCamera(mouse, camera);
   const intersectPoint = new THREE.Vector3();
-  raycaster.ray.intersectPlane(groundPlane, intersectPoint);
+  const hit = raycaster.ray.intersectPlane(groundPlane, intersectPoint);
 
-  if (intersectPoint) {
-    const gx = Math.round(intersectPoint.x / MAP_CONFIG.tileSize);
-    const gz = Math.round(intersectPoint.z / MAP_CONFIG.tileSize);
+  if (hit) {
+    const gx = Math.round(hit.x / MAP_CONFIG.tileSize);
+    const gz = Math.round(hit.z / MAP_CONFIG.tileSize);
 
     if (gx >= 0 && gx < MAP_CONFIG.width && gz >= 0 && gz < MAP_CONFIG.height) {
       state.hoveredTile = { x: gx, z: gz };
       tileCursorMesh.position.set(gx * MAP_CONFIG.tileSize, 0.08, gz * MAP_CONFIG.tileSize);
       tileCursorMesh.visible = true;
-    } else {
-      tileCursorMesh.visible = false;
-      state.hoveredTile = null;
+      return;
     }
   }
+
+  tileCursorMesh.visible = false;
+  state.hoveredTile = null;
 }
 
 function onPointerDown(e) {
-  // Prevent if clicking HUD UI
-  if (e.target.closest('.village-hud')) return;
+  // Only process primary left button
+  if (e.button !== 0) return;
 
-  if (state.hoveredTile) {
-    navigateToTile(state.hoveredTile.x, state.hoveredTile.z);
+  // Prevent when clicking on HUD, modals, speech bubbles or cards
+  if (e.target.closest('.village-hud, .bwed-modal, .modal-backdrop, .speech-bubble, .village-toast, .interaction-card')) return;
+
+  // Compute exact target tile directly at click coordinates
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersectPoint = new THREE.Vector3();
+  const hit = raycaster.ray.intersectPlane(groundPlane, intersectPoint);
+
+  if (hit) {
+    const gx = Math.round(hit.x / MAP_CONFIG.tileSize);
+    const gz = Math.round(hit.z / MAP_CONFIG.tileSize);
+
+    if (gx >= 0 && gx < MAP_CONFIG.width && gz >= 0 && gz < MAP_CONFIG.height) {
+      navigateToTile(gx, gz);
+    }
   }
 }
 
