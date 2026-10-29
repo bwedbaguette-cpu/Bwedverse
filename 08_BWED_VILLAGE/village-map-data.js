@@ -13,20 +13,25 @@ export const MAP_CONFIG = {
 // Tile Types
 export const TILE_TYPES = {
   EMPTY: 0,
-  COBBLE_SABLE: 1,    // Pavés sablés de beurre (grands boulevards & allées)
-  MATCHA_GRASS: 2,    // Pelouse génoise matcha & pistache
-  WAFFLE_PLAZA: 3,    // Dalles de gaufre caramélisée (la grande-place & terrasses)
-  CHOCO_CANAL: 4,     // Grand canal de chocolat chaud liquide
-  WOOD_PIER: 5,       // Quais & ponts en bois de hêtre
-  MILLEFEUILLE_ROCK: 6// Falaise de pâte feuilletée surélevée
+  COBBLE_SABLE: 1,     // Pavés sablés de beurre (grands boulevards & allées)
+  MATCHA_GRASS: 2,     // Pelouse génoise matcha & pistache
+  WAFFLE_PLAZA: 3,     // Dalles de gaufre caramélisée (la grande-place & terrasses)
+  CHOCO_CANAL: 4,      // Grand canal de chocolat chaud liquide
+  WOOD_PIER: 5,        // Quais & ponts en bois de hêtre
+  MILLEFEUILLE_ROCK: 6,// Falaise de pâte feuilletée surélevée
+  VICHY_PICNIC: 7,     // Nappe de pique-nique vichy fraise
+  CHECKER_BOARD: 8,    // Damier vanille-chocolat pour arcade & boutiques
+  FOREST_DIRT: 9,      // Sentier terreau de cannelle et cacao
+  CANE_SAND: 10        // Berges de cassonade dorée le long du canal
 };
 
 // Districts Definition
 export const DISTRICTS = [
   { id: 'plaza', name: 'La Grand-Place du Beurre Doré', bounds: { minX: 18, maxX: 32, minZ: 18, maxZ: 32 } },
-  { id: 'gourmet', name: 'Le Faubourg Gourmand & Marché', bounds: { minX: 33, maxX: 49, minZ: 15, maxZ: 35 } },
-  { id: 'residential', name: 'Le Quartier Résidentiel des Pains', bounds: { minX: 0, maxX: 17, minZ: 15, maxZ: 35 } },
-  { id: 'port', name: 'Le Port & Canal du Chocolat', bounds: { minX: 0, maxX: 49, minZ: 0, maxZ: 14 } },
+  { id: 'gourmet', name: 'Le Faubourg Gourmand & Grand Marché', bounds: { minX: 33, maxX: 49, minZ: 14, maxZ: 35 } },
+  { id: 'residential', name: 'Le Village Fleuri des Pains', bounds: { minX: 0, maxX: 17, minZ: 21, maxZ: 35 } },
+  { id: 'woods', name: 'Le Bois de Cannelle & Clairière Calme', bounds: { minX: 0, maxX: 17, minZ: 12, maxZ: 20 } },
+  { id: 'port', name: 'Le Port & Berges du Chocolat', bounds: { minX: 0, maxX: 49, minZ: 0, maxZ: 13 } },
   { id: 'arcade', name: 'La Fête Foraine & BwedWare Arcade', bounds: { minX: 31, maxX: 49, minZ: 34, maxZ: 49 } },
   { id: 'sanctuary', name: 'La Colline de l\'Observatoire Céleste', bounds: { minX: 0, maxX: 19, minZ: 34, maxZ: 49 } },
 ];
@@ -67,18 +72,50 @@ export function generateVillageGrid() {
           heightLevel = 0.25;
         }
       }
-      // Grands Quais en Bois le long du Canal (z = 10 à 11)
-      else if ((z === 10 || z === 11) && x >= 4 && x <= 45) {
+      // Berges de cassonade dorée au Nord et au Sud du canal (z = 4 et z = 10)
+      else if ((z === 4 || z === 10) && x >= 2 && x <= 47) {
+        type = TILE_TYPES.CANE_SAND;
+        walkable = true;
+      }
+      // Grands Quais en Bois le long du Canal (z = 11)
+      else if (z === 11 && x >= 4 && x <= 45) {
         type = TILE_TYPES.WOOD_PIER;
         walkable = true;
       }
-      // 2. La Grand-Place du Beurre Doré (x: 19-31, z: 19-31)
+      // 2. Le Grand Bois de Cannelle & Promenade Calme (x: 2 à 16, z: 12 à 20)
+      else if (x >= 2 && x <= 16 && z >= 12 && z <= 20) {
+        // Sentier sinueux en terre de cannelle
+        if ((z === 15 || z === 16) && x >= 3 && x <= 15) {
+          type = TILE_TYPES.FOREST_DIRT;
+        } else if ((x === 6 || x === 7) && z >= 13 && z <= 19) {
+          type = TILE_TYPES.FOREST_DIRT;
+        } else {
+          type = TILE_TYPES.MATCHA_GRASS;
+        }
+        walkable = true;
+      }
+      // 3. La Grand-Place du Beurre Doré (x: 19-31, z: 19-31)
       else if (x >= 19 && x <= 31 && z >= 19 && z <= 31) {
         type = TILE_TYPES.WAFFLE_PLAZA;
         walkable = true;
       }
-      // 3. Boulevards & Rues Principales (Pavés Sablés)
-      // Boulevard Central Nord-Sud (x = 24 à 26, z: 12 à 46)
+      // 4. Parvis Damier de la Fête Foraine & Arcade (x: 35 à 45, z: 38 à 44)
+      else if (x >= 35 && x <= 45 && z >= 38 && z <= 44) {
+        type = TILE_TYPES.CHECKER_BOARD;
+        walkable = true;
+      }
+      // 5. Terrasses Vichy Pique-Nique du Parc des Macarons (x: 6 à 10, z: 27 à 31)
+      else if (x >= 6 && x <= 10 && z >= 27 && z <= 31) {
+        type = TILE_TYPES.VICHY_PICNIC;
+        walkable = true;
+      }
+      // 6. Seuil en Damier devant la Pâtisserie (x: 33-35, z: 24-26)
+      else if (x >= 33 && x <= 35 && z >= 24 && z <= 26) {
+        type = TILE_TYPES.CHECKER_BOARD;
+        walkable = true;
+      }
+      // 7. Boulevards & Rues Principales (Pavés Sablés)
+      // Boulevard Central Nord-Sud (x = 24 à 26, z: 11 à 46)
       else if ((x >= 24 && x <= 26) && z >= 11 && z <= 46) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
@@ -108,7 +145,7 @@ export function generateVillageGrid() {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
-      // 4. Colline de l'Observatoire Céleste (Terrasse surélevée, x: 2-16, z: 36-47)
+      // 8. Colline de l'Observatoire Céleste (Terrasse surélevée, x: 2-16, z: 36-47)
       else if (x >= 2 && x <= 16 && z >= 36 && z <= 47) {
         type = TILE_TYPES.MILLEFEUILLE_ROCK;
         heightLevel = 1.2;
@@ -483,4 +520,157 @@ export const VILLAGE_LANTERNS = [
   { x: 36, z: 39 }, { x: 44, z: 39 },
   // Colline
   { x: 14, z: 36 }, { x: 8, z: 39 }
+];
+
+// Modular Procedural Citizen Houses (Populate residential & side alleys)
+export const CITIZEN_HOUSES = [
+  // Village Fleuri des Pains (Quartier Résidentiel)
+  {
+    id: 'house-strawberry-cottage',
+    name: 'Cottage Fraisier',
+    gridX: 6,
+    gridZ: 16,
+    scale: 1.05,
+    roofColor: 0xe65271, // Fraise glacée
+    wallColor: 0xfbf1e3,
+    roofType: 'pitched',
+    rotationY: 0,
+    interaction: { title: 'Cottage Fraisier', desc: 'Maisonnette au toit nappé de coulis de fraise. Des rideaux de dentelle en sucre filtrent la lumière.', actionLabel: 'Frapper à la porte' }
+  },
+  {
+    id: 'house-matcha-villa',
+    name: 'Villa Matcha & Pistache',
+    gridX: 14,
+    gridZ: 16,
+    scale: 1.1,
+    roofColor: 0x6e9544, // Vert matcha
+    wallColor: 0xf5e6cc,
+    roofType: 'dome',
+    rotationY: -Math.PI / 2,
+    interaction: { title: 'Villa Matcha', desc: 'Demeure raffinée au dôme parfumé au thé vert matcha. Le parfum de brioche chaude s\'échappe de la cheminée.', actionLabel: 'Frapper à la porte' }
+  },
+  {
+    id: 'house-blueberry-cottage',
+    name: 'Maisonnette Myrtille Sauvage',
+    gridX: 5,
+    gridZ: 22,
+    scale: 0.95,
+    roofColor: 0x5a7ca8, // Myrtille
+    wallColor: 0xfef7ea,
+    roofType: 'pitched',
+    rotationY: Math.PI / 2,
+    interaction: { title: 'Maisonnette Myrtille', desc: 'Coquette chaumière avec volets en sablés pur beurre. Une boîte aux lettres brioche trône devant.', actionLabel: 'Sonner' }
+  },
+  {
+    id: 'house-vanilla-manor',
+    name: 'Pavillon Crème Vanillée',
+    gridX: 8,
+    gridZ: 25,
+    scale: 1.0,
+    roofColor: 0xfbd278, // Vanille dorée
+    wallColor: 0xf8eedb,
+    roofType: 'dome',
+    rotationY: Math.PI,
+    interaction: { title: 'Pavillon Crème Vanille', desc: 'Maison familiale tout en rondeur. Des pots de crème chantilly décorent les rebords de fenêtres.', actionLabel: 'Frapper à la porte' }
+  },
+  {
+    id: 'house-caramel-lodge',
+    name: 'Manoir Toffee & Caramel',
+    gridX: 6,
+    gridZ: 32,
+    scale: 1.15,
+    roofColor: 0xb5632a, // Caramel au beurre salé
+    wallColor: 0xf3dfc5,
+    roofType: 'pitched',
+    rotationY: 0,
+    interaction: { title: 'Manoir Caramel', desc: 'Belle bâtisse à deux fenêtres à l\'étage. La girouette sur le toit tourne au gré des odeurs de boulangerie.', actionLabel: 'Frapper à la porte' }
+  },
+  {
+    id: 'house-apricot-bakery',
+    name: 'Chaumière Abricot Rôti',
+    gridX: 14,
+    gridZ: 32,
+    scale: 0.9,
+    roofColor: 0xf37f34, // Abricot
+    wallColor: 0xfbf1e3,
+    roofType: 'dome',
+    rotationY: Math.PI / 2,
+    interaction: { title: 'Chaumière Abricot', desc: 'Petit refuge douillet bordé d\'une haie de biscuits cuillère.', actionLabel: 'Saluer les résidents' }
+  },
+  // Faubourg Gourmand & Échoppes de Ruelle
+  {
+    id: 'house-baker-guild',
+    name: 'L\'Atelier du Pâtissier Compagnon',
+    gridX: 45,
+    gridZ: 17,
+    scale: 1.05,
+    roofColor: 0x3d1d0e, // Chocolat noir
+    wallColor: 0xf3e2cc,
+    roofType: 'pitched',
+    rotationY: -Math.PI / 2,
+    interaction: { title: 'Atelier du Compagnon', desc: 'Ici travaillent les apprentis boulangers, apprenant le secret du pétrissage magique.', actionLabel: 'Jeter un œil par la fenêtre' }
+  },
+  {
+    id: 'house-sugar-fairy',
+    name: 'Échoppe du Sucre Glace',
+    gridX: 45,
+    gridZ: 32,
+    scale: 0.95,
+    roofColor: 0xff8ca3, // Rose bonbon
+    wallColor: 0xfffaef,
+    roofType: 'dome',
+    rotationY: -Math.PI / 2,
+    interaction: { title: 'Échoppe du Sucre Glace', desc: 'Petite boutique où l\'on tamise le sucre impérial pour décorer les gâteaux de fête.', actionLabel: 'Entrer' }
+  },
+  // Bord du Fleuve & Bois de Cannelle
+  {
+    id: 'house-canal-cabin',
+    name: 'Cabane du Passeur de Chocolat',
+    gridX: 9,
+    gridZ: 13,
+    scale: 0.9,
+    roofColor: 0x76543d,
+    wallColor: 0xeed9bf,
+    roofType: 'pitched',
+    rotationY: Math.PI,
+    interaction: { title: 'Cabane du Passeur', desc: 'C\'est ici que vit le vieux timonier qui amarre les barques et les gondoles de croissant.', actionLabel: 'Toquer au carreau' }
+  },
+  {
+    id: 'house-woodland-retreat',
+    name: 'L\'Ermitage du Bois de Cannelle',
+    gridX: 4,
+    gridZ: 18,
+    scale: 0.85,
+    roofColor: 0x5a7536,
+    wallColor: 0xf2e0c9,
+    roofType: 'dome',
+    rotationY: Math.PI / 4,
+    interaction: { title: 'L\'Ermitage des Bois', desc: 'Un havre de paix blotti au milieu des arbres brioches. L\'air y sent la cannelle fraîche.', actionLabel: 'Méditer devant la porte' }
+  }
+];
+
+// Instanced Wafer Benches (Street Furniture)
+export const VILLAGE_BENCHES = [
+  // Grand-Place
+  { x: 21, z: 23, rot: 0 }, { x: 29, z: 23, rot: 0 },
+  { x: 21, z: 27, rot: Math.PI }, { x: 29, z: 27, rot: Math.PI },
+  // Promenade des Quais
+  { x: 17, z: 11, rot: 0 }, { x: 33, z: 11, rot: 0 },
+  // Parc & Terrasses
+  { x: 7, z: 29, rot: -Math.PI / 2 }, { x: 12, z: 29, rot: Math.PI / 2 },
+  // Bois de Cannelle
+  { x: 6, z: 18, rot: 0.4 }, { x: 13, z: 18, rot: -0.4 },
+  // Colline
+  { x: 11, z: 44, rot: Math.PI / 4 }
+];
+
+// Instanced Barrels, Crates & Flour Sacks
+export const VILLAGE_BARRELS_CRATES = [
+  // Taverne du Pot de Miel
+  { x: 37, z: 18, type: 'barrel' }, { x: 37, z: 19, type: 'crate' },
+  // Pâtisserie
+  { x: 34, z: 27, type: 'sack' }, { x: 35, z: 27, type: 'sack' },
+  // Quais du Port
+  { x: 21, z: 11, type: 'barrel' }, { x: 29, z: 11, type: 'crate' },
+  { x: 38, z: 11, type: 'barrel' }, { x: 12, z: 11, type: 'sack' }
 ];

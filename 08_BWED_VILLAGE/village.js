@@ -11,8 +11,20 @@ import {
   DISTRICTS,
   generateVillageGrid,
   VILLAGE_BUILDINGS,
-  VILLAGE_LANTERNS
+  VILLAGE_LANTERNS,
+  CITIZEN_HOUSES,
+  VILLAGE_BENCHES,
+  VILLAGE_BARRELS_CRATES
 } from './village-map-data.js';
+import {
+  createWaffleTexture,
+  createCobbleTexture,
+  createGrassTexture,
+  createVichyTexture,
+  createCheckerTexture,
+  createWoodTexture,
+  createDirtTexture
+} from './village-textures.js';
 
 // --- GAME STATE ---
 const state = {
@@ -124,13 +136,20 @@ function init() {
   // 8. Build Procedural Brioche Trees & Flora
   buildVillageVegetation();
 
-  // 9. Setup Key Landmark Colored Glows
+  // 9. Build Modular Procedural Citizen Houses (10 Distinct Homes)
+  buildCitizenHouses();
+
+  // 10. Build Instanced Street Furniture & Props Kit (Benches, Barrels, Sacks)
+  buildInstancedBenches();
+  buildInstancedBarrelsAndCrates();
+
+  // 11. Setup Key Landmark Colored Glows
   setupLandmarkLights();
 
-  // 10. Load Village GLB Buildings & Props (Tracks actual progress)
+  // 12. Load Village GLB Buildings & Props (Tracks actual progress)
   loadVillageBuildings();
 
-  // 11. Input & Event Listeners
+  // 13. Input & Event Listeners
   setupEventListeners();
 
   // 12. Safety fallback timeout for loader
@@ -246,32 +265,61 @@ function buildInstancedTileGrid() {
   // Single beveled rounded tile geometry
   const tileGeo = new THREE.BoxGeometry(tileSize * 0.96, 0.45, tileSize * 0.96);
 
+  // Procedural Canvas Textures (0 KB download, pure runtime generation)
+  const cobbleTex = createCobbleTexture();
+  const grassTex = createGrassTexture();
+  const waffleTex = createWaffleTexture();
+  const vichyTex = createVichyTexture();
+  const checkerTex = createCheckerTexture();
+  const woodTex = createWoodTexture();
+  const dirtTex = createDirtTexture();
+
   // Materials for each tile type
   const materials = {
     [TILE_TYPES.COBBLE_SABLE]: new THREE.MeshStandardMaterial({
-      color: 0xd8a474,
+      map: cobbleTex,
       roughness: 0.85,
       metalness: 0.05
     }),
     [TILE_TYPES.MATCHA_GRASS]: new THREE.MeshStandardMaterial({
-      color: 0x6e8f48,
+      map: grassTex,
       roughness: 0.95,
       metalness: 0.02
     }),
     [TILE_TYPES.WAFFLE_PLAZA]: new THREE.MeshStandardMaterial({
-      color: 0xe09b3d,
+      map: waffleTex,
       roughness: 0.7,
       metalness: 0.08
+    }),
+    [TILE_TYPES.VICHY_PICNIC]: new THREE.MeshStandardMaterial({
+      map: vichyTex,
+      roughness: 0.8,
+      metalness: 0.02
+    }),
+    [TILE_TYPES.CHECKER_BOARD]: new THREE.MeshStandardMaterial({
+      map: checkerTex,
+      roughness: 0.5,
+      metalness: 0.1
+    }),
+    [TILE_TYPES.WOOD_PIER]: new THREE.MeshStandardMaterial({
+      map: woodTex,
+      roughness: 0.75,
+      metalness: 0.04
+    }),
+    [TILE_TYPES.FOREST_DIRT]: new THREE.MeshStandardMaterial({
+      map: dirtTex,
+      roughness: 0.9,
+      metalness: 0.02
+    }),
+    [TILE_TYPES.CANE_SAND]: new THREE.MeshStandardMaterial({
+      color: 0xdeb887,
+      roughness: 0.85,
+      metalness: 0.02
     }),
     [TILE_TYPES.CHOCO_CANAL]: new THREE.MeshStandardMaterial({
       color: 0x38180c,
       roughness: 0.25,
       metalness: 0.15
-    }),
-    [TILE_TYPES.WOOD_PIER]: new THREE.MeshStandardMaterial({
-      color: 0x824e2c,
-      roughness: 0.75,
-      metalness: 0.04
     }),
     [TILE_TYPES.MILLEFEUILLE_ROCK]: new THREE.MeshStandardMaterial({
       color: 0xb58253,
@@ -469,6 +517,239 @@ function buildVillageVegetation() {
   scene.add(crownInstanced);
   scene.add(sideBunsInstanced);
   scene.add(pearlInstanced);
+}
+
+// ============================================================================
+// MODULAR PROCEDURAL CITIZEN HOUSES (10 HOMES & WORKSHOPS)
+// ============================================================================
+function buildCitizenHouses() {
+  CITIZEN_HOUSES.forEach(h => {
+    const group = new THREE.Group();
+    const s = h.scale || 1.0;
+    const wx = h.gridX * MAP_CONFIG.tileSize;
+    const wz = h.gridZ * MAP_CONFIG.tileSize;
+    const tile = state.grid[h.gridZ] && state.grid[h.gridZ][h.gridX];
+    const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
+
+    // 1. House Body (Brioche Dough Walls with soft crumb texture)
+    const bodyGeo = new THREE.BoxGeometry(2.4 * s, 1.8 * s, 2.1 * s);
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: h.wallColor || 0xfbf1e3,
+      roughness: 0.8,
+      metalness: 0.04
+    });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.9 * s;
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
+
+    // 2. Glazed Wafer Roof
+    const roofMat = new THREE.MeshStandardMaterial({
+      color: h.roofColor || 0xe65271,
+      roughness: 0.5,
+      metalness: 0.08
+    });
+
+    if (h.roofType === 'dome') {
+      // Round brioche dome roof
+      const domeGeo = new THREE.SphereGeometry(1.45 * s, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.5);
+      const dome = new THREE.Mesh(domeGeo, roofMat);
+      dome.position.y = 1.8 * s;
+      dome.scale.set(1.15, 0.95, 1.05);
+      dome.castShadow = true;
+      group.add(dome);
+    } else {
+      // Pitched roof (wafer gable prism)
+      const roofGeo = new THREE.ConeGeometry(1.9 * s, 1.3 * s, 4);
+      roofGeo.rotateY(Math.PI / 4);
+      const roof = new THREE.Mesh(roofGeo, roofMat);
+      roof.position.y = 2.45 * s;
+      roof.scale.set(1.15, 1.0, 1.05);
+      roof.castShadow = true;
+      group.add(roof);
+    }
+
+    // 3. Arched Chocolate Door & Brass Handle
+    const doorGeo = new THREE.BoxGeometry(0.55 * s, 0.95 * s, 0.08 * s);
+    const chocoMat = new THREE.MeshStandardMaterial({ color: 0x3d1c0e, roughness: 0.6 });
+    const door = new THREE.Mesh(doorGeo, chocoMat);
+    door.position.set(0, 0.48 * s, 1.06 * s);
+    group.add(door);
+
+    const knobGeo = new THREE.SphereGeometry(0.05 * s, 8, 8);
+    const brassMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8, roughness: 0.3 });
+    const knob = new THREE.Mesh(knobGeo, brassMat);
+    knob.position.set(0.18 * s, 0.5 * s, 1.11 * s);
+    group.add(knob);
+
+    // 4. Biscuit Windows
+    const winGeo = new THREE.BoxGeometry(0.48 * s, 0.48 * s, 0.06 * s);
+    const winMat = new THREE.MeshStandardMaterial({ color: 0xfff6ea, roughness: 0.4 });
+    const winL = new THREE.Mesh(winGeo, winMat);
+    winL.position.set(-0.75 * s, 1.1 * s, 1.06 * s);
+    group.add(winL);
+
+    const winR = new THREE.Mesh(winGeo, winMat);
+    winR.position.set(0.75 * s, 1.1 * s, 1.06 * s);
+    group.add(winR);
+
+    // 5. Canelé Chimney with Sugar Smoke Puff
+    const chimGeo = new THREE.CylinderGeometry(0.16 * s, 0.22 * s, 0.7 * s, 8);
+    const chimMat = new THREE.MeshStandardMaterial({ color: 0x421e10, roughness: 0.7 });
+    const chimney = new THREE.Mesh(chimGeo, chimMat);
+    chimney.position.set(0.7 * s, 2.5 * s, -0.3 * s);
+    chimney.castShadow = true;
+    group.add(chimney);
+
+    const smokeGeo = new THREE.SphereGeometry(0.2 * s, 8, 8);
+    const smokeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
+    const smoke = new THREE.Mesh(smokeGeo, smokeMat);
+    smoke.position.set(0.7 * s, 3.0 * s, -0.3 * s);
+    group.add(smoke);
+
+    group.position.set(wx, wy, wz);
+    group.rotation.y = h.rotationY || 0;
+    scene.add(group);
+
+    // Register into buildingObjects for proximity interaction card
+    buildingObjects.push({ config: h, mesh: group });
+
+    // Mark tiles as occupied in state grid
+    for (let dz = -1; dz <= 1; dz++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const gx = h.gridX + dx;
+        const gz = h.gridZ + dz;
+        if (state.grid[gz] && state.grid[gz][gx]) {
+          state.grid[gz][gx].walkable = false;
+          state.grid[gz][gx].occupant = h;
+        }
+      }
+    }
+  });
+}
+
+// ============================================================================
+// INSTANCED STREET PROPS (BENCHES, BARRELS, CRATES & SACKS)
+// ============================================================================
+function buildInstancedBenches() {
+  const count = VILLAGE_BENCHES.length;
+  const waferMat = new THREE.MeshStandardMaterial({ color: 0xdd9c44, roughness: 0.65 });
+  const legMat = new THREE.MeshStandardMaterial({ color: 0x3d1b0d, roughness: 0.7 });
+
+  const seatGeo = new THREE.BoxGeometry(1.5, 0.12, 0.55);
+  const backGeo = new THREE.BoxGeometry(1.5, 0.45, 0.1);
+  const legGeo = new THREE.BoxGeometry(0.12, 0.45, 0.45);
+
+  const seatInstanced = new THREE.InstancedMesh(seatGeo, waferMat, count);
+  seatInstanced.castShadow = true;
+  seatInstanced.receiveShadow = true;
+
+  const backInstanced = new THREE.InstancedMesh(backGeo, waferMat, count);
+  backInstanced.castShadow = true;
+
+  const legInstanced = new THREE.InstancedMesh(legGeo, legMat, count * 2);
+  legInstanced.castShadow = true;
+
+  const dummy = new THREE.Object3D();
+  let legCount = 0;
+
+  VILLAGE_BENCHES.forEach((b, idx) => {
+    const wx = b.x * MAP_CONFIG.tileSize;
+    const wz = b.z * MAP_CONFIG.tileSize;
+    const tile = state.grid[b.z] && state.grid[b.z][b.x];
+    const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
+    const rot = b.rot || 0;
+
+    // Seat
+    dummy.position.set(wx, wy + 0.45, wz);
+    dummy.rotation.set(0, rot, 0);
+    dummy.updateMatrix();
+    seatInstanced.setMatrixAt(idx, dummy.matrix);
+
+    // Backrest
+    const backOffset = new THREE.Vector3(0, 0.25, -0.22).applyAxisAngle(new THREE.Vector3(0, 1, 0), rot);
+    dummy.position.set(wx + backOffset.x, wy + 0.45 + backOffset.y, wz + backOffset.z);
+    dummy.updateMatrix();
+    backInstanced.setMatrixAt(idx, dummy.matrix);
+
+    // Left & Right Legs
+    [-0.6, 0.6].forEach(dx => {
+      const legOffset = new THREE.Vector3(dx, -0.2, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), rot);
+      dummy.position.set(wx + legOffset.x, wy + 0.45 + legOffset.y, wz + legOffset.z);
+      dummy.updateMatrix();
+      legInstanced.setMatrixAt(legCount++, dummy.matrix);
+    });
+
+    if (tile) tile.walkable = false;
+  });
+
+  seatInstanced.instanceMatrix.needsUpdate = true;
+  backInstanced.instanceMatrix.needsUpdate = true;
+  legInstanced.instanceMatrix.needsUpdate = true;
+
+  scene.add(seatInstanced);
+  scene.add(backInstanced);
+  scene.add(legInstanced);
+}
+
+function buildInstancedBarrelsAndCrates() {
+  const items = VILLAGE_BARRELS_CRATES;
+  const count = items.length;
+
+  const barrelMat = new THREE.MeshStandardMaterial({ color: 0x7a4625, roughness: 0.7 });
+  const crateMat = new THREE.MeshStandardMaterial({ color: 0xc4935a, roughness: 0.8 });
+  const sackMat = new THREE.MeshStandardMaterial({ color: 0xf5ead6, roughness: 0.95 });
+
+  const barrelGeo = new THREE.CylinderGeometry(0.38, 0.42, 0.85, 10);
+  const crateGeo = new THREE.BoxGeometry(0.75, 0.75, 0.75);
+  const sackGeo = new THREE.SphereGeometry(0.42, 8, 8);
+  sackGeo.scale(1.0, 1.25, 0.85);
+
+  const barrelInst = new THREE.InstancedMesh(barrelGeo, barrelMat, count);
+  barrelInst.castShadow = true;
+  barrelInst.receiveShadow = true;
+
+  const crateInst = new THREE.InstancedMesh(crateGeo, crateMat, count);
+  crateInst.castShadow = true;
+  crateInst.receiveShadow = true;
+
+  const sackInst = new THREE.InstancedMesh(sackGeo, sackMat, count);
+  sackInst.castShadow = true;
+  sackInst.receiveShadow = true;
+
+  const dummy = new THREE.Object3D();
+  let bCount = 0, cCount = 0, sCount = 0;
+
+  items.forEach(it => {
+    const wx = it.x * MAP_CONFIG.tileSize;
+    const wz = it.z * MAP_CONFIG.tileSize;
+    const tile = state.grid[it.z] && state.grid[it.z][it.x];
+    const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
+
+    if (it.type === 'barrel') {
+      dummy.position.set(wx, wy + 0.42, wz);
+      dummy.rotation.set(0, Math.random() * Math.PI, 0);
+      dummy.updateMatrix();
+      barrelInst.setMatrixAt(bCount++, dummy.matrix);
+    } else if (it.type === 'crate') {
+      dummy.position.set(wx, wy + 0.38, wz);
+      dummy.rotation.set(0, (it.x + it.z) * 0.3, 0);
+      dummy.updateMatrix();
+      crateInst.setMatrixAt(cCount++, dummy.matrix);
+    } else {
+      dummy.position.set(wx, wy + 0.45, wz);
+      dummy.rotation.set(0.1, (it.x + it.z) * 0.5, 0);
+      dummy.updateMatrix();
+      sackInst.setMatrixAt(sCount++, dummy.matrix);
+    }
+
+    if (tile) tile.walkable = false;
+  });
+
+  if (bCount > 0) { barrelInst.count = bCount; barrelInst.instanceMatrix.needsUpdate = true; scene.add(barrelInst); }
+  if (cCount > 0) { crateInst.count = cCount; crateInst.instanceMatrix.needsUpdate = true; scene.add(crateInst); }
+  if (sCount > 0) { sackInst.count = sCount; sackInst.instanceMatrix.needsUpdate = true; scene.add(sackInst); }
 }
 
 // ============================================================================
