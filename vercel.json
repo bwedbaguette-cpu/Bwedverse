@@ -1,25 +1,10 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/index.html" },
-    { "source": "/party-board", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.html" },
-    { "source": "/party-board.html", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.html" },
-    { "source": "/styles.css", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/styles.css" },
-    { "source": "/app.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/app.js" },
-    { "source": "/depot-data.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/depot-data.js" },
-    { "source": "/party-board.css", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.css" },
-    { "source": "/party-board.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.js" },
-    { "source": "/assets/(.*)", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/assets/$1" },
-    { "source": "/06_BRAND_AND_HUB/styles.css", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/styles.css" },
-    { "source": "/06_BRAND_AND_HUB/app.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/app.js" },
-    { "source": "/06_BRAND_AND_HUB/depot-data.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/depot-data.js" },
-    { "source": "/06_BRAND_AND_HUB/assets/(.*)", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/assets/$1" },
-    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/styles.css", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/styles.css" },
-    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/app.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/app.js" },
-    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/depot-data.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/depot-data.js" },
-    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.css", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.css" },
-    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.js", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.js" },
-    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/assets/(.*)", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/assets/$1" }
+    { "source": "/party-board", "destination": "/party-board.html" },
+    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/index.html" },
+    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/index.html" },
+    { "source": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board", "destination": "/06_BRAND_AND_HUB/03_HUB_SITE/party-board.html" }
   ],
   "headers": [
     {

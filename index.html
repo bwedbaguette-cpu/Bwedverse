@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#120905" />
+    <meta
+      name="description"
+      content="Bwedverse — The slice is alive. 18 collectible 3D vinyl heroes, the Crumb Run 3D board game, and two years of unhinged bread lore."
+    />
+    <title>BWEDVERSE — The Slice is Alive | Crumb Run 3D &amp; 18 Heroes</title>
+
+    <!-- Critical Inlined CSS -->
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #120905;
+        color: #fff7ea;
+        font-family: 'Outfit', 'Space Grotesk', -apple-system, sans-serif;
+        overflow-x: hidden;
+      }
+      .mosaic-wallpaper {
+        position: fixed;
+        inset: -10% -15% -10% -15%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        transform: rotate(-3deg);
+        opacity: 0.65;
+      }
+      .mosaic-track {
+        display: flex;
+        gap: 16px;
+        width: max-content;
+      }
+      .mosaic-tile {
+        width: 84px;
+        height: 84px;
+        flex-shrink: 0;
+        border-radius: 18px;
+        background: rgba(30, 14, 8, 0.88);
+        border: 1px solid rgba(255, 209, 90, 0.22);
+        overflow: hidden;
+      }
+      .mosaic-tile img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .site-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        padding: 14px 4vw;
+        background: rgba(22, 10, 6, 0.88);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      main, .site-footer {
+        position: relative;
+        z-index: 10;
+      }
+    </style>
+
+    <link rel="stylesheet" href="./styles.css?v=5.2.0" />
+    <script src="./depot-data.js?v=5.2.0"></script>
+    <script src="./app.js?v=5.2.0" defer></script>
+  </head>
+  <body>
+    <!-- Live Moving Mosaic Wallpaper (Pure GPU-accelerated CSS marquee with dozens of real Bwed memes & PFPs) -->
+    <div class="mosaic-wallpaper" id="mosaicWallpaper" aria-hidden="true">
+      <div class="mosaic-track track-1"></div>
+      <div class="mosaic-track track-2"></div>
+      <div class="mosaic-track track-3"></div>
+      <div class="mosaic-track track-4"></div>
+      <div class="mosaic-track track-5"></div>
+      <div class="mosaic-overlay"></div>
+    </div>
+
+    <!-- Ambient Glow Orbs -->
+    <div class="glow-orb glow-orb-gold" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-crimson" aria-hidden="true"></div>
+
+    <!-- Sticky Header Navigation -->
+    <header class="site-header">
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <a class="brand" href="#top" aria-label="Bwedverse Home">
+          <div class="brand-mark brand-avatar" aria-hidden="true">
+            <img src="./assets/bwed-avatar-canon.png" alt="Canonical Bwed Avatar" />
+          </div>
+          <div class="brand-copy">
+            <strong>BWED<span>VERSE</span></strong>
+            <small>THE LIVING SLICE</small>
+          </div>
+        </a>
+
+        <!-- Stylized Baguette Contract Address Copy Pill -->
+        <div class="ca-baguette-pill" id="caBaguetteBtn" role="button" tabindex="0" title="Click to copy CA">
+          <span class="baguette-slashes" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="ca-label">CA:</span>
+          <span class="ca-val">5nfDdZ...Ppump</span>
+          <span class="ca-badge" id="caCopyBadge">COPY</span>
+        </div>
+
+        <!-- Discreet Bwed Visitor Clicker Pill -->
+        <div class="bwed-clicker-pill" id="bwedClickerPill" role="button" tabindex="0" title="Click Bwed to say hi!">
+          <div class="clicker-avatar-frame">
+            <img src="./assets/bwed-avatar-canon.png" alt="Bwed Avatar" class="clicker-avatar-img" />
+          </div>
+          <div class="clicker-bubble" id="clickerBubble">
+            <span class="clicker-bubble-tail" aria-hidden="true"></span>
+            <span class="clicker-bubble-text"><strong id="clickerCount">1</strong> Bwed was here</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="main-nav" id="mainNav" aria-label="Main Navigation">
+        <a class="nav-link" href="#game">Crumb Run 3D</a>
+        <a class="nav-link" href="#arcade">Arcade</a>
+        <a class="nav-link" href="#buildings">Buildings</a>
+        <a class="nav-link" href="#roster">18 Heroes</a>
+        <a class="nav-link" href="#archive">Lore &amp; Memes</a>
+      </nav>
+
+      <div class="header-controls">
+        <!-- Discreet Social / Market Links -->
+        <div class="header-socials">
+          <a class="social-icon-btn" href="https://dexscreener.com/solana/bnttpswsrsvl2dphptsuqkkujbr8fprtb2ejrfbhgjev" target="_blank" rel="noopener noreferrer" title="Dexscreener Live Chart">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
+          </a>
+          <a class="social-icon-btn" href="https://pump.fun/coin/5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump?clip=20261023_161922%3A2605966_20261023_161852" target="_blank" rel="noopener noreferrer" title="Pump.fun Token">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z" />
+              <path d="m8.5 8.5 7 7" />
+            </svg>
+          </a>
+          <a class="social-icon-btn" href="https://t.me/+wK2gsh6QGrk2N2Nh" target="_blank" rel="noopener noreferrer" title="Telegram Community">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Official MP3 Soundtrack Player Pill -->
+        <div class="music-player-pill" id="musicPlayerWidget">
+          <button class="music-btn-play" id="musicPlayBtn" type="button" aria-label="Play or pause music" title="Play / Pause Soundtrack">
+            <svg class="icon-play" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg class="icon-pause" width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+          <div class="music-info-wrap" id="musicTrackInfo" title="Click to view playlist">
+            <span class="music-label">OST:</span>
+            <span class="music-track-name" id="musicTrackName">Bakery Morning</span>
+          </div>
+          <button class="music-btn-next" id="musicNextBtn" type="button" aria-label="Next track" title="Next Song">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"/></svg>
+          </button>
+          <div class="music-volume-box">
+            <button class="music-btn-mute" id="musicMuteBtn" type="button" aria-label="Mute or unmute music" title="Toggle Mute">
+              <svg class="icon-vol-on" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <svg class="icon-vol-off" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            </button>
+            <input type="range" class="music-slider" id="musicVolumeSlider" min="0" max="100" value="40" aria-label="Music volume" title="Volume" />
+            <span class="music-vol-num" id="musicVolNum">40%</span>
+          </div>
+        </div>
+
+        <button class="tool-btn active" id="toggleMosaic" type="button" aria-label="Toggle wallpaper motion">
+          <span>Motion: ON</span>
+        </button>
+        <button class="tool-btn active" id="toggleAudio" type="button" aria-label="Toggle sound effects">
+          <span>SFX: ON</span>
+        </button>
+        <a class="btn-play-header" href="./party-board.html">
+          <span>PLAY CRUMB RUN 3D</span> <b>&rarr;</b>
+        </a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-content reveal">
+          <div class="tag-badge">
+            <i></i> <span>THE LIVING SLICE &bull; OFFICIAL 3D HUB</span>
+          </div>
+          <h1 class="hero-title">
+            The slice is alive.<br />
+            <span class="gradient-text">Now in full 3D.</span>
+          </h1>
+          <p class="hero-desc">
+            Started on Solana as a lonely slice with red sneakers. Grew into an entire weird species. Now we built a full 3D diorama board game, 18 collectible vinyl homies, and an archive of unhinged bread lore.
+          </p>
+          <div class="hero-cta-group">
+            <a class="btn btn-primary" href="./party-board.html">
+              <span>Play Crumb Run 3D</span> <b>&rarr;</b>
+            </a>
+            <a class="btn btn-secondary" href="#roster">
+              <span>Meet the 18 Heroes</span> <b>&darr;</b>
+            </a>
+            <a class="btn btn-secondary" href="#buildings">
+              <span>Explore the Town</span> <b>&darr;</b>
+            </a>
+          </div>
+
+          <div class="hero-stats-row">
+            <div class="stat-item">
+              <span class="stat-val">18</span>
+              <span class="stat-lbl">3D Vinyl Heroes</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val">12</span>
+              <span class="stat-lbl">Town Buildings</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val">2 YRS</span>
+              <span class="stat-lbl">Lore &amp; Memes</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-val">100%</span>
+              <span class="stat-lbl">Free In Browser</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Illuminated Collector Showcase Cabinet (All 18 Vinyl Figurines on Shelves) -->
+        <div class="hero-stage-wrap reveal">
+          <div class="collector-cabinet" id="collectorCabinet">
+            <div class="cabinet-crown">
+              <div class="cabinet-plaque">
+                <span class="plaque-title">BWEDVILLE COLLECTOR ARCHIVE</span>
+                <span class="plaque-sub">18 OFFICIAL 3D VINYL FIGURES</span>
+              </div>
+              <div class="cabinet-status">
+                <i class="status-led"></i>
+                <span>3D VITRINE ACTIVE</span>
+              </div>
+            </div>
+
+            <div class="cabinet-interior" id="cabinetShelves">
+              <!-- Tier 1: Top Shelf (6 figures) -->
+              <div class="cabinet-shelf-tier tier-1">
+                <div class="shelf-led-beam"></div>
+                <div class="shelf-figures-row" id="shelfRow1"></div>
+                <div class="shelf-plank"></div>
+              </div>
+
+              <!-- Tier 2: Mid Shelf (6 figures) -->
+              <div class="cabinet-shelf-tier tier-2">
+                <div class="shelf-led-beam"></div>
+                <div class="shelf-figures-row" id="shelfRow2"></div>
+                <div class="shelf-plank"></div>
+              </div>
+
+              <!-- Tier 3: Bottom Shelf (6 figures) -->
+              <div class="cabinet-shelf-tier tier-3">
+                <div class="shelf-led-beam"></div>
+                <div class="shelf-figures-row" id="shelfRow3"></div>
+                <div class="shelf-plank"></div>
+              </div>
+            </div>
+
+            <!-- Interactive Cabinet Dock / Quick Hero Inspector -->
+            <div class="cabinet-dock">
+              <div class="dock-hero-meta" id="dockHeroMeta">
+                <img class="dock-avatar" id="dockAvatar" src="./assets/pawns/thumbs/super-hero-bwed.png" alt="Super Bwed" />
+                <div class="dock-info">
+                  <strong id="dockHeroName">Super Bwed</strong>
+                  <span id="dockHeroRole">The Crust Crusader &bull; Hero Leap (Fly +3 &amp; 2c)</span>
+                </div>
+              </div>
+              <div class="dock-actions">
+                <button type="button" class="btn btn-secondary btn-dock-inspect" id="btnDockInspect">
+                  <span>Inspect Card</span>
+                </button>
+                <a class="btn btn-primary btn-dock-play" id="btnDockPlay" href="./party-board.html">
+                  <span>Play in 3D</span> <b>&rarr;</b>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Clean Text Ticker Strip -->
+      <section class="ticker-band" aria-label="Bwedverse Keywords">
+        <div class="ticker-track">
+          <span>BWED IS THE SPECIES</span>
+          <span>&bull;</span>
+          <span>NO CRUMBS LEFT BEHIND</span>
+          <span>&bull;</span>
+          <span>18 VINYL HEROES</span>
+          <span>&bull;</span>
+          <span>CRUMB RUN 3D BOARD GAME</span>
+          <span>&bull;</span>
+          <span>TWO YEARS OF CHAOS</span>
+          <span>&bull;</span>
+          <span>THE SLICE IS ALIVE</span>
+          <span>&bull;</span>
+          <span>ORIGINAL CANON</span>
+          <span>&bull;</span>
+          <span>BWED IS THE SPECIES</span>
+          <span>&bull;</span>
+          <span>NO CRUMBS LEFT BEHIND</span>
+          <span>&bull;</span>
+          <span>18 VINYL HEROES</span>
+          <span>&bull;</span>
+          <span>CRUMB RUN 3D BOARD GAME</span>
+          <span>&bull;</span>
+          <span>TWO YEARS OF CHAOS</span>
+          <span>&bull;</span>
+          <span>THE SLICE IS ALIVE</span>
+          <span>&bull;</span>
+          <span>ORIGINAL CANON</span>
+        </div>
+      </section>
+
+      <!-- Section 1: Crumb Run 3D Board Spotlight -->
+      <section class="hub-section" id="game">
+        <div class="section-head reveal">
+          <div class="tag-badge"><i></i> THE FLAGSHIP 3D GAME</div>
+          <h2 class="section-title">
+            Crumb Run 3D : <em>The Race for the Golden Loaf</em>
+          </h2>
+          <p class="section-desc">
+            Think Mario Party, but everyone is a fresh slice of toast trying to bankrupt each other. Roll custom dice, bounce on waffle springboards, raid the chocolate vault, and trigger your hero's talent to mess with your friends.
+          </p>
+        </div>
+
+        <div class="game-spotlight-card reveal">
+          <div class="spotlight-info">
+            <div class="feature-grid">
+              <div class="feature-item">
+                <strong>18 Playable Heroes</strong>
+                <p>From the stealthy shadow ninja to the Cape Crusader. Pick your slice, each with its own active talent.</p>
+              </div>
+              <div class="feature-item">
+                <strong>Living 13-Tile Board</strong>
+                <p>Chocolate bank vaults, arena duels, bakery power-up shops, and hot oven burner tiles.</p>
+              </div>
+              <div class="feature-item">
+                <strong>BwedWare Minigames</strong>
+                <p>Rapid-fire reaction brawls between board turns to stack dough and flip the standings.</p>
+              </div>
+              <div class="feature-item">
+                <strong>Solo vs AI or Local Squad</strong>
+                <p>Instant play right in your browser against 3 smart bot bakers or pass the keyboard with friends.</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+              <a class="btn btn-primary" href="./party-board.html">
+                <span>Launch Crumb Run 3D</span> <b>&rarr;</b>
+              </a>
+              <a class="btn btn-secondary" href="#buildings">
+                <span>View Town Buildings</span> <b>&darr;</b>
+              </a>
+            </div>
+          </div>
+
+          <div class="spotlight-visual">
+            <img
+              class="spotlight-board-preview"
+              src="./assets/crumb-run-board-snapshot.png"
+              alt="Crumb Run 3D In-Game Board Snapshot"
+            />
+            <div class="board-floating-badge">
+              <span>3D DIORAMA BOARD ACTIVE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Town & Board Buildings Showcase (100% Verified in-game .GLB models from party-board.js!) -->
+        <div class="buildings-showcase-wrap reveal" id="buildings">
+          <div class="buildings-head">
+            <div>
+              <div class="tag-badge"><i></i> 100% IN-GAME 3D ASSETS (.GLB)</div>
+              <h3>Bwedville Landmarks &amp; Board Buildings</h3>
+            </div>
+            <p>Every building displayed here is an authentic 3D model placed live on the Crumb Run diorama board.</p>
+          </div>
+
+          <div class="buildings-grid" id="buildingsGrid"></div>
+        </div>
+      </section>
+
+      <!-- Section: Bwed Arcade & Future Mini-Games -->
+      <section class="hub-section" id="arcade">
+        <div class="section-head reveal">
+          <div class="tag-badge"><i></i> THE BWED LABS &bull; UPCOMING EXPERIMENTS</div>
+          <h2 class="section-title">
+            The Bwed Arcade. <em>More games baking in the oven.</em>
+          </h2>
+          <p class="section-desc">
+            Crumb Run 3D is our flagship diorama board game, but the Bwed bakery never stops cooking. Here are the upcoming community spin-offs, physics mayhem, and multiplayer racers currently in development.
+          </p>
+        </div>
+
+        <div class="arcade-grid reveal">
+          <!-- Game 1: Bwedtris -->
+          <article class="arcade-card">
+            <div class="arcade-card-media">
+              <div class="arcade-media-badge status-indev">IN DEVELOPMENT</div>
+              <div class="arcade-art-preview">
+                <div class="arcade-vector-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="arcade-card-body">
+              <div class="arcade-tags">
+                <span class="tag-chip">PUZZLE</span>
+                <span class="tag-chip">RETRO ARCADE</span>
+              </div>
+              <h3 class="arcade-title">Bwedtris : <em>Bwed Edition</em></h3>
+              <p class="arcade-desc">
+                Classic block-dropping madness with a bakery twist. Stack falling brioche blocks, French baguette batons, and chocolate eclairs. Clear full rows to toast them into golden crumb combos before the oven timer dings!
+              </p>
+              <div class="arcade-footer">
+                <span class="arcade-phase">ALPHA RULES DEFINED</span>
+                <span class="arcade-action-pill">STAY TUNED</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Game 2: Flappy Bwed -->
+          <article class="arcade-card">
+            <div class="arcade-card-media">
+              <div class="arcade-media-badge status-prototype">PROTOTYPE BAKING</div>
+              <div class="arcade-art-preview">
+                <div class="arcade-vector-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-2V7a5 5 0 0 0-5-5z" />
+                    <path d="M16 11l4-4" />
+                    <path d="M8 11l-4-4" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="arcade-card-body">
+              <div class="arcade-tags">
+                <span class="tag-chip">HYPER-CASUAL</span>
+                <span class="tag-chip">ONE-TAP</span>
+              </div>
+              <h3 class="arcade-title">Flappy Bwed</h3>
+              <p class="arcade-desc">
+                Tap to flap your crispy toast slice with tiny butter wings! Dodge red-hot toaster heating elements, dripping syrup cascades, and snapping butter dishes without burning your crust.
+              </p>
+              <div class="arcade-footer">
+                <span class="arcade-phase">TAP PHYSICS TESTED</span>
+                <span class="arcade-action-pill">PLAYABLE SOON</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Game 3: Fallbwed -->
+          <article class="arcade-card">
+            <div class="arcade-card-media">
+              <div class="arcade-media-badge status-physics">PHYSICS CHAOS</div>
+              <div class="arcade-art-preview">
+                <div class="arcade-vector-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M10 15l5-3-5-3v6z" />
+                    <line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="2 2" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="arcade-card-body">
+              <div class="arcade-tags">
+                <span class="tag-chip">3D MULTIPLAYER</span>
+                <span class="tag-chip">RAGDOLL ROYALE</span>
+              </div>
+              <h3 class="arcade-title">Fallbwed : <em>Crumb Knockout</em></h3>
+              <p class="arcade-desc">
+                30 wobbly bread slices stumble through giant kitchen obstacle courses. Outrun spinning mahogany rolling pins, survive slippery melted butter slides, and avoid falling into the fondue pit to snag the Golden Crown.
+              </p>
+              <div class="arcade-footer">
+                <span class="arcade-phase">PHYSICS LAB EXPERIMENT</span>
+                <span class="arcade-action-pill">CONCEPT STAGE</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Game 4: BwedKart -->
+          <article class="arcade-card">
+            <div class="arcade-card-media">
+              <div class="arcade-media-badge status-kart">ROADMAP 2026</div>
+              <div class="arcade-art-preview">
+                <div class="arcade-vector-icon">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="7" cy="17" r="3" />
+                    <circle cx="17" cy="17" r="3" />
+                    <path d="M4 17h1m12 0h3M5 14l2-6h8l3 6M7 8h10" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="arcade-card-body">
+              <div class="arcade-tags">
+                <span class="tag-chip">3D RACING</span>
+                <span class="tag-chip">KART BATTLE</span>
+              </div>
+              <h3 class="arcade-title">BwedKart : <em>Sugar Grand Prix</em></h3>
+              <p class="arcade-desc">
+                High-speed pastry kart brawling across Cocoa Cove, Cinnamon Canyon, and Starlight Sugar Highway. Drift on caramel slicks, deploy butter bar traps, and turbo-boost your baguette rocket past the checkered flag!
+              </p>
+              <div class="arcade-footer">
+                <span class="arcade-phase">VEHICLE LORE DESIGNED</span>
+                <span class="arcade-action-pill">ROADMAP Q1 2026</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Game 5: Community Pitch Box -->
+          <article class="arcade-card arcade-card-pitch">
+            <div class="arcade-card-body" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div class="arcade-tags">
+                  <span class="tag-chip community-chip">COMMUNITY LAB</span>
+                  <span class="tag-chip community-chip">OPEN PROPOSALS</span>
+                </div>
+                <h3 class="arcade-title">Have a Game Idea for Bwed?</h3>
+                <p class="arcade-desc">
+                  Are you a game dev, pixel artist, or have an unhinged idea for a mini-game starring Bwed? Jump into our Telegram group and pitch your prototype directly to the team and holders.
+                </p>
+              </div>
+              <div class="arcade-pitch-action" style="margin-top: 14px;">
+                <a class="btn btn-primary" href="https://t.me/+wK2gsh6QGrk2N2Nh" target="_blank" rel="noopener noreferrer" style="width: 100%; justify-content: center;">
+                  <span>Pitch on Telegram</span> <b>&rarr;</b>
+                </a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Section 2: 18 Heroes Roster Gallery -->
+      <section class="hub-section" id="roster">
+        <div class="section-head reveal">
+          <div class="tag-badge"><i></i> COLLECTIBLE VINYL ROSTER</div>
+          <h2 class="section-title">
+            The 18 Heroes of <em>Bwedville</em>
+          </h2>
+          <p class="section-desc">
+            Every single slice has its own 3D model, stats, and a talent designed to mess with your opponents in the best way possible. Click any figure to inspect their card or jump straight into the board game with them.
+          </p>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="roster-filters reveal" role="tablist" aria-label="Filter heroes">
+          <button class="filter-btn active" data-cat="all" role="tab" aria-selected="true">All (18)</button>
+          <button class="filter-btn" data-cat="adventurers" role="tab" aria-selected="false">Adventurers</button>
+          <button class="filter-btn" data-cat="fighters" role="tab" aria-selected="false">Fighters &amp; Ninjas</button>
+          <button class="filter-btn" data-cat="rogues" role="tab" aria-selected="false">Rogues &amp; Bosses</button>
+          <button class="filter-btn" data-cat="mages" role="tab" aria-selected="false">Mages &amp; Mechs</button>
+        </div>
+
+        <!-- 18 Heroes Grid (Populated dynamically by app.js) -->
+        <div class="heroes-grid reveal" id="heroesGrid"></div>
+      </section>
+
+      <!-- Section 3: BwedDepot — Community Media Vault & Meme Index (MemeDepot Style) -->
+      <section class="hub-section bwed-depot-section" id="archive">
+        <div class="section-head reveal">
+          <div class="tag-badge"><i></i> MEMEDEPOT STYLE &bull; COMMUNITY MEDIA VAULT</div>
+          <h2 class="section-title">
+            BwedDepot : <em>The Living Media Vault</em>
+          </h2>
+          <p class="section-desc">
+            Over 160+ community memes, comic strips, space adventures, canon references, and 3D vinyl PFPs. Free high-res downloads and persistent upvotes that grow live like on MemeDepot.
+          </p>
+        </div>
+
+        <!-- Live Depot Stats Banner -->
+        <div class="depot-stats-banner reveal">
+          <div class="depot-stat">
+            <span class="d-val" id="depotTotalCount">163</span>
+            <span class="d-lbl">Available Assets</span>
+          </div>
+          <div class="depot-stat">
+            <span class="d-val" id="depotTotalLikes">98,420</span>
+            <span class="d-lbl">Community Upvotes</span>
+          </div>
+          <div class="depot-stat">
+            <span class="d-val">100%</span>
+            <span class="d-lbl">Free Download</span>
+          </div>
+          <div class="depot-stat">
+            <span class="d-val">LIVE</span>
+            <span class="d-lbl">Community Sync</span>
+          </div>
+        </div>
+
+        <!-- Depot Filter Tabs, Search & Sort Toolbar -->
+        <div class="depot-toolbar reveal">
+          <div class="depot-filter-tabs" id="depotCategoryTabs" role="tablist" aria-label="Filter media categories">
+            <button class="depot-tab active" data-cat="all" role="tab" aria-selected="true">All (163)</button>
+            <button class="depot-tab" data-cat="memes" role="tab" aria-selected="false">Memes &amp; Social</button>
+            <button class="depot-tab" data-cat="comics" role="tab" aria-selected="false">Comics &amp; Strips</button>
+            <button class="depot-tab" data-cat="adventures" role="tab" aria-selected="false">Adventures</button>
+            <button class="depot-tab" data-cat="locations" role="tab" aria-selected="false">Town Locations</button>
+            <button class="depot-tab" data-cat="canon" role="tab" aria-selected="false">Canon Core</button>
+            <button class="depot-tab" data-cat="cast" role="tab" aria-selected="false">Cast Variants</button>
+            <button class="depot-tab" data-cat="pfp" role="tab" aria-selected="false">3D Vinyl PFPs</button>
+          </div>
+
+          <div class="depot-search-sort">
+            <div class="depot-search-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" id="depotSearchInput" placeholder="Search memes, lore, keywords..." aria-label="Search media vault" />
+            </div>
+
+            <div class="depot-sort-wrap">
+              <label for="depotSortSelect">Sort:</label>
+              <select id="depotSortSelect" aria-label="Sort media">
+                <option value="likes">Most Upvoted</option>
+                <option value="trending">Trending Now</option>
+                <option value="az">Title A-Z</option>
+                <option value="newest">Newest First</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Depot Media Grid (Populated dynamically by app.js from depot-data.js) -->
+        <div class="depot-grid reveal" id="depotGrid"></div>
+
+        <!-- Load More Pagination Button -->
+        <div class="depot-pagination reveal" id="depotPagination">
+          <button type="button" class="btn btn-secondary" id="btnLoadMoreDepot">
+            <span>Load More Media</span> <b>&darr;</b>
+          </button>
+        </div>
+      </section>
+
+      <!-- Final Call to Action -->
+      <section class="cta-banner reveal" id="play-now">
+        <div class="tag-badge"><i></i> READY TO GET TOASTED?</div>
+        <h2>
+          Ready to jump into the <span>Bwedverse?</span>
+        </h2>
+        <p>
+          Pick your favorite vinyl figure, roll the dice, and see if you can hold onto your crumbs.
+        </p>
+        <a class="btn btn-primary" href="./party-board.html" style="font-size: 15px; padding: 18px 36px;">
+          <span>START CRUMB RUN 3D</span> <b>&rarr;</b>
+        </a>
+      </section>
+    </main>
+
+    <!-- Hero Card Inspector Modal -->
+    <div class="hero-modal-backdrop" id="heroModalBackdrop" role="dialog" aria-modal="true" aria-label="Hero Card Inspector">
+      <div class="hero-modal">
+        <button class="modal-close-btn" id="heroModalClose" type="button" aria-label="Close modal">&times;</button>
+        <div class="modal-hero-header">
+          <div class="modal-avatar-box">
+            <img class="modal-avatar-img" src="./assets/pawns/thumbs/super-hero-bwed.png" alt="Hero Avatar" />
+          </div>
+          <div class="modal-hero-meta">
+            <h3>Super Bwed</h3>
+            <span class="modal-hero-role">The Crust Crusader</span>
+            <p class="modal-hero-desc">
+              Cape fluttering in the warm oven breeze. Leaps across Bwedville to make sure no golden slice gets left behind.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-talent-card">
+          <strong>ACTIVE TALENT: HERO LEAP (FLY +3 &amp; 2 COINS)</strong>
+          <p>Leap 3 spaces forward with golden invulnerability and grab 2 coins.</p>
+        </div>
+
+        <div class="modal-actions">
+          <a class="btn btn-primary btn-modal-play" href="./party-board.html">
+            <span>Play Super Bwed in Crumb Run 3D</span> <b>&rarr;</b>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- BwedDepot Media Lightbox Modal -->
+    <div class="depot-lightbox" id="depotLightbox" role="dialog" aria-modal="true" aria-label="Media Preview">
+      <div class="lightbox-overlay" id="lightboxOverlay"></div>
+      <div class="lightbox-content">
+        <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close preview">&times;</button>
+        <div class="lightbox-image-wrap">
+          <img id="lightboxImg" src="./assets/pawns/thumbs/super-hero-bwed.png" alt="Bwed Media" />
+        </div>
+        <div class="lightbox-meta">
+          <div class="lightbox-details">
+            <span class="lightbox-badge" id="lightboxCategory">MEME</span>
+            <h3 id="lightboxTitle">Media Title</h3>
+            <p id="lightboxDesc">Media Description</p>
+          </div>
+          <div class="lightbox-actions">
+            <button type="button" class="btn-like-pill" id="lightboxLikeBtn">
+              <svg class="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="lightboxLikeCount">1,420</span>
+            </button>
+            <a class="btn btn-primary btn-lightbox-download" id="lightboxDownloadBtn" href="#" download="bwed-media.png">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Download High-Res</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clean Site Footer -->
+    <footer class="site-footer">
+      <div class="footer-copy">
+        <a class="brand" href="#top">
+          <div class="brand-mark brand-avatar" style="width: 34px; height: 34px;">
+            <img src="./assets/bwed-avatar-canon.png" alt="Canonical Bwed Avatar" />
+          </div>
+          <div class="brand-copy">
+            <strong style="font-size: 14px;">BWED<span>VERSE</span></strong>
+            <small>EDITION 2026</small>
+          </div>
+        </a>
+        <p style="margin-left: 14px;">&copy; 2026 Bwedverse. Made of crumbs, mischief &amp; community.</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="#game">Crumb Run 3D</a>
+        <a href="#arcade">Arcade</a>
+        <a href="#buildings">Buildings</a>
+        <a href="#roster">18 Heroes</a>
+        <a href="#archive">BwedDepot</a>
+        <a href="./party-board.html">Play in 3D &rarr;</a>
+      </div>
+    </footer>
+  </body>
+</html>
