@@ -2991,12 +2991,13 @@ button {
 }
 
 /* ==========================================================================
-   RESPONSIVE MEDIA QUERIES
+   RESPONSIVE MEDIA QUERIES (DESKTOP >= 1025px REMAINS 100% UNTOUCHED)
+   Mobile (< 768px and < 420px) is hyper-optimized for touch and small screens
    ========================================================================== */
 @media (max-width: 1024px) {
   .hero-section {
     grid-template-columns: 1fr;
-    padding-top: 130px;
+    padding-top: 120px;
     gap: 40px;
   }
   .hero-stage-wrap {
@@ -3016,93 +3017,399 @@ button {
   }
 }
 
-@media (max-width: 768px) {
-  .main-nav {
-    display: none;
-    position: fixed;
-    top: 70px;
-    left: 4vw;
-    right: 4vw;
-    background: rgba(20, 10, 5, 0.96);
-    border: 1px solid var(--border-gold);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    flex-direction: column;
-    gap: 16px;
-    box-shadow: var(--shadow-card);
-  }
-  .main-nav.open {
-    display: flex;
-  }
-  .menu-toggle {
-    display: flex;
-  }
-  .header-controls .tool-btn span {
-    display: none;
-  }
-  .btn-play-header {
-    padding: 7px 14px;
-    font-size: 11px;
-  }
-  .hero-title {
-    font-size: 40px;
-  }
-  .spotlight-info,
-  .minigame-info {
-    padding: 30px 20px;
-  }
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-  .collector-cabinet {
-    max-width: 100%;
-  }
-  .shelf-figures-row {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 4px;
-  }
-  .shelf-figure-img {
-    width: 44px;
-    height: 44px;
-  }
-  .shelf-pedestal {
-    width: 34px;
-    height: 6px;
-  }
-  .depot-stats-banner {
-    grid-template-columns: repeat(2, 1fr);
-    padding: 16px;
-    gap: 12px;
-  }
-  .depot-search-sort {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .depot-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px;
-  }
-  .depot-card-body {
-    padding: 12px;
-  }
-}
-
 @media (max-width: 900px) {
   .ca-baguette-pill .ca-label {
     display: none;
   }
 }
 
-@media (max-width: 600px) {
-  .bwed-clicker-pill {
-    padding: 2px 8px 2px 3px;
+@media (max-width: 768px) {
+  /* Header: Ultra-clean, non-overflowing bar on mobile */
+  .site-header {
+    padding: 8px 14px;
+    height: 56px;
+    box-sizing: border-box;
   }
+
+  .brand-copy small {
+    display: none;
+  }
+
+  .brand-copy strong {
+    font-size: 15px;
+  }
+
+  .brand-mark {
+    width: 32px;
+    height: 32px;
+  }
+
+  .btn-play-header {
+    display: none;
+  }
+
+  .header-socials {
+    display: none;
+  }
+
+  .music-player-pill .music-info-wrap,
+  .music-player-pill .music-slider,
+  .music-player-pill .music-volume-box,
+  .music-player-pill .music-btn-next {
+    display: none;
+  }
+
+  .music-player-pill {
+    padding: 2px 4px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .ca-baguette-pill {
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+
+  .ca-baguette-pill .baguette-slashes {
+    display: none;
+  }
+
+  .bwed-clicker-pill {
+    padding: 2px 7px 2px 3px;
+  }
+
+  .bwed-clicker-pill .clicker-avatar-frame {
+    width: 24px;
+    height: 24px;
+  }
+
   .bwed-clicker-pill .clicker-bubble-text {
     font-size: 10px;
   }
-  .clicker-avatar-frame {
-    width: 24px;
-    height: 24px;
+
+  /* Full-Screen Modern Drawer Menu for Mobile */
+  .main-nav {
+    display: none;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: calc(100vh - 56px);
+    background: rgba(14, 6, 3, 0.98);
+    backdrop-filter: blur(28px);
+    border: none;
+    border-top: 1px solid var(--border-gold);
+    border-radius: 0;
+    padding: 30px 24px;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 18px;
+    box-shadow: none;
+    overflow-y: auto;
+    z-index: 999;
+  }
+
+  .main-nav.open {
+    display: flex;
+  }
+
+  .main-nav .nav-link {
+    font-size: 18px;
+    font-weight: 800;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 209, 90, 0.12);
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  /* Hero Section: Compact, readable & punchy on phones */
+  .hero-section {
+    padding: 80px 16px 36px;
+    gap: 28px;
+  }
+
+  .tag-badge {
+    font-size: 9px;
+    padding: 4px 10px;
+  }
+
+  .hero-title {
+    font-size: clamp(30px, 8.5vw, 40px);
+    line-height: 1.1;
+  }
+
+  .hero-desc {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 22px;
+  }
+
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .hero-cta-group .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 20px;
+    font-size: 13px;
+  }
+
+  .hero-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .stat-item {
+    padding: 12px 10px;
+  }
+
+  .stat-val {
+    font-size: 26px;
+  }
+
+  .stat-lbl {
+    font-size: 9px;
+  }
+
+  /* 3D Showcase Cabinet: Touch-friendly on mobile */
+  .collector-cabinet {
+    max-width: 100%;
+    padding: 14px 10px;
+    border-radius: 20px;
+  }
+
+  .shelf-figures-row {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+
+  .shelf-figure-img {
+    width: 44px;
+    height: 44px;
+  }
+
+  .shelf-pedestal {
+    width: 34px;
+    height: 6px;
+  }
+
+  /* Spotlight & Game Preview Card */
+  .game-spotlight-card {
+    border-radius: 20px;
+  }
+
+  .spotlight-info {
+    padding: 24px 16px;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .spotlight-visual {
+    min-height: 220px;
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+  }
+
+  .spotlight-board-preview {
+    height: 220px;
+    object-fit: cover;
+  }
+
+  /* Buildings Showcase */
+  .buildings-showcase-wrap {
+    margin-top: 36px;
+    padding-top: 30px;
+  }
+
+  .buildings-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .buildings-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Bwed Arcade Section */
+  .arcade-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .arcade-card-body {
+    padding: 16px;
+  }
+
+  .arcade-title {
+    font-size: 16px;
+  }
+
+  .arcade-desc {
+    font-size: 12px;
+  }
+
+  /* 18 Heroes Roster */
+  .roster-filters {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    gap: 6px;
+  }
+
+  .filter-btn {
+    white-space: nowrap;
+    padding: 6px 14px;
+    font-size: 10px;
+  }
+
+  .roster-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .hero-avatar-wrap {
+    height: 130px;
+  }
+
+  /* Hero Modal Turnaround on Mobile: perfect viewport fit */
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .hero-modal-card {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 24px 24px 16px 16px;
+    padding: 20px 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .modal-stage {
+    height: 200px;
+  }
+
+  /* MemeDepot Vault on Mobile */
+  .depot-category-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    gap: 6px;
+  }
+
+  .depot-stats-banner {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .depot-search-sort {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .depot-search-box {
+    width: 100%;
+  }
+
+  .depot-sort-select {
+    width: 100%;
+  }
+
+  .depot-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .depot-card-body {
+    padding: 10px 8px;
+  }
+
+  .depot-card-meta h4 {
+    font-size: 12px;
+  }
+
+  .depot-card-actions {
+    gap: 6px;
+  }
+
+  .btn-like-pill,
+  .btn-download-pill {
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 30px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header {
+    padding: 6px 10px;
+  }
+
+  .brand-copy strong {
+    font-size: 13px;
+  }
+
+  .ca-baguette-pill {
+    max-width: 110px;
+    overflow: hidden;
+  }
+
+  .ca-val {
+    max-width: 50px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bwed-clicker-pill .clicker-bubble-text strong {
+    margin-right: 1px;
+  }
+
+  .hero-title {
+    font-size: 28px;
+  }
+
+  .buildings-grid {
+    grid-template-columns: 1fr;
   }
 }
 

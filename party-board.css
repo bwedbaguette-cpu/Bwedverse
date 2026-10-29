@@ -1383,22 +1383,139 @@ h1 em { color: var(--yellow); font-style: normal; }
   .right-panel { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 14px; }
   .viewport-hint { display: none; }
 }
+
 @media (max-width: 930px) {
-  .home-screen { grid-template-columns: 1fr; gap: 35px; padding-top: 20px; }
-  .menu-copy { max-width: 680px; }
-  .menu-art-frame, .menu-art-frame img { min-height: 360px; }
-  .selection-layout { grid-template-columns: 200px 1fr; }
-}
-@media (max-width: 720px) {
-  .front-header { padding: 18px; }
-  .front-status { display: none; }
-  .menu-frame { width: calc(100% - 34px); min-height: auto; padding: 20px 0 40px; }
-  .menu-actions { grid-template-columns: 1fr; }
+  .home-screen { grid-template-columns: 1fr; gap: 28px; padding-top: 10px; }
+  .menu-copy { max-width: 100%; }
+  .menu-art-frame, .menu-art-frame img { min-height: 280px; }
   .selection-layout { grid-template-columns: 1fr; }
-  .selection-stage { grid-template-columns: 1fr; }
-  .shop-grid, .bonus-stars-box, .rule-cards, .legend, .right-panel { grid-template-columns: 1fr; }
-  .game-header { grid-template-columns: 1fr auto; padding: 14px; }
-  .game-title { grid-column: 1 / -1; grid-row: 1; text-align: left; }
-  .game-layout { display: flex; flex-direction: column; min-height: auto; padding: 9px; }
-  .viewport-shell { order: -1; min-height: 66vh; border-radius: 23px; }
+}
+
+@media (max-width: 768px) {
+  /* Front door start menu on mobile */
+  .front-header { padding: 12px 14px; }
+  .front-status { display: none; }
+  .menu-frame { width: calc(100% - 20px); min-height: auto; padding: 14px 0 30px; }
+  .menu-actions { grid-template-columns: 1fr; gap: 8px; }
+  .primary-menu-button { padding: 14px 20px; font-size: 14px; }
+  .player-count-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .pawn-catalog { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  /* In-Game Header on Mobile */
+  .game-header {
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .game-title h1 {
+    font-size: 18px;
+  }
+
+  .game-title .eyebrow {
+    display: none;
+  }
+
+  .game-header-actions {
+    gap: 6px;
+  }
+
+  .quick-minigame-button {
+    padding: 6px 10px;
+    font-size: 9px;
+  }
+
+  .bank-vault-chip,
+  #goldDistanceChip {
+    display: none;
+  }
+
+  .hud-audio-pill {
+    padding: 3px 6px;
+    gap: 4px;
+  }
+
+  .hud-audio-title,
+  .hud-audio-slider {
+    display: none;
+  }
+
+  /* Game Layout on Mobile: 3D Board on top, Controller on bottom */
+  .game-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+    padding: 8px;
+    gap: 10px;
+  }
+
+  .viewport-shell {
+    order: 1;
+    height: 52vh;
+    min-height: 52vh;
+    border-radius: 20px;
+    border-width: 2px;
+  }
+
+  .left-panel {
+    order: 2;
+    padding: 14px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .panel-header-row {
+    margin-bottom: 4px;
+  }
+
+  .turn-card {
+    padding: 10px 12px;
+  }
+
+  .player-list {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+
+  .player-row {
+    min-width: 140px;
+    padding: 8px 10px;
+  }
+
+  .roll-button {
+    height: 54px;
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ff4d30, #d92b14);
+    box-shadow: 0 4px 0 #8b180a, 0 8px 24px rgba(255, 77, 48, 0.45);
+  }
+
+  .roll-button b {
+    font-size: 22px;
+  }
+
+  .talent-card {
+    padding: 10px 12px;
+  }
+
+  .right-panel {
+    order: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .space-inspector {
+    left: 10px;
+    bottom: 10px;
+    right: 10px;
+    max-width: none;
+  }
 }

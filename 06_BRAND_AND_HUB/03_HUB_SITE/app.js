@@ -1167,6 +1167,12 @@ function initBwedClicker() {
 
 // Global UI controls (Motion, Sound, Mobile menu, Scroll reveals)
 function initGlobalControls() {
+  // Auto device detection
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 768);
+  if (isMobile) {
+    document.documentElement.classList.add('is-mobile-device');
+  }
+
   const toggleMosaicBtn = document.getElementById('toggleMosaic');
   const wallpaper = document.getElementById('mosaicWallpaper');
   let mosaicRunning = true;
