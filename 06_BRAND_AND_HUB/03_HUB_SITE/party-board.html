@@ -305,6 +305,27 @@
           <button class="quick-minigame-button" id="triggerMinigameButton" type="button">PLAY BWEDWARE</button>
           <div class="header-chip bank-vault-chip" id="bankVaultChip">VAULT: 6c</div>
           <div class="header-chip" id="goldDistanceChip">★ JACKPOT: 9 SPACES</div>
+          
+          <!-- Discreet In-Game Soundtrack Controls -->
+          <div class="hud-audio-pill" id="hudAudioPill" title="In-Game Music Controls">
+            <button class="hud-audio-btn" id="hudAudioToggle" type="button" aria-label="Mute / Unmute Music" title="Mute / Unmute">
+              <svg class="hud-icon-vol-on" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+              <svg class="hud-icon-vol-off" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <line x1="23" y1="9" x2="17" y2="15"/>
+                <line x1="17" y1="9" x2="23" y2="15"/>
+              </svg>
+            </button>
+            <button class="hud-audio-next" id="hudAudioNext" type="button" aria-label="Next song" title="Next Song">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"/></svg>
+            </button>
+            <input class="hud-audio-slider" id="hudAudioSlider" type="range" min="0" max="100" value="50" aria-label="Music volume" title="Game Volume" />
+            <span class="hud-audio-title" id="hudAudioTrack">Bakery Morning</span>
+          </div>
+
           <button class="game-settings-button" id="gameSettingsButton" type="button" aria-label="Open settings">OPTS</button>
         </div>
       </header>

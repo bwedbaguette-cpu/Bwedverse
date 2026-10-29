@@ -1739,6 +1739,179 @@ button {
 }
 
 /* ==========================================================================
+   BWED ARCADE & UPCOMING GAMES SECTION
+   ========================================================================== */
+.arcade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+  margin-top: 36px;
+}
+
+.arcade-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(38, 17, 9, 0.82), rgba(18, 8, 4, 0.94));
+  border: 1.5px solid rgba(255, 209, 90, 0.28);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.3s, box-shadow 0.3s;
+}
+
+.arcade-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: var(--gold-bright);
+  box-shadow: 0 16px 40px rgba(255, 209, 90, 0.25), 0 0 20px rgba(255, 179, 0, 0.15);
+}
+
+.arcade-card-media {
+  position: relative;
+  height: 120px;
+  background: radial-gradient(circle at 50% 50%, rgba(95, 42, 18, 0.6), rgba(22, 10, 5, 0.95));
+  border-bottom: 1px solid rgba(255, 209, 90, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.arcade-media-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: rgba(18, 8, 4, 0.85);
+  border: 1px solid rgba(255, 209, 90, 0.35);
+  color: var(--gold-bright);
+  z-index: 2;
+}
+
+.status-indev {
+  color: #ffb703;
+  border-color: #ffb703;
+}
+.status-prototype {
+  color: #fb8500;
+  border-color: #fb8500;
+}
+.status-physics {
+  color: #e63946;
+  border-color: #e63946;
+}
+.status-kart {
+  color: #2ec4b6;
+  border-color: #2ec4b6;
+}
+
+.arcade-vector-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(68, 30, 14, 0.9), rgba(30, 13, 6, 0.95));
+  border: 1.5px solid rgba(255, 209, 90, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-bright);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.arcade-card:hover .arcade-vector-icon {
+  transform: scale(1.12) rotate(4deg);
+  border-color: #ffe082;
+}
+
+.arcade-card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.arcade-tags {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tag-chip {
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(255, 209, 90, 0.1);
+  color: var(--gold-warm);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.tag-chip.community-chip {
+  background: rgba(46, 196, 182, 0.15);
+  color: #2ec4b6;
+}
+
+.arcade-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff4dd;
+  margin: 0 0 8px 0;
+}
+
+.arcade-title em {
+  font-style: normal;
+  color: var(--gold-bright);
+}
+
+.arcade-desc {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #d1b49c;
+  margin: 0 0 16px 0;
+  flex: 1;
+}
+
+.arcade-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 209, 90, 0.15);
+}
+
+.arcade-phase {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: #9f7d65;
+  letter-spacing: 0.05em;
+}
+
+.arcade-action-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--gold-bright);
+  padding: 3px 8px;
+  background: rgba(255, 209, 90, 0.12);
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 209, 90, 0.25);
+}
+
+.arcade-card-pitch {
+  background: linear-gradient(145deg, rgba(48, 22, 12, 0.9), rgba(22, 10, 5, 0.98));
+  border: 1.5px dashed rgba(255, 209, 90, 0.45);
+}
+
+/* ==========================================================================
    SECTION 2: 18 HERO ROSTER GALLERY
    ========================================================================== */
 .roster-filters {

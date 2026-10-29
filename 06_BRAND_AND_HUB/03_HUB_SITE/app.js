@@ -470,22 +470,32 @@ function initMusicPlayer() {
     });
   }
 
-  let userInteracted = false;
-  function handleFirstInteraction() {
-    if (userInteracted) return;
-    userInteracted = true;
-    window.removeEventListener('click', handleFirstInteraction);
-    window.removeEventListener('keydown', handleFirstInteraction);
-    const visitorPaused = localStorage.getItem('bwed_music_paused') === 'true';
-    if (!visitorPaused && !isPlaying) {
-      playTrack();
-    }
-  }
-  window.addEventListener('click', handleFirstInteraction, { once: true });
-  window.addEventListener('keydown', handleFirstInteraction, { once: true });
-
   loadTrack(currentTrackIdx);
   updateUI();
+
+  // Autoplay soundtrack on landing page arrival; user can pause whenever they like
+  function attemptAutoplay() {
+    audioEl.play().then(() => {
+      isPlaying = true;
+      updateUI();
+    }).catch(() => {
+      // Browser blocked zero-interaction autoplay; start immediately on first user touch, click, or scroll
+      const unlockAudio = () => {
+        ['click', 'pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+          window.removeEventListener(evt, unlockAudio, { passive: true });
+        });
+        if (!isPlaying) {
+          playTrack();
+        }
+      };
+      ['click', 'pointerdown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, unlockAudio, { once: true, passive: true });
+      });
+    });
+  }
+
+  // Trigger autoplay attempt
+  setTimeout(attemptAutoplay, 300);
 }
 
 // 3D Illuminated Collector Showcase Cabinet (All 18 Vinyl Figures on Shelves)

@@ -57,6 +57,7 @@ const makePlayer = (pawn, index = 0, isBot = index > 0) => ({
 const urlParams = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search) : null;
 const urlHeroParam = urlParams ? urlParams.get('hero') : null;
 const urlDirectBoard = urlParams ? (urlParams.get('direct') === '1' || urlParams.get('mode') === 'board') : false;
+const urlCinematic = urlParams ? (urlParams.get('cinematic') === '1' || urlParams.get('snapshot') === '1') : false;
 const initialHero = (urlHeroParam && pawnCatalog.find(p => p.id === urlHeroParam)) || pawnCatalog[0];
 const otherPawns = pawnCatalog.filter(p => p.id !== initialHero.id);
 const players = [initialHero, ...otherPawns.slice(0, 3)].map((p, i) => makePlayer(p, i, i > 0));
@@ -283,6 +284,7 @@ const gameMusicList = [
   './assets/audio/music/board-game-fever-2.mp3'
 ];
 let gameMusicIdx = 0;
+const gameMusicTitles = ['Bakery Morning', 'Cozy Morning', 'Kitchen Caper', 'Game Fever'];
 const bgMusicAudio = new Audio(gameMusicList[0]);
 bgMusicAudio.preload = 'metadata';
 bgMusicAudio.volume = Math.max(0, Math.min(1, (settings.music || 50) / 100));
@@ -290,7 +292,10 @@ bgMusicAudio.addEventListener('ended', () => {
   gameMusicIdx = (gameMusicIdx + 1) % gameMusicList.length;
   bgMusicAudio.src = gameMusicList[gameMusicIdx];
   if (settings.music > 0) bgMusicAudio.play().catch(() => {});
+  updateGameMusicVolume();
 });
+
+let savedGameMusicVol = settings.music || 50;
 
 function updateGameMusicVolume() {
   if (!bgMusicAudio) return;
@@ -300,6 +305,58 @@ function updateGameMusicVolume() {
     bgMusicAudio.play().catch(() => {});
   } else if (vol === 0 && !bgMusicAudio.paused) {
     bgMusicAudio.pause();
+  }
+
+  // Update In-Game HUD audio pill
+  const hudSlider = document.getElementById('hudAudioSlider');
+  const iconOn = document.querySelector('.hud-icon-vol-on');
+  const iconOff = document.querySelector('.hud-icon-vol-off');
+  const trackLabel = document.getElementById('hudAudioTrack');
+
+  if (hudSlider) hudSlider.value = settings.music;
+  if (iconOn) iconOn.style.display = (settings.music > 0 && !bgMusicAudio.paused) ? 'block' : (settings.music > 0 ? 'block' : 'none');
+  if (iconOff) iconOff.style.display = settings.music > 0 ? 'none' : 'block';
+  if (trackLabel) trackLabel.textContent = gameMusicTitles[gameMusicIdx] || 'Bakery OST';
+}
+
+function initHudAudioControls() {
+  const toggleBtn = document.getElementById('hudAudioToggle');
+  const nextBtn = document.getElementById('hudAudioNext');
+  const slider = document.getElementById('hudAudioSlider');
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (settings.music > 0) {
+        savedGameMusicVol = settings.music;
+        settings.music = 0;
+      } else {
+        settings.music = savedGameMusicVol > 0 ? savedGameMusicVol : 50;
+      }
+      updateGameMusicVolume();
+      refreshSettingsUI();
+      saveSettings();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      gameMusicIdx = (gameMusicIdx + 1) % gameMusicList.length;
+      bgMusicAudio.src = gameMusicList[gameMusicIdx];
+      if (settings.music > 0) bgMusicAudio.play().catch(() => {});
+      updateGameMusicVolume();
+    });
+  }
+
+  if (slider) {
+    slider.addEventListener('input', (e) => {
+      settings.music = Number(e.target.value);
+      if (settings.music > 0) savedGameMusicVol = settings.music;
+      updateGameMusicVolume();
+      refreshSettingsUI();
+      saveSettings();
+    });
   }
 }
 
@@ -327,7 +384,7 @@ const desiredCameraPosition = new THREE.Vector3();
 let cameraFocusPlayer = null;
 const raycaster = new THREE.Raycaster();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'default' });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'default', preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -4628,6 +4685,23 @@ function initMenu() {
   setPlayerCount(selectedPlayerCount);
   showMenuScreen('home');
   refreshSettingsUI();
+  initHudAudioControls();
+  updateGameMusicVolume();
+
+  if (urlCinematic) {
+    document.body.classList.add('is-cinematic');
+    frontDoor.classList.add('is-hidden');
+    gameShell.classList.add('is-active');
+    state.autoCam = false;
+    cameraFocusPlayer = null;
+    cameraDistance = 25.5;
+    cameraDistanceGoal = 25.5;
+    cameraAzimuth = 0.58;
+    cameraElevation = 0.82;
+    cameraTargetGoal.set(0, 0.4, 0);
+    updateCamera(true);
+    resize();
+  }
 
   document.querySelector('#playButton').addEventListener('click', () => { sfx.pop(); showMenuScreen('count'); });
 
