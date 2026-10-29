@@ -1,37 +1,37 @@
 // ============================================================================
-// BWED VILLAGE 3D — MAP DATA & URBANISME GRID
-// 36x36 Isometric Tile Grid with Culinary Themes
+// BWED VILLAGE 3D — EXPANDED MAP DATA (50x50 GRID)
+// Full-Scale Diorama Urbanism with 18 Grand GLB Buildings & Props
 // ============================================================================
 
 export const MAP_CONFIG = {
-  width: 36,
-  height: 36,
-  tileSize: 2.0, // 2 meters per tile for comfortable building scale
-  elevationStep: 0.8,
+  width: 50,
+  height: 50,
+  tileSize: 2.5, // 2.5 meters per tile for grand village scale (125m x 125m)
+  elevationStep: 1.2,
 };
 
-// Tile Types enum
+// Tile Types
 export const TILE_TYPES = {
   EMPTY: 0,
-  COBBLE_SABLE: 1,    // Pavés sablés de beurre (rues principales)
+  COBBLE_SABLE: 1,    // Pavés sablés de beurre (grands boulevards & allées)
   MATCHA_GRASS: 2,    // Pelouse génoise matcha & pistache
-  WAFFLE_PLAZA: 3,    // Dalles de gaufre caramélisée (places & terrasses)
-  CHOCO_CANAL: 4,     // Canal de chocolat chaud liquide
-  WOOD_PIER: 5,       // Ponton & ponts en bois de hêtre
-  MILLEFEUILLE_ROCK: 6// Falaise & roche en pâte feuilletée croustillante
+  WAFFLE_PLAZA: 3,    // Dalles de gaufre caramélisée (la grande-place & terrasses)
+  CHOCO_CANAL: 4,     // Grand canal de chocolat chaud liquide
+  WOOD_PIER: 5,       // Quais & ponts en bois de hêtre
+  MILLEFEUILLE_ROCK: 6// Falaise de pâte feuilletée surélevée
 };
 
-// Districts Definition for HUD and atmosphere
+// Districts Definition
 export const DISTRICTS = [
-  { id: 'plaza', name: 'La Grand-Place du Beurre Doré', bounds: { minX: 13, maxX: 23, minZ: 13, maxZ: 23 } },
-  { id: 'gourmet', name: 'Le Faubourg Gourmand & Marché', bounds: { minX: 24, maxX: 35, minZ: 11, maxZ: 25 } },
-  { id: 'residential', name: 'Le Quartier Résidentiel des Pains', bounds: { minX: 1, maxX: 12, minZ: 11, maxZ: 25 } },
-  { id: 'port', name: 'Le Port & Canal du Chocolat', bounds: { minX: 0, maxX: 35, minZ: 0, maxZ: 10 } },
-  { id: 'arcade', name: 'La Fête Foraine BwedWare', bounds: { minX: 22, maxX: 35, minZ: 24, maxZ: 35 } },
-  { id: 'sanctuary', name: 'La Colline de l\'Observatoire', bounds: { minX: 1, maxX: 14, minZ: 24, maxZ: 35 } },
+  { id: 'plaza', name: 'La Grand-Place du Beurre Doré', bounds: { minX: 18, maxX: 32, minZ: 18, maxZ: 32 } },
+  { id: 'gourmet', name: 'Le Faubourg Gourmand & Marché', bounds: { minX: 33, maxX: 49, minZ: 15, maxZ: 35 } },
+  { id: 'residential', name: 'Le Quartier Résidentiel des Pains', bounds: { minX: 0, maxX: 17, minZ: 15, maxZ: 35 } },
+  { id: 'port', name: 'Le Port & Canal du Chocolat', bounds: { minX: 0, maxX: 49, minZ: 0, maxZ: 14 } },
+  { id: 'arcade', name: 'La Fête Foraine & BwedWare Arcade', bounds: { minX: 31, maxX: 49, minZ: 34, maxZ: 49 } },
+  { id: 'sanctuary', name: 'La Colline de l\'Observatoire Céleste', bounds: { minX: 0, maxX: 19, minZ: 34, maxZ: 49 } },
 ];
 
-// Generate Base Tile Grid
+// Generate Expanded 50x50 Tile Grid
 export function generateVillageGrid() {
   const { width, height } = MAP_CONFIG;
   const grid = [];
@@ -43,52 +43,75 @@ export function generateVillageGrid() {
       let heightLevel = 0;
       let walkable = true;
 
-      // 1. Canal de chocolat chaud (z = 4 à 6)
-      if (z >= 4 && z <= 6) {
+      // 1. Grand Canal de Chocolat Chaud (z = 5 à 9)
+      if (z >= 5 && z <= 9) {
         type = TILE_TYPES.CHOCO_CANAL;
         walkable = false;
-        // Ponts en bois traversant le canal (x = 17, 18, 19)
-        if (x >= 17 && x <= 19) {
+
+        // Grand Pont Principal (x = 23 à 27)
+        if (x >= 23 && x <= 27) {
           type = TILE_TYPES.WOOD_PIER;
           walkable = true;
-          heightLevel = 0.2;
+          heightLevel = 0.25;
+        }
+        // Pont Ouest (x = 9 à 11)
+        else if (x >= 9 && x <= 11) {
+          type = TILE_TYPES.WOOD_PIER;
+          walkable = true;
+          heightLevel = 0.25;
+        }
+        // Pont Est (x = 39 à 41)
+        else if (x >= 39 && x <= 41) {
+          type = TILE_TYPES.WOOD_PIER;
+          walkable = true;
+          heightLevel = 0.25;
         }
       }
-      // Quai en bois le long du canal (z = 7)
-      else if (z === 7 && x >= 8 && x <= 28) {
+      // Grands Quais en Bois le long du Canal (z = 10 à 11)
+      else if ((z === 10 || z === 11) && x >= 4 && x <= 45) {
         type = TILE_TYPES.WOOD_PIER;
         walkable = true;
       }
-      // 2. La Grand-Place centrale (14 <= x <= 22 et 14 <= z <= 22)
-      else if (x >= 14 && x <= 22 && z >= 14 && z <= 22) {
+      // 2. La Grand-Place du Beurre Doré (x: 19-31, z: 19-31)
+      else if (x >= 19 && x <= 31 && z >= 19 && z <= 31) {
         type = TILE_TYPES.WAFFLE_PLAZA;
         walkable = true;
       }
-      // 3. Allées pavées sablées (Rues principales)
-      // Axe Nord-Sud principal
-      else if ((x >= 17 && x <= 19) && z > 6 && z < 32) {
+      // 3. Boulevards & Rues Principales (Pavés Sablés)
+      // Boulevard Central Nord-Sud (x = 24 à 26, z: 12 à 46)
+      else if ((x >= 24 && x <= 26) && z >= 11 && z <= 46) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
-      // Axe Est-Ouest principal
-      else if ((z >= 17 && z <= 19) && x > 2 && x < 33) {
+      // Boulevard Transversal Est-Ouest (z = 24 à 26, x: 2 à 47)
+      else if ((z >= 24 && z <= 26) && x >= 2 && x <= 47) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
-      // Allée vers l'Arcade (Nord-Est)
-      else if (x >= 23 && z >= 23 && (x === 24 || x === 25 || z === 24 || z === 25)) {
+      // Avenue Résidentielle Ouest (x = 10 à 12, z: 12 à 34)
+      else if ((x >= 10 && x <= 12) && z >= 11 && z <= 34) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
-      // Allée vers l'Observatoire (Nord-Ouest)
-      else if (x <= 13 && z >= 23 && (x === 12 || x === 13 || z === 24 || z === 25)) {
+      // Avenue Gourmande Est (x = 38 à 40, z: 12 à 34)
+      else if ((x >= 38 && x <= 40) && z >= 11 && z <= 34) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
-      // 4. Colline de l'Observatoire (Plateau surélevé)
-      else if (x >= 2 && x <= 11 && z >= 26 && z <= 34) {
+      // Allée de la Fête Foraine (z = 37 à 39, x: 26 à 47)
+      else if ((z >= 37 && z <= 39) && x >= 26 && x <= 47) {
+        type = TILE_TYPES.COBBLE_SABLE;
+        walkable = true;
+      }
+      // Allée de l'Observatoire (z = 37 à 39, x: 2 à 24)
+      else if ((z >= 37 && z <= 39) && x >= 2 && x <= 24) {
+        type = TILE_TYPES.COBBLE_SABLE;
+        walkable = true;
+      }
+      // 4. Colline de l'Observatoire Céleste (Terrasse surélevée, x: 2-16, z: 36-47)
+      else if (x >= 2 && x <= 16 && z >= 36 && z <= 47) {
         type = TILE_TYPES.MILLEFEUILLE_ROCK;
-        heightLevel = 1.0;
+        heightLevel = 1.2;
         walkable = true;
       }
 
@@ -107,40 +130,63 @@ export function generateVillageGrid() {
   return grid;
 }
 
-// Landmark Buildings & Interactive Props Placements
+// 18 Grand GLB Buildings & Props at Monumental Scales (3.5x to 8.5x)
 export const VILLAGE_BUILDINGS = [
-  // --- CENTRE DU VILLAGE ---
+  // ==========================================
+  // 1. LA GRAND-PLACE DU BEURRE DORÉ
+  // ==========================================
   {
-    id: 'fountain-moka',
-    name: 'Fontaine Cafetière Moka',
+    id: 'monument-bloom',
+    name: 'Monument Fleur d\'Or de la Grand-Place',
     category: 'monument',
-    gridX: 18,
-    gridZ: 18,
+    gridX: 25,
+    gridZ: 25,
     sizeX: 3,
     sizeZ: 3,
     model: '../07_3D_MODEL/buildings/monument-golden-bloom.glb',
-    scale: 0.85,
+    scale: 4.8, // Grand monument central
     rotationY: 0,
     interaction: {
-      title: 'Fontaine du Chocolat Chaud',
-      desc: 'L\'eau jaillissante sent la noisette et le cacao crémeux. Jetez une miette pour faire un vœu !',
-      actionLabel: 'Faire un vœu'
+      title: 'Le Monument de la Fleur d\'Or',
+      desc: 'Sculpture impériale en or massif érigée au cœur du village pour célébrer la Première Récolte de Brioche.',
+      actionLabel: 'Admirer la fleur'
     }
   },
+  {
+    id: 'golden-croissant-prop',
+    name: 'Le Croissant d\'Or Impérial',
+    category: 'monument',
+    gridX: 25,
+    gridZ: 30,
+    sizeX: 3,
+    sizeZ: 2,
+    model: '../07_3D_MODEL/buildings/prop-golden-croissant.glb',
+    scale: 4.2,
+    rotationY: 0,
+    interaction: {
+      title: 'Le Croissant d\'Or Légendaire',
+      desc: 'La relique sacrée du village. Frottez sa dorure pour porter chance à vos prochains lancers de dés !',
+      actionLabel: 'Frotter la relique'
+    }
+  },
+
+  // ==========================================
+  // 2. LE FAUBOURG GOURMAND & MARCHÉ
+  // ==========================================
   {
     id: 'patisserie-coin',
     name: 'Pâtisserie du Croissant d\'Or',
     category: 'shop',
-    gridX: 25,
-    gridZ: 18,
-    sizeX: 4,
-    sizeZ: 3,
+    gridX: 34,
+    gridZ: 25,
+    sizeX: 5,
+    sizeZ: 4,
     model: '../07_3D_MODEL/buildings/patisserie-coin.glb',
-    scale: 0.8,
+    scale: 6.2, // Grand bâtiment imposant à 2 étages
     rotationY: -Math.PI / 2,
     interaction: {
-      title: 'La Pâtisserie d\'Or',
-      desc: 'Boutique artisanale tenue par les maîtres boulangers. Croissants au beurre et fèves dorées fraîches du matin.',
+      title: 'Pâtisserie du Croissant d\'Or',
+      desc: 'Maison fondée en l\'an 2 du Bwedverse. Vitrine garnie de brioches tièdes, chaussons dorés et chouquettes géantes.',
       actionLabel: 'Entrer dans la Pâtisserie'
     }
   },
@@ -148,175 +194,293 @@ export const VILLAGE_BUILDINGS = [
     id: 'honey-tavern',
     name: 'Taverne du Pot de Miel',
     category: 'social',
-    gridX: 26,
-    gridZ: 13,
-    sizeX: 4,
-    sizeZ: 4,
+    gridX: 39,
+    gridZ: 18,
+    sizeX: 5,
+    sizeZ: 5,
     model: '../07_3D_MODEL/buildings/honey-pot-tavern.glb',
-    scale: 0.75,
+    scale: 9.5, // Échelle ajustée pour correspondre au gabarit
     rotationY: Math.PI,
     interaction: {
-      title: 'Taverne du Pot de Miel',
-      desc: 'Salon cosy de dégustation. Installez-vous avec vos amis pour écouter les disques vinyle de l\'OST.',
-      actionLabel: 'Prendre une table'
+      title: 'Auberge & Taverne du Pot de Miel',
+      desc: 'Le point de rendez-vous des aventuriers. Venez écouter la musique au coin du poêle à caramel.',
+      actionLabel: 'Pousser la porte du bar'
+    }
+  },
+  {
+    id: 'galeries-boutique',
+    name: 'Les Galeries de Mode & Boutique',
+    category: 'shop',
+    gridX: 39,
+    gridZ: 30,
+    sizeX: 5,
+    sizeZ: 5,
+    model: '../07_3D_MODEL/buildings/galeries-boutique.glb',
+    scale: 6.0,
+    rotationY: -Math.PI / 2,
+    interaction: {
+      title: 'Les Galeries Royales',
+      desc: 'Boutique de luxe proposant les tenues, toques, sneakers de collection et accessoires pour votre Bwed.',
+      actionLabel: 'Visiter la boutique'
     }
   },
   {
     id: 'jam-apothecary',
     name: 'Apothicaire Pot de Confiture',
     category: 'shop',
-    gridX: 25,
-    gridZ: 23,
-    sizeX: 3,
-    sizeZ: 3,
+    gridX: 45,
+    gridZ: 25,
+    sizeX: 4,
+    sizeZ: 4,
     model: '../07_3D_MODEL/buildings/jam-jar-apothecary.glb',
-    scale: 0.8,
+    scale: 5.6,
     rotationY: 0,
     interaction: {
-      title: 'Apothicaire de Confiture',
-      desc: 'Potions de confiture de framboise, sirops revigorants et élixirs à la vanille.',
-      actionLabel: 'Découvrir les remèdes'
+      title: 'Apothicaire Pot de Confiture',
+      desc: 'Préparations d\'élixirs artisanaux à la gelée de fraise, sirops revigorants et baumes à la fleur d\'oranger.',
+      actionLabel: 'Acheter un élixir'
+    }
+  },
+  {
+    id: 'npc-toaster-bot',
+    name: 'Marchand Toaster-Bot du Marché',
+    category: 'npc',
+    gridX: 37,
+    gridZ: 23,
+    sizeX: 2,
+    sizeZ: 2,
+    model: '../07_3D_MODEL/buildings/npc-shopkeeper-toaster-bot.glb',
+    scale: 2.8,
+    rotationY: Math.PI / 4,
+    interaction: {
+      title: 'Toaster-Bot le Camelot',
+      desc: '"Bzzzt ! Farine fraîche, levure magique et miettes de haute qualité ! Que désirez-vous, jeune pain ?"',
+      actionLabel: 'Parler au marchand'
     }
   },
 
-  // --- QUARTIER RÉSIDENTIEL ---
+  // ==========================================
+  // 3. LE QUARTIER RÉSIDENTIEL DES PAINS
+  // ==========================================
   {
     id: 'milk-apartments',
-    name: 'Résidence Brique de Lait',
+    name: 'Résidence Brique de Lait & Wafer-Boxes',
     category: 'residential',
-    gridX: 10,
-    gridZ: 18,
-    sizeX: 4,
-    sizeZ: 4,
+    gridX: 15,
+    gridZ: 25,
+    sizeX: 5,
+    sizeZ: 5,
     model: '../07_3D_MODEL/buildings/milk-carton-apartments.glb',
-    scale: 0.85,
+    scale: 6.2,
     rotationY: Math.PI / 2,
     interaction: {
       title: 'Résidence Brique de Lait',
-      desc: 'Appartements douillets des Bwed citoyens avec vue imprenable sur les jardins de brioche.',
-      actionLabel: 'Sonner aux portes'
+      desc: 'Bâtisse moderne abritant les Bwed citoyens. Les balcons en gaufrette offrent une vue panoramique sur les toits.',
+      actionLabel: 'Sonner à l\'interphone'
     }
   },
   {
     id: 'barber-shop',
-    name: 'Barbier & Salon Chantilly',
+    name: 'Salon de Coiffure Chantilly & Beauté',
     category: 'shop',
-    gridX: 10,
-    gridZ: 13,
-    sizeX: 3,
-    sizeZ: 3,
+    gridX: 11,
+    gridZ: 18,
+    sizeX: 4,
+    sizeZ: 4,
     model: '../07_3D_MODEL/buildings/shop-barber-chantilly.glb',
-    scale: 0.8,
+    scale: 5.8,
     rotationY: Math.PI / 2,
     interaction: {
       title: 'Barbier Chantilly',
-      desc: 'Coiffures et glaçages de fête pour donner un nouveau look à votre croûte de pain.',
-      actionLabel: 'Changer de look'
+      desc: 'Coiffures sur mesure, brushing de mie et glaçages de fête pour donner de l\'éclat à votre croûte.',
+      actionLabel: 'Prendre rendez-vous'
     }
   },
   {
     id: 'tea-gazebo',
-    name: 'Kiosque Tasse de Thé du Parc',
+    name: 'Pavillon Tasse de Thé & Macarons du Parc',
     category: 'park',
-    gridX: 10,
-    gridZ: 23,
-    sizeX: 3,
-    sizeZ: 3,
+    gridX: 11,
+    gridZ: 30,
+    sizeX: 5,
+    sizeZ: 5,
     model: '../07_3D_MODEL/buildings/teacup-gazebo-park.glb',
-    scale: 0.8,
+    scale: 6.0,
     rotationY: 0,
     interaction: {
-      title: 'Kiosque à Thé & Macarons',
-      desc: 'Un havre de paix au milieu de la pelouse matcha pour discuter tranquillement au soleil.',
-      actionLabel: 'S\'asseoir au kiosque'
+      title: 'Le Kiosque Tasse de Thé',
+      desc: 'Pavillon ombragé au milieu de la pelouse matcha. Prenez un goûter tranquille sous la coupole de porcelaine.',
+      actionLabel: 'S\'installer pour le thé'
     }
   },
 
-  // --- QUARTIER ARCADE & FÊTE FORAINE ---
+  // ==========================================
+  // 4. LA FÊTE FORAINE & ARCADE BWEDWARE
+  // ==========================================
   {
     id: 'arcade-hall',
-    name: 'Borne BwedWare Arcade',
+    name: 'Le Palais BwedWare Arcade',
     category: 'arcade',
-    gridX: 28,
-    gridZ: 28,
-    sizeX: 4,
-    sizeZ: 4,
+    gridX: 40,
+    gridZ: 41,
+    sizeX: 6,
+    sizeZ: 6,
     model: '../07_3D_MODEL/buildings/arcade-duel.glb',
-    scale: 0.85,
+    scale: 6.8, // Borne géante majestueuse
     rotationY: -Math.PI / 4,
     interaction: {
-      title: 'La Salle BwedWare Arcade',
-      desc: 'Défiez d\'autres Bwed dans des micro-jeux frénétiques de 5 secondes ou un Tetris géant !',
-      actionLabel: 'Lancer un jeu'
+      title: 'L\'Arcade BwedWare',
+      desc: 'Le temple des mini-jeux du Bwedverse ! Défiez d\'autres villageois dans des épreuves d\'adresse et de réflexes.',
+      actionLabel: 'Insérer une pièce'
     }
   },
   {
     id: 'bumper-cars',
-    name: 'Autos-Tamponneuses Donut',
+    name: 'Autos-Tamponneuses Donut Glacé',
     category: 'ride',
-    gridX: 23,
-    gridZ: 28,
-    sizeX: 4,
-    sizeZ: 4,
+    gridX: 33,
+    gridZ: 41,
+    sizeX: 5,
+    sizeZ: 5,
     model: '../07_3D_MODEL/buildings/ride-bumper-cars-donut.glb',
-    scale: 0.75,
+    scale: 5.6,
     rotationY: 0,
     interaction: {
       title: 'Piste des Donuts Glacés',
-      desc: 'Glissez et tamponnez vos amis sur une patinoire de glaçage au sucre !',
-      actionLabel: 'Monter dans un Donut'
+      desc: 'Grimpez à bord d\'un donut framboise ou chocolat et faites la course sur la patinoire de sucre !',
+      actionLabel: 'Prendre le volant'
+    }
+  },
+  {
+    id: 'tiered-cake-podium',
+    name: 'Le Podium Gâteau des Champions',
+    category: 'arcade',
+    gridX: 40,
+    gridZ: 35,
+    sizeX: 4,
+    sizeZ: 4,
+    model: '../07_3D_MODEL/buildings/arcade-podium-tiered-cake.glb',
+    scale: 5.0,
+    rotationY: 0,
+    interaction: {
+      title: 'Le Podium des Vainqueurs',
+      desc: 'Gâteau monté à trois étages où sont remis les trophées de la fève dorée lors des tournois forains.',
+      actionLabel: 'Monter sur la première marche'
     }
   },
 
-  // --- COLLINE MYSTIQUE ---
+  // ==========================================
+  // 5. LA COLLINE DE L'OBSERVATOIRE CÉLESTE
+  // ==========================================
   {
     id: 'portal-observatory',
-    name: 'Observatoire du Mage Boulanger',
+    name: 'L\'Observatoire du Mage Céleste',
     category: 'sanctuary',
-    gridX: 7,
-    gridZ: 29,
-    sizeX: 4,
-    sizeZ: 4,
+    gridX: 8,
+    gridZ: 42,
+    sizeX: 6,
+    sizeZ: 6,
     model: '../07_3D_MODEL/buildings/portal-observatory.glb',
-    scale: 0.85,
+    scale: 7.8, // Tour majestueuse dominant la colline
     rotationY: Math.PI / 4,
     interaction: {
       title: 'L\'Observatoire Céleste',
-      desc: 'Scrutez les étoiles de sucre et voyagez vers d\'autres dimensions du Bwedverse.',
-      actionLabel: 'Observer le cosmos'
+      desc: 'Tour de guet astronomique. Les lentilles en sucre filé permettent de repérer les pluies de météorites de mie.',
+      actionLabel: 'Regarder dans le télescope'
+    }
+  },
+  {
+    id: 'wafer-stairs',
+    name: 'Grand Escalier de Gaufrettes de la Colline',
+    category: 'sanctuary',
+    gridX: 14,
+    gridZ: 38,
+    sizeX: 4,
+    sizeZ: 3,
+    model: '../07_3D_MODEL/buildings/terrain-stairs-wafer-ramp.glb',
+    scale: 4.8,
+    rotationY: Math.PI / 2,
+    interaction: {
+      title: 'L\'Escalier de Gaufrette',
+      desc: 'Marches croustillantes reliant la grand-place aux hauteurs mystiques de l\'observatoire.',
+      actionLabel: 'Grimper l\'escalier'
+    }
+  },
+  {
+    id: 'cosmic-dice',
+    name: 'Le Dé Cosmique du Destin',
+    category: 'sanctuary',
+    gridX: 4,
+    gridZ: 45,
+    sizeX: 2,
+    sizeZ: 2,
+    model: '../07_3D_MODEL/buildings/bwed-dice.glb',
+    scale: 3.2,
+    rotationY: Math.PI / 6,
+    interaction: {
+      title: 'Le Dé Sacré du Bwedverse',
+      desc: 'Un cube taillé dans la roche de mie ancestrale. Chaque face recèle un pouvoir secret.',
+      actionLabel: 'Examiner les symboles'
     }
   },
 
-  // --- PORT & QUAI ---
+  // ==========================================
+  // 6. LE PORT & CANAL DU CHOCOLAT
+  // ==========================================
   {
     id: 'board-cannon',
-    name: 'Grand Canon à Sucre du Port',
+    name: 'Le Grand Canon à Sucre du Port',
     category: 'port',
-    gridX: 13,
-    gridZ: 7,
-    sizeX: 2,
-    sizeZ: 2,
+    gridX: 18,
+    gridZ: 10,
+    sizeX: 3,
+    sizeZ: 3,
     model: '../07_3D_MODEL/buildings/board-cannon-sugar-blast.glb',
-    scale: 0.7,
+    scale: 4.6,
     rotationY: 0,
     interaction: {
       title: 'Canon à Sucre d\'Artifice',
-      desc: 'Propulsez une volée d\'étincelles sucrées au-dessus du canal.',
-      actionLabel: 'Tirer un feu d\'artifice'
+      desc: 'Pièce d\'artillerie festive en cuivre martelé qui illumine la baie de chocolat lors des grandes fêtes.',
+      actionLabel: 'Tirer une salve de confettis'
+    }
+  },
+  {
+    id: 'captain-bean',
+    name: 'Capitaine Haricot du Quai',
+    category: 'npc',
+    gridX: 25,
+    gridZ: 10,
+    sizeX: 2,
+    sizeZ: 2,
+    model: '../07_3D_MODEL/buildings/mascot-captain-bean.glb',
+    scale: 2.8,
+    rotationY: Math.PI,
+    interaction: {
+      title: 'Capitaine Haricot',
+      desc: '"Ahoy ! La marée de chocolat est haute aujourd\'hui ! Les gondoles sont prêtes pour naviguer vers la Grande Boulangerie !"',
+      actionLabel: 'Parler au Capitaine'
     }
   }
 ];
 
-// Street Lanterns Placements (Light up with warm amber glow)
+// 24 Street Lanterns Placed along Main Boulevards
 export const VILLAGE_LANTERNS = [
-  { x: 15, z: 15 },
-  { x: 21, z: 15 },
-  { x: 15, z: 21 },
-  { x: 21, z: 21 },
-  { x: 18, z: 11 },
-  { x: 18, z: 25 },
-  { x: 24, z: 18 },
-  { x: 12, z: 18 },
-  { x: 18, z: 8 }, // Entrée du pont
-  { x: 26, z: 26 } // Entrée de l'arcade
+  // Grand-Place
+  { x: 21, z: 21 }, { x: 29, z: 21 },
+  { x: 21, z: 29 }, { x: 29, z: 29 },
+  // Boulevard Central Nord-Sud
+  { x: 25, z: 14 }, { x: 25, z: 18 },
+  { x: 25, z: 32 }, { x: 25, z: 36 }, { x: 25, z: 42 },
+  // Boulevard Est-Ouest
+  { x: 16, z: 25 }, { x: 8, z: 25 },
+  { x: 34, z: 25 }, { x: 42, z: 25 },
+  // Entrées des Ponts du Canal
+  { x: 23, z: 10 }, { x: 27, z: 10 },
+  { x: 10, z: 10 }, { x: 40, z: 10 },
+  // Faubourg Gourmand & Marché
+  { x: 38, z: 16 }, { x: 38, z: 32 }, { x: 44, z: 23 },
+  // Fête Foraine
+  { x: 36, z: 39 }, { x: 44, z: 39 },
+  // Colline
+  { x: 14, z: 36 }, { x: 8, z: 39 }
 ];

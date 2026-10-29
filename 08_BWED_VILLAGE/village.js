@@ -18,10 +18,10 @@ import {
 const state = {
   grid: null,
   player: {
-    gridX: 18,
-    gridZ: 15,
-    worldPos: new THREE.Vector3(18 * MAP_CONFIG.tileSize, 0, 15 * MAP_CONFIG.tileSize),
-    targetPos: new THREE.Vector3(18 * MAP_CONFIG.tileSize, 0, 15 * MAP_CONFIG.tileSize),
+    gridX: 25,
+    gridZ: 22,
+    worldPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0, 22 * MAP_CONFIG.tileSize),
+    targetPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0, 22 * MAP_CONFIG.tileSize),
     rotation: 0,
     targetRotation: 0,
     isMoving: false,
@@ -36,10 +36,10 @@ const state = {
     azimuth: Math.PI / 4, // 45 deg classic Dofus isometric
     targetAzimuth: Math.PI / 4,
     pitch: Math.PI / 5.2, // ~34.6 deg isometric elevation
-    distance: 26,
-    targetDistance: 26,
-    minDistance: 12,
-    maxDistance: 45,
+    distance: 38,
+    targetDistance: 38,
+    minDistance: 14,
+    maxDistance: 75,
     offset: new THREE.Vector3(0, 0, 0)
   },
   hoveredTile: null,
@@ -73,6 +73,7 @@ let scene, camera, renderer, clock;
 let sunLight, hemiLight;
 let tileCursorMesh, targetMarkerMesh;
 let playerMesh, playerBones = {};
+let chocoMaterial = null;
 const buildingObjects = [];
 const lanternPointLights = [];
 const speechBubbles = [];
@@ -85,14 +86,14 @@ function init() {
   clock = new THREE.Clock();
   state.grid = generateVillageGrid();
 
-  // 1. Scene & Fog
+  // 1. Scene & Fog (Warm bakery haze that reveals distant landmarks)
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x180b06);
-  scene.fog = new THREE.FogExp2(0x180b06, 0.012);
+  scene.fog = new THREE.FogExp2(0x180b06, 0.0055);
 
-  // 2. Camera (Isometric Perspective)
+  // 2. Camera (Isometric Perspective with broad diorama view)
   const aspect = window.innerWidth / window.innerHeight;
-  camera = new THREE.PerspectiveCamera(40, aspect, 0.5, 180);
+  camera = new THREE.PerspectiveCamera(40, aspect, 0.5, 320);
   updateCameraPosition(true);
 
   // 3. Renderer
@@ -117,22 +118,28 @@ function init() {
   // 7. Spawn Procedural Rigged Bwed Avatar
   buildProceduralBwed();
 
-  // 8. Load Village GLB Buildings & Props
+  // 8. Build Procedural Brioche Trees & Flora
+  buildVillageVegetation();
+
+  // 9. Setup Key Landmark Colored Glows
+  setupLandmarkLights();
+
+  // 10. Load Village GLB Buildings & Props (Tracks actual progress)
   loadVillageBuildings();
 
-  // 9. Input & Event Listeners
+  // 11. Input & Event Listeners
   setupEventListeners();
 
-  // 10. Hide Loader after brief setup
+  // 12. Safety fallback timeout for loader
   setTimeout(() => {
-    loaderBar.style.width = '100%';
-    loaderStatus.textContent = 'Village prêt ! Bienvenue à Bwedville.';
-    setTimeout(() => {
+    if (!loaderEl.classList.contains('fade-out')) {
+      loaderBar.style.width = '100%';
+      loaderStatus.textContent = 'Village prêt ! Bienvenue à Bwedville.';
       loaderEl.classList.add('fade-out');
-    }, 450);
-  }, 900);
+    }
+  }, 7000);
 
-  // 11. Start Loop
+  // 13. Start Loop
   renderer.setAnimationLoop(animate);
 }
 
@@ -140,17 +147,17 @@ function init() {
 // LIGHTING & ATMOSPHERE
 // ============================================================================
 function setupLighting() {
-  hemiLight = new THREE.HemisphereLight(0xffecd2, 0x3d2014, 0.85);
+  hemiLight = new THREE.HemisphereLight(0xffecd2, 0x3d2014, 0.95);
   scene.add(hemiLight);
 
-  sunLight = new THREE.DirectionalLight(0xfff5e1, 1.45);
-  sunLight.position.set(30, 45, 20);
+  sunLight = new THREE.DirectionalLight(0xfff5e1, 1.55);
+  sunLight.position.set(45, 65, 30);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 2048;
   sunLight.shadow.mapSize.height = 2048;
   sunLight.shadow.camera.near = 5;
-  sunLight.shadow.camera.far = 120;
-  const d = 40;
+  sunLight.shadow.camera.far = 250;
+  const d = 75;
   sunLight.shadow.camera.left = -d;
   sunLight.shadow.camera.right = d;
   sunLight.shadow.camera.top = d;
@@ -160,8 +167,8 @@ function setupLighting() {
 
   // Spawn Street Lantern Point Lights
   VILLAGE_LANTERNS.forEach(pos => {
-    const light = new THREE.PointLight(0xffaa44, 1.2, 12, 1.8);
-    light.position.set(pos.x * MAP_CONFIG.tileSize, 3.2, pos.z * MAP_CONFIG.tileSize);
+    const light = new THREE.PointLight(0xffaa44, 1.4, 14, 1.8);
+    light.position.set(pos.x * MAP_CONFIG.tileSize, 3.4, pos.z * MAP_CONFIG.tileSize);
     light.castShadow = false;
     scene.add(light);
     lanternPointLights.push(light);
@@ -171,40 +178,66 @@ function setupLighting() {
   });
 }
 
+// Landmark Key Colored Lights (Glows & Neon)
+function setupLandmarkLights() {
+  const lights = [
+    // Pâtisserie: Warm Amber Glow
+    { x: 34, z: 25, y: 5.5, color: 0xff9933, intensity: 2.8, dist: 22 },
+    // Taverne du Pot de Miel: Cozy Warm Hearth
+    { x: 39, z: 18, y: 5.0, color: 0xffaa22, intensity: 2.4, dist: 20 },
+    // Arcade BwedWare: Neon Cyan & Magenta
+    { x: 40, z: 41, y: 6.5, color: 0x00f0ff, intensity: 3.2, dist: 25 },
+    { x: 41, z: 42, y: 5.5, color: 0xff0088, intensity: 2.8, dist: 22 },
+    // Observatoire Céleste: Mystic Purple
+    { x: 8, z: 42, y: 9.0, color: 0xaa44ff, intensity: 3.6, dist: 30 },
+    // Grand Phare du Canal: Golden Beacon
+    { x: 5, z: 7, y: 11.0, color: 0xfff0aa, intensity: 4.2, dist: 38 }
+  ];
+
+  lights.forEach(l => {
+    const pl = new THREE.PointLight(l.color, l.intensity, l.dist, 2);
+    pl.position.set(l.x * MAP_CONFIG.tileSize, l.y, l.z * MAP_CONFIG.tileSize);
+    scene.add(pl);
+  });
+}
+
 function setTimeOfDay(tod) {
   state.timeOfDay = tod;
   if (tod === 'day') {
     scene.background.set(0x1a0d07);
     scene.fog.color.set(0x1a0d07);
+    scene.fog.density = 0.0055;
     hemiLight.color.set(0xffecd2);
     hemiLight.groundColor.set(0x3d2014);
-    hemiLight.intensity = 0.9;
+    hemiLight.intensity = 0.95;
     sunLight.color.set(0xfff5e1);
-    sunLight.intensity = 1.45;
-    sunLight.position.set(30, 45, 20);
-    lanternPointLights.forEach(l => l.intensity = 0.4);
+    sunLight.intensity = 1.55;
+    sunLight.position.set(45, 65, 30);
+    lanternPointLights.forEach(l => l.intensity = 0.5);
     todIcon.textContent = 'Soleil Doré';
   } else if (tod === 'golden') {
     scene.background.set(0x2d1109);
     scene.fog.color.set(0x2d1109);
+    scene.fog.density = 0.006;
     hemiLight.color.set(0xff9944);
     hemiLight.groundColor.set(0x4a180d);
-    hemiLight.intensity = 0.85;
+    hemiLight.intensity = 0.9;
     sunLight.color.set(0xff7722);
     sunLight.intensity = 1.6;
-    sunLight.position.set(45, 25, 10);
-    lanternPointLights.forEach(l => l.intensity = 1.2);
+    sunLight.position.set(55, 35, 15);
+    lanternPointLights.forEach(l => l.intensity = 1.4);
     todIcon.textContent = 'Heure Dorée';
   } else if (tod === 'night') {
     scene.background.set(0x0a0504);
     scene.fog.color.set(0x0a0504);
+    scene.fog.density = 0.007;
     hemiLight.color.set(0x334466);
     hemiLight.groundColor.set(0x150b07);
-    hemiLight.intensity = 0.4;
+    hemiLight.intensity = 0.45;
     sunLight.color.set(0x4466aa);
-    sunLight.intensity = 0.35;
-    sunLight.position.set(-20, 35, -20);
-    lanternPointLights.forEach(l => l.intensity = 2.4);
+    sunLight.intensity = 0.4;
+    sunLight.position.set(-30, 45, -30);
+    lanternPointLights.forEach(l => l.intensity = 2.8);
     todIcon.textContent = 'Nuit Cosy';
   }
 }
@@ -252,6 +285,8 @@ function buildInstancedTileGrid() {
       metalness: 0.05
     })
   };
+
+  chocoMaterial = materials[TILE_TYPES.CHOCO_CANAL];
 
   // Create an InstancedMesh per material
   const instancedMeshes = {};
@@ -315,6 +350,110 @@ function buildStreetLampPost(gridX, gridZ) {
 
   group.position.set(worldX, 0, worldZ);
   scene.add(group);
+}
+
+// Procedural Brioche Trees & Flora
+function buildVillageVegetation() {
+  const treePositions = [
+    // Grand-Place Corners
+    { x: 19, z: 19 }, { x: 31, z: 19 },
+    { x: 19, z: 31 }, { x: 31, z: 31 },
+    // Boulevard Central Nord-Sud
+    { x: 23, z: 15 }, { x: 27, z: 15 },
+    { x: 23, z: 34 }, { x: 27, z: 34 },
+    { x: 23, z: 44 }, { x: 27, z: 44 },
+    // Boulevard Est-Ouest
+    { x: 14, z: 23 }, { x: 14, z: 27 },
+    { x: 36, z: 23 }, { x: 36, z: 27 },
+    // Parc Macarons (Faubourg Ouest)
+    { x: 8, z: 28 }, { x: 14, z: 28 },
+    { x: 8, z: 33 }, { x: 14, z: 33 },
+    // Quai du Canal
+    { x: 6, z: 12 }, { x: 16, z: 12 },
+    { x: 34, z: 12 }, { x: 44, z: 12 },
+    // Fête Foraine Perimeter
+    { x: 46, z: 36 }, { x: 46, z: 44 },
+    // Colline de l'Observatoire
+    { x: 4, z: 45 }, { x: 12, z: 46 }
+  ];
+
+  const barkMat = new THREE.MeshStandardMaterial({
+    color: 0x5a2d12,
+    roughness: 0.85,
+    metalness: 0.05
+  });
+
+  const briocheMat = new THREE.MeshStandardMaterial({
+    color: 0xdd9738,
+    roughness: 0.6,
+    metalness: 0.08
+  });
+
+  const matchaMat = new THREE.MeshStandardMaterial({
+    color: 0x6e934a,
+    roughness: 0.7,
+    metalness: 0.04
+  });
+
+  treePositions.forEach((pos, idx) => {
+    const group = new THREE.Group();
+    const wx = pos.x * MAP_CONFIG.tileSize;
+    const wz = pos.z * MAP_CONFIG.tileSize;
+
+    // Get terrain elevation
+    const tile = state.grid[pos.z] && state.grid[pos.z][pos.x];
+    const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
+
+    // Cinnamon Bark Trunk
+    const trunkGeo = new THREE.CylinderGeometry(0.22, 0.35, 2.2, 10);
+    const trunk = new THREE.Mesh(trunkGeo, barkMat);
+    trunk.position.y = 1.1;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+    group.add(trunk);
+
+    // Fluffy Brioche Crown (Golden or Matcha variety)
+    const crownMat = (idx % 3 === 0) ? matchaMat : briocheMat;
+    const crownGroup = new THREE.Group();
+    crownGroup.position.y = 2.4;
+
+    // Main central loaf
+    const mainBun = new THREE.Mesh(new THREE.SphereGeometry(1.15, 14, 14), crownMat);
+    mainBun.scale.set(1.1, 0.85, 1.1);
+    mainBun.castShadow = true;
+    crownGroup.add(mainBun);
+
+    // 3 smaller side buns for authentic braided brioche look
+    for (let i = 0; i < 3; i++) {
+      const angle = (i * Math.PI * 2) / 3;
+      const sideBun = new THREE.Mesh(new THREE.SphereGeometry(0.65, 10, 10), crownMat);
+      sideBun.position.set(Math.cos(angle) * 0.7, 0.25, Math.sin(angle) * 0.7);
+      sideBun.scale.set(0.9, 0.75, 0.9);
+      sideBun.castShadow = true;
+      crownGroup.add(sideBun);
+    }
+
+    // Top Sugar / Pearl cluster
+    const pearlMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+    const pearl = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), pearlMat);
+    pearl.position.y = 0.95;
+    crownGroup.add(pearl);
+
+    group.add(crownGroup);
+    group.position.set(wx, wy, wz);
+
+    // Random slight rotation & subtle scale variety
+    group.rotation.y = idx * 1.37;
+    const s = 0.85 + (idx % 4) * 0.1;
+    group.scale.set(s, s, s);
+
+    scene.add(group);
+
+    // Mark tile as occupied so Bwed doesn't walk into the trunk
+    if (tile) {
+      tile.walkable = false;
+    }
+  });
 }
 
 // ============================================================================
@@ -484,51 +623,78 @@ function buildProceduralBwed() {
 }
 
 // ============================================================================
-// VILLAGE GLB BUILDINGS LOADER
+// VILLAGE GLB BUILDINGS LOADER (TRACKS REAL ASSET PROGRESS)
 // ============================================================================
 function loadVillageBuildings() {
   const loader = new GLTFLoader();
+  const total = VILLAGE_BUILDINGS.length;
+  let loadedCount = 0;
+
+  function onBuildingLoaded(b, gltf) {
+    const model = gltf.scene;
+    const worldX = b.gridX * MAP_CONFIG.tileSize;
+    const worldZ = b.gridZ * MAP_CONFIG.tileSize;
+
+    model.position.set(worldX, 0, worldZ);
+    model.scale.set(b.scale, b.scale, b.scale);
+    model.rotation.y = b.rotationY || 0;
+
+    // Shadows & Material optimization
+    model.traverse(child => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        if (child.material) {
+          child.material.roughness = Math.min(child.material.roughness, 0.85);
+        }
+      }
+    });
+
+    scene.add(model);
+    buildingObjects.push({ config: b, mesh: model });
+
+    // Mark tiles as occupied in the grid
+    const halfW = Math.max(1, Math.floor(b.sizeX / 2));
+    const halfH = Math.max(1, Math.floor(b.sizeZ / 2));
+    for (let dz = -halfH; dz <= halfH; dz++) {
+      for (let dx = -halfW; dx <= halfW; dx++) {
+        const gx = b.gridX + dx;
+        const gz = b.gridZ + dz;
+        if (state.grid[gz] && state.grid[gz][gx]) {
+          state.grid[gz][gx].walkable = false;
+          state.grid[gz][gx].occupant = b;
+        }
+      }
+    }
+
+    loadedCount++;
+    const pct = Math.round((loadedCount / total) * 100);
+    loaderBar.style.width = `${pct}%`;
+    loaderStatus.textContent = `Bâtiments 3D chargés (${loadedCount}/${total}) : ${b.name}`;
+
+    if (loadedCount >= total) {
+      setTimeout(() => {
+        loaderStatus.textContent = 'Tous les bâtiments 3D sont en place ! Bienvenue à Bwedville.';
+        setTimeout(() => {
+          loaderEl.classList.add('fade-out');
+        }, 350);
+      }, 250);
+    }
+  }
 
   VILLAGE_BUILDINGS.forEach(b => {
     loader.load(
       b.model,
-      gltf => {
-        const model = gltf.scene;
-        const worldX = b.gridX * MAP_CONFIG.tileSize;
-        const worldZ = b.gridZ * MAP_CONFIG.tileSize;
-
-        model.position.set(worldX, 0, worldZ);
-        model.scale.set(b.scale, b.scale, b.scale);
-        model.rotation.y = b.rotationY || 0;
-
-        // Shadows
-        model.traverse(child => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-          }
-        });
-
-        scene.add(model);
-        buildingObjects.push({ config: b, mesh: model });
-
-        // Mark tiles as occupied in the grid
-        const halfW = Math.floor(b.sizeX / 2);
-        const halfH = Math.floor(b.sizeZ / 2);
-        for (let dz = -halfH; dz <= halfH; dz++) {
-          for (let dx = -halfW; dx <= halfW; dx++) {
-            const gx = b.gridX + dx;
-            const gz = b.gridZ + dz;
-            if (state.grid[gz] && state.grid[gz][gx]) {
-              state.grid[gz][gx].walkable = false;
-              state.grid[gz][gx].occupant = b;
-            }
-          }
-        }
-      },
+      gltf => onBuildingLoaded(b, gltf),
       undefined,
       err => {
         console.warn(`Could not load building model ${b.model}`, err);
+        loadedCount++;
+        const pct = Math.round((loadedCount / total) * 100);
+        loaderBar.style.width = `${pct}%`;
+        if (loadedCount >= total) {
+          loaderEl.classList.add('fade-out');
+        }
       }
     );
   });
@@ -863,7 +1029,12 @@ function animate() {
     tileCursorMesh.scale.set(s, s, 1);
   }
 
-  // 7. Render
+  // 7. Liquid Chocolate Canal Shimmer Animation
+  if (chocoMaterial) {
+    chocoMaterial.roughness = 0.22 + Math.sin(clock.elapsedTime * 1.8) * 0.08;
+  }
+
+  // 8. Render
   renderer.render(scene, camera);
 }
 
@@ -944,16 +1115,25 @@ function updateMovement(dt) {
   while (diff > Math.PI) diff -= Math.PI * 2;
   p.rotation += diff * 0.2;
 
-  // Jump Gravity
+  // Terrain elevation calculation
+  const currGX = Math.round(p.worldPos.x / MAP_CONFIG.tileSize);
+  const currGZ = Math.round(p.worldPos.z / MAP_CONFIG.tileSize);
+  const currTile = state.grid[currGZ] && state.grid[currGZ][currGX];
+  const targetGroundY = currTile ? currTile.elevation * MAP_CONFIG.elevationStep : 0;
+
+  // Jump Gravity & Ground alignment
   if (!p.isGrounded) {
     p.verticalVelocity -= 22 * dt;
     p.worldPos.y += p.verticalVelocity * dt;
 
-    if (p.worldPos.y <= 0) {
-      p.worldPos.y = 0;
+    if (p.worldPos.y <= targetGroundY) {
+      p.worldPos.y = targetGroundY;
       p.verticalVelocity = 0;
       p.isGrounded = true;
     }
+  } else {
+    // Smoothly step up or down slopes / ramps
+    p.worldPos.y += (targetGroundY - p.worldPos.y) * 0.25;
   }
 
   playerMesh.position.copy(p.worldPos);
