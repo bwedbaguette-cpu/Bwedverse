@@ -449,6 +449,28 @@ html, body {
   color: var(--cream-soft);
 }
 
+.big-start-btn {
+  background: linear-gradient(180deg, #ffd15a 0%, #e59b24 100%);
+  border: 2px solid #ffffff;
+  border-radius: 8px;
+  color: #1a0802;
+  font-family: var(--font-pixel);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 10px 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), 0 0 12px var(--gold-glow);
+  letter-spacing: 0.05em;
+  animation: pulseStartBtn 1.8s infinite alternate;
+  width: 100%;
+  max-width: 250px;
+}
+
+@keyframes pulseStartBtn {
+  from { transform: scale(0.98); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6); }
+  to { transform: scale(1.02); box-shadow: 0 5px 16px rgba(255, 209, 90, 0.6); }
+}
+
 /* Retro Menu Options */
 .retro-menu-options {
   display: flex;

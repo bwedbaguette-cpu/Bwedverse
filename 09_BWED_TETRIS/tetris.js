@@ -7,7 +7,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
    Pièces réelles GLB Meshy, Système SRS, Menus Rétro, Audio Synthétique
    ========================================================================== */
 
-// --- DIMENSIONS DE LA GRILLE ---
+// --- CONFIGURATION GRILLE & JEU ---
 const COLS = 10;
 const ROWS = 20;
 const CELL_SIZE = 1.0;
@@ -20,7 +20,7 @@ const LEVEL_SPEEDS = [
   950, 800, 680, 560, 460, 370, 290, 220, 160, 110, 80, 60, 45, 30
 ];
 
-// Configuration des thèmes et des modèles GLB par pièce
+// Configuration des modèles GLB et transformations 3D par pièce
 const PIECE_CONFIG = {
   I: {
     name: 'Baguette Dorée',
@@ -101,7 +101,7 @@ const PIECE_CONFIG = {
   }
 };
 
-// Matrices des pièces (rotations 0, 1, 2, 3)
+// Matrices des tétrominos (rotations 0, 1, 2, 3)
 const TETROMINOES = {
   I: {
     size: 4,
@@ -168,7 +168,7 @@ const TETROMINOES = {
   }
 };
 
-// Tables de décalage mural SRS (Super Rotation System)
+// Tables de décalage mural SRS
 const WALL_KICKS_JLSTZ = {
   '0->1': [[0,0], [-1,0], [-1,1], [0,-2], [-1,-2]],
   '1->0': [[0,0], [1,0], [1,-1], [0,2], [1,2]],
@@ -204,19 +204,23 @@ class BwedAudioManager {
   }
 
   ensureContext() {
-    if (!this.audioCtx) {
-      const AudioClass = window.AudioContext || window.webkitAudioContext;
-      if (AudioClass) this.audioCtx = new AudioClass();
-    }
-    if (this.audioCtx && this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
-    }
+    try {
+      if (!this.audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) this.audioCtx = new AudioClass();
+      }
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+    } catch {}
   }
 
   initMusic() {
-    this.musicAudio = new Audio('./assets/audio/bakery-theme.mp3');
-    this.musicAudio.loop = true;
-    this.musicAudio.volume = 0.3;
+    try {
+      this.musicAudio = new Audio('./assets/audio/bakery-theme.mp3');
+      this.musicAudio.loop = true;
+      this.musicAudio.volume = 0.28;
+    } catch {}
   }
 
   toggleMusic() {
@@ -353,7 +357,6 @@ class BwedBoyScreen3D {
     // Modèles 3D préchargés
     this.gltfLoader = new GLTFLoader();
     this.models = {};
-    this.materials = {};
     this.isModelsReady = false;
 
     // Groupes 3D
@@ -364,11 +367,8 @@ class BwedBoyScreen3D {
     this.particlesGroup = new THREE.Group();
     this.titleDecorGroup = new THREE.Group();
 
-    // Système de particules de miettes et poussière de farine
     this.particles = [];
     this.dustParticles = [];
-
-    // Pièce de démonstration de l'écran titre
     this.titleDemoMesh = null;
 
     this.init();
@@ -390,12 +390,12 @@ class BwedBoyScreen3D {
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.2;
+    this.renderer.toneMappingExposure = 1.25;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.container.appendChild(this.renderer.domElement);
 
-    // Arborescence
+    // Hiérarchie
     this.scene.add(this.boardGroup);
     this.boardGroup.add(this.lockedPiecesGroup);
     this.boardGroup.add(this.ghostPieceGroup);
@@ -406,35 +406,37 @@ class BwedBoyScreen3D {
     this.setupLighting();
     this.buildOvenBackdrop();
     this.setupFlourDust();
+
+    // Pièce de démonstration immédiate dès la frame 1
+    this.setupTitleDemoPiece('T');
+
+    // Lancement du chargement asynchrone des GLB
     this.preloadGLBModels();
 
     window.addEventListener('resize', () => this.onResize());
+    setTimeout(() => this.onResize(), 100);
   }
 
   setupLighting() {
-    const ambientLight = new THREE.AmbientLight(0xffecd1, 1.35);
+    const ambientLight = new THREE.AmbientLight(0xffecd1, 1.4);
     this.scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0xffeed6, 2.4);
+    const mainLight = new THREE.DirectionalLight(0xffeed6, 2.5);
     mainLight.position.set(10, 22, 16);
     mainLight.castShadow = true;
-    mainLight.shadow.mapSize.width = 1024;
-    mainLight.shadow.mapSize.height = 1024;
     this.scene.add(mainLight);
 
-    // Lueur rougeoyante du bas du four
     const hearthGlow = new THREE.PointLight(0xff7722, 2.5, 20);
     hearthGlow.position.set(0, -1, 3);
     this.scene.add(hearthGlow);
 
-    // Éclairage de contre-jour doux
     const rimLight = new THREE.DirectionalLight(0xffb84d, 0.8);
     rimLight.position.set(-12, 10, -8);
     this.scene.add(rimLight);
   }
 
   buildOvenBackdrop() {
-    // Fond sombre de la chambre de cuisson
+    // Fond sombre
     const wallGeo = new THREE.PlaneGeometry(10.5, 20.5);
     const wallMat = new THREE.MeshStandardMaterial({
       color: 0x160c07,
@@ -445,7 +447,7 @@ class BwedBoyScreen3D {
     backWall.position.set(0, 9.5, -0.52);
     this.boardGroup.add(backWall);
 
-    // Grille de guidage fine
+    // Grillage de guidage
     const lineMat = new THREE.LineBasicMaterial({ color: 0x472715, transparent: true, opacity: 0.5 });
     for (let c = 0; c <= COLS; c++) {
       const x = (c - COLS / 2) * CELL_SIZE;
@@ -458,7 +460,7 @@ class BwedBoyScreen3D {
       this.boardGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
     }
 
-    // Montants en laiton
+    // Montants latéraux
     const brassMat = new THREE.MeshStandardMaterial({ color: 0xb57c32, roughness: 0.4, metalness: 0.7 });
     const colGeo = new THREE.BoxGeometry(0.35, 21.2, 0.8);
 
@@ -540,26 +542,21 @@ class BwedBoyScreen3D {
     });
   }
 
-  // Instancie un modèle 3D de pièce avec son échelle, rotation et correction de pivot
   createPiece3D(type, isGhost = false) {
     const cfg = PIECE_CONFIG[type] || PIECE_CONFIG.I;
     const rootGroup = new THREE.Group();
 
-    // Source du modèle (J réutilise L, S réutilise Z)
     const sourceKey = type === 'J' ? 'L' : (type === 'S' ? 'Z' : type);
     const template = this.models[sourceKey];
 
     if (template) {
       const cloned = template.clone(true);
-
-      // Application des transformations de base du modèle
       cloned.rotation.set(cfg.baseRot[0], cfg.baseRot[1], cfg.baseRot[2]);
       cloned.position.set(cfg.baseOffset[0], cfg.baseOffset[1], cfg.baseOffset[2]);
 
       const sx = cfg.reflectX ? -cfg.scale : cfg.scale;
       cloned.scale.set(sx, cfg.scale, cfg.scale);
 
-      // Traitement du fantôme
       if (isGhost) {
         const ghostMat = new THREE.MeshBasicMaterial({
           color: new THREE.Color(cfg.color),
@@ -568,9 +565,7 @@ class BwedBoyScreen3D {
           wireframe: false
         });
         cloned.traverse((node) => {
-          if (node.isMesh) {
-            node.material = ghostMat;
-          }
+          if (node.isMesh) node.material = ghostMat;
         });
       } else {
         cloned.traverse((node) => {
@@ -583,7 +578,7 @@ class BwedBoyScreen3D {
 
       rootGroup.add(cloned);
     } else {
-      // Secours procédural si le modèle GLB charge encore
+      // Secours procédural instantané
       const boxGeo = new THREE.BoxGeometry(0.92, 0.92, 0.92);
       const mat = new THREE.MeshStandardMaterial({
         color: new THREE.Color(cfg.color),
@@ -607,9 +602,7 @@ class BwedBoyScreen3D {
   }
 
   setupTitleDemoPiece(type = 'T') {
-    while (this.titleDecorGroup.children.length > 0) {
-      this.titleDecorGroup.children.pop();
-    }
+    this.titleDecorGroup.clear();
     const piece = this.createPiece3D(type, false);
     piece.position.set(0, 9.5, 2.5);
     piece.scale.set(1.4, 1.4, 1.4);
@@ -622,19 +615,13 @@ class BwedBoyScreen3D {
     this.boardGroup.visible = !show;
   }
 
-  // Rendu de la pièce active en mouvement
   renderActivePiece(piece) {
-    while (this.activePieceGroup.children.length > 0) {
-      const child = this.activePieceGroup.children.pop();
-      child.geometry?.dispose();
-    }
-
+    this.activePieceGroup.clear();
     if (!piece) return;
 
     const cfg = PIECE_CONFIG[piece.type];
     const mesh = this.createPiece3D(piece.type, false);
 
-    // Calcul du pivot dans l'espace Three.js
     const pivotCol = piece.col + cfg.pivot[0];
     const pivotRow = piece.row - cfg.pivot[1];
 
@@ -647,13 +634,8 @@ class BwedBoyScreen3D {
     this.activePieceGroup.add(mesh);
   }
 
-  // Rendu de la silhouette fantôme (ghost piece)
   renderGhostPiece(piece, ghostRow) {
-    while (this.ghostPieceGroup.children.length > 0) {
-      const child = this.ghostPieceGroup.children.pop();
-      child.geometry?.dispose();
-    }
-
+    this.ghostPieceGroup.clear();
     if (!piece || ghostRow === piece.row) return;
 
     const cfg = PIECE_CONFIG[piece.type];
@@ -671,16 +653,10 @@ class BwedBoyScreen3D {
     this.ghostPieceGroup.add(mesh);
   }
 
-  // Reconstruction de la grille verrouillée
   rebuildLockedPieces(placedPieces, grid) {
-    while (this.lockedPiecesGroup.children.length > 0) {
-      const child = this.lockedPiecesGroup.children.pop();
-      child.geometry?.dispose();
-    }
-
+    this.lockedPiecesGroup.clear();
     const boxGeo = new THREE.BoxGeometry(0.92, 0.92, 0.92);
 
-    // Rendu des pièces encore intactes avec leurs modèles 3D complets
     for (const p of placedPieces) {
       if (!p.broken) {
         const cfg = PIECE_CONFIG[p.type];
@@ -695,7 +671,6 @@ class BwedBoyScreen3D {
       }
     }
 
-    // Rendu des cases individuelles fragmentées
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const cell = grid[r][c];
@@ -770,13 +745,11 @@ class BwedBoyScreen3D {
   }
 
   update(deltaTime) {
-    // 1. Animation de la pièce de démonstration de l'écran titre
     if (this.titleDemoMesh && this.titleDecorGroup.visible) {
       this.titleDemoMesh.rotation.y += deltaTime * 1.2;
       this.titleDemoMesh.rotation.x = Math.sin(Date.now() * 0.002) * 0.25;
     }
 
-    // 2. Particules de miettes
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.mesh.position.x += p.vx * deltaTime;
@@ -798,7 +771,6 @@ class BwedBoyScreen3D {
       }
     }
 
-    // 3. Poussière de farine
     if (this.dustParticles && this.dustParticles.mesh) {
       const pos = this.dustParticles.mesh.geometry.attributes.position.array;
       for (let i = 0; i < this.dustParticles.count; i++) {
@@ -841,15 +813,13 @@ class TetrominoPiece {
 }
 
 /* ==========================================================================
-   CONTRÔLEUR CENTRAL DU JEU & MACHINE D'ÉTATS DES MENUS
+   CONTRÔLEUR CENTRAL DU JEU & MACHINE D'ÉTATS
    ========================================================================== */
 
 class BwedBoyApp {
   constructor() {
-    // États : 'TITLE', 'LEVEL_SELECT', 'SCORES', 'HELP', 'PLAYING', 'PAUSED', 'GAMEOVER'
     this.state = 'TITLE';
 
-    // Grille & Pièces
     this.grid = [];
     this.placedPieces = [];
     this.pieceIdCounter = 1;
@@ -861,7 +831,6 @@ class BwedBoyApp {
     this.bag = new TetrisBag();
     this.nextQueue = [];
 
-    // Paramètres & Progression
     this.score = 0;
     this.lines = 0;
     this.level = 1;
@@ -871,21 +840,17 @@ class BwedBoyApp {
     this.combo = -1;
     this.backToBack = false;
 
-    // Timers
     this.lastDropTime = 0;
     this.lockTimer = 0;
     this.lockResets = 0;
     this.isOnGround = false;
 
-    // Navigation dans le menu Titre
     this.titleMenuIndex = 0;
     this.titleOptionsList = ['play', 'level-select', 'scores', 'help'];
 
-    // Moteur Audio & Scène 3D
     this.audio = new BwedAudioManager();
     this.screen3D = null;
 
-    // Mini preview canvas pour Hold et Next dans le HUD
     this.holdCanvas = null;
     this.nextCanvas = null;
 
@@ -896,7 +861,6 @@ class BwedBoyApp {
 
   initDOM() {
     this.dom = {
-      // Overlays
       titleMenu: document.getElementById('titleMenu'),
       levelMenu: document.getElementById('levelMenu'),
       scoresMenu: document.getElementById('scoresMenu'),
@@ -908,7 +872,6 @@ class BwedBoyApp {
       toastTitle: document.getElementById('toastTitle'),
       toastSub: document.getElementById('toastSub'),
 
-      // HUD Readouts
       hudScore: document.getElementById('hudScore'),
       hudLines: document.getElementById('hudLines'),
       hudLevel: document.getElementById('hudLevel'),
@@ -916,7 +879,6 @@ class BwedBoyApp {
       nextSlotFrame: document.getElementById('nextSlotFrame'),
       holdEmptyText: document.getElementById('holdEmptyText'),
 
-      // Menu Choix Niveau
       selectedLevelNum: document.getElementById('selectedLevelNum'),
       selectedLevelSpeed: document.getElementById('selectedLevelSpeed'),
       btnPrevLevel: document.getElementById('btnPrevLevel'),
@@ -924,30 +886,25 @@ class BwedBoyApp {
       btnStartWithLevel: document.getElementById('btnStartWithLevel'),
       btnBackFromLevel: document.getElementById('btnBackFromLevel'),
 
-      // Menu Palmarès
       recordScoreVal: document.getElementById('recordScoreVal'),
       recordLinesVal: document.getElementById('recordLinesVal'),
       recordRankVal: document.getElementById('recordRankVal'),
       btnBackFromScores: document.getElementById('btnBackFromScores'),
 
-      // Menu Aide
       btnBackFromHelp: document.getElementById('btnBackFromHelp'),
 
-      // Menu Pause
       btnResume: document.getElementById('btnResume'),
       btnRestartGame: document.getElementById('btnRestartGame'),
       btnToggleSound: document.getElementById('btnToggleSound'),
       soundOptLabel: document.getElementById('soundOptLabel'),
       btnQuitToTitle: document.getElementById('btnQuitToTitle'),
 
-      // Menu Game Over
       finalScoreVal: document.getElementById('finalScoreVal'),
       finalLinesVal: document.getElementById('finalLinesVal'),
       finalRankLabel: document.getElementById('finalRankLabel'),
       btnRetryGame: document.getElementById('btnRetryGame'),
       btnOverToTitle: document.getElementById('btnOverToTitle'),
 
-      // Console Buttons
       btnDpadUp: document.getElementById('btnDpadUp'),
       btnDpadDown: document.getElementById('btnDpadDown'),
       btnDpadLeft: document.getElementById('btnDpadLeft'),
@@ -959,7 +916,6 @@ class BwedBoyApp {
       btnSelect: document.getElementById('btnSelect')
     };
 
-    // Création des canvas 2D pour les slots Hold et Next
     if (this.dom.holdSlotFrame) {
       this.holdCanvas = document.createElement('canvas');
       this.holdCanvas.width = 64;
@@ -1040,7 +996,6 @@ class BwedBoyApp {
   setMenuState(newState) {
     this.state = newState;
 
-    // Masquage de tous les menus
     const overlays = [
       this.dom.titleMenu,
       this.dom.levelMenu,
@@ -1084,9 +1039,6 @@ class BwedBoyApp {
         if (this.dom.finalLinesVal) this.dom.finalLinesVal.textContent = this.lines.toString();
         if (this.dom.finalRankLabel) this.dom.finalRankLabel.textContent = this.getRankName(this.score);
         break;
-      case 'PLAYING':
-        // En jeu direct
-        break;
     }
   }
 
@@ -1127,6 +1079,10 @@ class BwedBoyApp {
     this.backToBack = false;
     this.heldPieceType = null;
     this.canHold = true;
+
+    this.lastDropTime = performance.now();
+    this.lockTimer = 0;
+    this.isOnGround = false;
 
     this.bag = new TetrisBag();
     this.nextQueue = [this.bag.next(), this.bag.next(), this.bag.next()];
@@ -1371,7 +1327,6 @@ class BwedBoyApp {
 
       this.screen3D.spawnCrumbBurst(clearedRows);
 
-      // Traitement des pièces découpées
       for (const p of this.placedPieces) {
         const initCount = p.cells.length;
         p.cells = p.cells.filter(cell => !clearedRows.includes(cell.row));
@@ -1387,7 +1342,6 @@ class BwedBoyApp {
         }
       }
 
-      // Flash et effacement
       this.screen3D.flashClearedRows(clearedRows, () => {
         const remaining = this.grid.filter((_, idx) => !clearedRows.includes(idx));
         while (remaining.length < ROWS) {
@@ -1395,7 +1349,6 @@ class BwedBoyApp {
         }
         this.grid = remaining;
 
-        // Mise à jour de l'indicateur broken sur les cellules
         for (const p of this.placedPieces) {
           if (p.broken) {
             for (const cell of p.cells) {
@@ -1449,7 +1402,6 @@ class BwedBoyApp {
   }
 
   renderPreviews() {
-    // 1. Réserve
     if (this.holdCanvas) {
       const ctx = this.holdCanvas.getContext('2d');
       ctx.clearRect(0, 0, this.holdCanvas.width, this.holdCanvas.height);
@@ -1461,7 +1413,6 @@ class BwedBoyApp {
       }
     }
 
-    // 2. Pièce suivante
     if (this.nextCanvas && this.nextQueue.length > 0) {
       const ctx = this.nextCanvas.getContext('2d');
       ctx.clearRect(0, 0, this.nextCanvas.width, this.nextCanvas.height);
@@ -1504,12 +1455,20 @@ class BwedBoyApp {
 
           ctx.fillStyle = cfg.color;
           ctx.beginPath();
-          ctx.roundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 2);
+          if (ctx.roundRect) {
+            ctx.roundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 2);
+          } else {
+            ctx.rect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+          }
           ctx.fill();
 
           ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
           ctx.beginPath();
-          ctx.roundRect(x + 2, y + 2, cellSize - 4, 2, 1);
+          if (ctx.roundRect) {
+            ctx.roundRect(x + 2, y + 2, cellSize - 4, 2, 1);
+          } else {
+            ctx.rect(x + 2, y + 2, cellSize - 4, 2);
+          }
           ctx.fill();
         }
       }
@@ -1555,78 +1514,124 @@ class BwedBoyApp {
     requestAnimationFrame((t) => this.loop(t));
   }
 
-  // Événements et liaisons contrôles
   bindEvents() {
     // 1. Boutons du Menu Titre
     document.querySelectorAll('#titleOptions .retro-opt-btn').forEach((btn, idx) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         this.titleMenuIndex = idx;
         this.updateTitleMenuSelection();
         this.executeTitleAction(btn.dataset.action);
       });
     });
 
+    // Clic n'importe où sur l'écran titre pour démarrer immédiatement
+    document.getElementById('btnQuickPlay')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.startNewGame();
+    });
+
+    this.dom.titleMenu?.addEventListener('click', (e) => {
+      if (e.target.closest('.retro-opt-btn')) return;
+      this.startNewGame();
+    });
+
+    document.getElementById('pressStartPrompt')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.startNewGame();
+    });
+
     // 2. Sélecteur de niveau
-    this.dom.btnPrevLevel?.addEventListener('click', () => {
+    this.dom.btnPrevLevel?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.selectedStartLevel = Math.max(1, this.selectedStartLevel - 1);
       this.audio.playCursor();
       this.updateLevelSelectUI();
     });
 
-    this.dom.btnNextLevel?.addEventListener('click', () => {
+    this.dom.btnNextLevel?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.selectedStartLevel = Math.min(10, this.selectedStartLevel + 1);
       this.audio.playCursor();
       this.updateLevelSelectUI();
     });
 
-    this.dom.btnStartWithLevel?.addEventListener('click', () => this.startNewGame());
-    this.dom.btnBackFromLevel?.addEventListener('click', () => {
+    this.dom.btnStartWithLevel?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.startNewGame();
+    });
+
+    this.dom.btnBackFromLevel?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.audio.playCursor();
       this.setMenuState('TITLE');
     });
 
     // 3. Palmarès & Aide
-    this.dom.btnBackFromScores?.addEventListener('click', () => {
+    this.dom.btnBackFromScores?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.audio.playCursor();
       this.setMenuState('TITLE');
     });
 
-    this.dom.btnBackFromHelp?.addEventListener('click', () => {
+    this.dom.btnBackFromHelp?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.audio.playCursor();
       this.setMenuState('TITLE');
     });
 
     // 4. Menu Pause
-    this.dom.btnResume?.addEventListener('click', () => this.togglePause());
-    this.dom.btnRestartGame?.addEventListener('click', () => this.startNewGame());
-    this.dom.btnToggleSound?.addEventListener('click', () => {
+    this.dom.btnResume?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.togglePause();
+    });
+
+    this.dom.btnRestartGame?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.startNewGame();
+    });
+
+    this.dom.btnToggleSound?.addEventListener('click', (e) => {
+      e.stopPropagation();
       const on = this.audio.toggleMusic();
       if (this.dom.soundOptLabel) {
         this.dom.soundOptLabel.textContent = on ? 'SON : ACTIF' : 'SON : COUPE';
       }
     });
-    this.dom.btnQuitToTitle?.addEventListener('click', () => {
+
+    this.dom.btnQuitToTitle?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.audio.playCursor();
       this.setMenuState('TITLE');
     });
 
     // 5. Game Over
-    this.dom.btnRetryGame?.addEventListener('click', () => this.startNewGame());
-    this.dom.btnOverToTitle?.addEventListener('click', () => {
+    this.dom.btnRetryGame?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.startNewGame();
+    });
+
+    this.dom.btnOverToTitle?.addEventListener('click', (e) => {
+      e.stopPropagation();
       this.audio.playCursor();
       this.setMenuState('TITLE');
     });
 
-    // 6. Commandes physiques du châssis Bwed Boy
+    // 6. Commandes physiques du châssis Bwed Boy (pointerdown + click avec anti-rebond)
     const addHoldOrClick = (el, action) => {
       if (!el) return;
+      let lastCall = 0;
       const trigger = (e) => {
+        const now = Date.now();
+        if (now - lastCall < 120) return;
+        lastCall = now;
         e.preventDefault();
         el.classList.add('pressed');
         setTimeout(() => el.classList.remove('pressed'), 120);
         action();
       };
       el.addEventListener('pointerdown', trigger);
+      el.addEventListener('click', trigger);
     };
 
     addHoldOrClick(this.dom.btnDpadUp, () => this.handleDirection('up'));
@@ -1795,7 +1800,15 @@ class BwedBoyApp {
   }
 }
 
-// Lancement au chargement du DOM
-window.addEventListener('DOMContentLoaded', () => {
-  window.bwedBoyApp = new BwedBoyApp();
-});
+// Initialisation garantie même si DOMContentLoaded a déjà eu lieu
+function boot() {
+  if (!window.bwedBoyApp) {
+    window.bwedBoyApp = new BwedBoyApp();
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
