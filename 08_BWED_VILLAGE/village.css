@@ -1,0 +1,583 @@
+/* ==========================================================================
+   BWED VILLAGE 3D — STYLESHEET
+   Warm Tactile Gourmet Aesthetic (Dofus Isometric meets Animal Crossing)
+   ========================================================================== */
+
+:root {
+  --bg-deep: #120905;
+  --bg-dark: #1e0e08;
+  --bg-card: rgba(30, 14, 8, 0.88);
+  --bg-card-hover: rgba(48, 22, 13, 0.95);
+  
+  --gold-main: #ffd15a;
+  --gold-warm: #f4bd5f;
+  --gold-glow: rgba(255, 209, 90, 0.4);
+  
+  --orange-crust: #ff6b35;
+  --cream: #fff7ea;
+  --cream-soft: #f7ead5;
+  --cream-muted: #c8b79f;
+  
+  --mint: #2ec4b6;
+  --border-gold: rgba(255, 209, 90, 0.3);
+  --border-subtle: rgba(255, 247, 234, 0.12);
+  
+  --font-display: 'Fredoka', 'Nunito', sans-serif;
+  --font-body: 'Nunito', 'Fredoka', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-deep);
+  color: var(--cream);
+  font-family: var(--font-body);
+}
+
+#canvasContainer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  outline: none;
+  cursor: crosshair;
+}
+
+/* ==========================================================================
+   HUD OVERLAY
+   ========================================================================== */
+.village-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 20px;
+}
+
+/* Top Bar */
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.district-badge {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-gold);
+  border-radius: 999px;
+  padding: 8px 18px 8px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(255, 209, 90, 0.15);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.district-badge:hover {
+  border-color: var(--gold-main);
+  transform: translateY(-2px);
+}
+
+.district-pin {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--gold-main);
+  box-shadow: 0 0 10px var(--gold-main);
+  animation: pulsePin 1.8s infinite ease-in-out;
+}
+
+@keyframes pulsePin {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.85); opacity: 0.7; }
+}
+
+.district-text small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  color: var(--gold-main);
+}
+
+.district-text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cream);
+  line-height: 1.1;
+}
+
+.hud-top-actions {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-btn {
+  background: var(--bg-card);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-gold);
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: background 0.2s, transform 0.2s, border-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.hud-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--gold-main);
+  color: var(--gold-main);
+  transform: translateY(-2px);
+}
+
+.hud-btn.active {
+  border-color: var(--gold-main);
+  color: var(--gold-main);
+  background: rgba(255, 209, 90, 0.18);
+}
+
+.hub-return-link {
+  border-color: rgba(255, 247, 234, 0.25);
+  color: #d5a682;
+}
+
+.hub-return-link:hover {
+  border-color: var(--orange-crust);
+  color: #ffaa88;
+}
+
+/* Controls Hint Box */
+.controls-hint {
+  pointer-events: auto;
+  align-self: flex-start;
+  margin-top: 10px;
+  background: rgba(20, 10, 6, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+.hint-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--cream-soft);
+}
+
+.hint-row kbd {
+  background: rgba(255, 247, 234, 0.15);
+  border: 1px solid rgba(255, 247, 234, 0.25);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--gold-main);
+  font-weight: 700;
+}
+
+/* Interaction Floating Card (When near or clicking a building) */
+.interaction-card {
+  pointer-events: auto;
+  align-self: center;
+  position: absolute;
+  bottom: 85px;
+  width: min(440px, calc(100% - 40px));
+  background: linear-gradient(135deg, rgba(38, 18, 11, 0.96) 0%, rgba(22, 10, 6, 0.98) 100%);
+  backdrop-filter: blur(24px);
+  border: 2px solid var(--gold-main);
+  border-radius: 22px;
+  padding: 20px 22px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 209, 90, 0.25);
+  animation: cardSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.interaction-card[hidden] {
+  display: none !important;
+}
+
+.close-card-btn {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #c8b79f;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: color 0.15s;
+}
+
+.close-card-btn:hover {
+  color: var(--cream);
+}
+
+.card-kicker {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold-main);
+  text-transform: uppercase;
+}
+
+.interaction-card h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  margin: 4px 0 6px;
+  color: var(--cream);
+}
+
+.interaction-card p {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--cream-soft);
+  margin-bottom: 16px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.primary-card-action {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, var(--orange-crust), #d9401e);
+  color: var(--cream);
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #8b180a, 0 8px 20px rgba(255, 107, 53, 0.4);
+  transition: transform 0.15s, filter 0.15s;
+}
+
+.primary-card-action:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.primary-card-action:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #8b180a;
+}
+
+/* Bottom Bar: Emotes & Chat */
+.hud-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(640px, 100%);
+  margin: 0 auto;
+}
+
+.emote-bar {
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.emote-btn {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-gold);
+  border-radius: 999px;
+  padding: 6px 14px;
+  color: var(--cream);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.emote-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: rgba(255, 209, 90, 0.2);
+  border-color: var(--gold-main);
+  color: var(--gold-main);
+}
+
+.chat-form {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1.5px solid var(--border-gold);
+  border-radius: 999px;
+  padding: 5px 6px 5px 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.chat-form:focus-within {
+  border-color: var(--gold-main);
+  box-shadow: 0 0 20px rgba(255, 209, 90, 0.35);
+}
+
+.chat-form input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+.chat-form input::placeholder {
+  color: #a4826b;
+}
+
+.chat-submit-btn {
+  background: linear-gradient(135deg, var(--gold-main), #e59938);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  color: #2c1711;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+}
+
+.chat-submit-btn:hover {
+  filter: brightness(1.08);
+  transform: scale(1.02);
+}
+
+/* ==========================================================================
+   SPEECH BUBBLES IN 3D (HABBO / DOFUS STYLE)
+   ========================================================================== */
+.speech-bubble {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
+  background: #fffdf9;
+  color: #2c1711;
+  border: 2px solid #2c1711;
+  border-radius: 16px;
+  padding: 7px 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  transform: translate(-50%, -100%);
+  animation: bubblePop 0.25s cubic-bezier(0.17, 1.3, 0.3, 1);
+  white-space: nowrap;
+  max-width: 240px;
+  text-align: center;
+}
+
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 7px 7px 0;
+  border-style: solid;
+  border-color: #2c1711 transparent transparent;
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 98%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px 5px 0;
+  border-style: solid;
+  border-color: #fffdf9 transparent transparent;
+  z-index: 1;
+}
+
+@keyframes bubblePop {
+  0% { opacity: 0; transform: translate(-50%, -85%) scale(0.6); }
+  100% { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+
+/* ==========================================================================
+   LOADING SCREEN
+   ========================================================================== */
+.village-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #140905;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.village-loader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-content {
+  text-align: center;
+  max-width: 420px;
+  padding: 20px;
+}
+
+.loader-icon-frame {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 209, 90, 0.25), transparent 70%);
+  display: grid;
+  place-items: center;
+}
+
+.loader-bwed-spin {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+  animation: bwedWobble 2s ease-in-out infinite;
+}
+
+@keyframes bwedWobble {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(-6deg); }
+  75% { transform: translateY(-6px) rotate(6deg); }
+}
+
+.loader-content h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--gold-main);
+  margin-bottom: 6px;
+}
+
+.loader-content p {
+  font-size: 13px;
+  color: #c8b79f;
+  margin-bottom: 18px;
+}
+
+.loader-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 247, 234, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.loader-bar {
+  width: 25%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange-crust), var(--gold-main));
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS
+   ========================================================================== */
+@media (max-width: 768px) {
+  .village-hud {
+    padding: 10px 12px;
+  }
+
+  .controls-hint {
+    display: none; /* Hide keyboard controls on touch devices */
+  }
+
+  .district-text strong {
+    font-size: 13px;
+  }
+
+  .hud-btn span {
+    font-size: 10px;
+  }
+
+  .hub-return-link {
+    display: none;
+  }
+
+  .interaction-card {
+    bottom: 75px;
+    width: calc(100% - 24px);
+    padding: 16px;
+  }
+
+  .interaction-card h3 {
+    font-size: 18px;
+  }
+
+  .emote-bar {
+    gap: 6px;
+  }
+
+  .emote-btn {
+    padding: 4px 10px;
+    font-size: 9px;
+  }
+
+  .chat-form {
+    padding: 4px 5px 4px 14px;
+  }
+
+  .chat-form input {
+    font-size: 12px;
+  }
+}

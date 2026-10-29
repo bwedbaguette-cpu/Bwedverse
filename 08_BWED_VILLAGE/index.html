@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Bwed Village 3D — Le Hub Isométrique</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./village.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- 3D WebGL Canvas Viewport -->
+    <div id="canvasContainer"></div>
+
+    <!-- HUD Overlay -->
+    <div class="village-hud">
+      <!-- Top Bar: District & Time -->
+      <header class="hud-top">
+        <div class="district-badge" id="districtBadge">
+          <span class="district-pin"></span>
+          <div class="district-text">
+            <small>BWED VILLAGE 3D</small>
+            <strong id="districtName">La Grand-Place du Beurre Doré</strong>
+          </div>
+        </div>
+
+        <div class="hud-top-actions">
+          <button class="hud-btn" id="todBtn" type="button" title="Changer l'heure de la journée">
+            <span id="todIcon">Soleil Doré</span>
+          </button>
+          <button class="hud-btn" id="camRotateBtn" type="button" title="Pivoter la vue (Touche Q / E)">
+            <span>Pivoter 45°</span>
+          </button>
+          <button class="hud-btn" id="audioBtn" type="button" title="Ambiance sonore boulangerie">
+            <span id="audioIcon">Musique : ON</span>
+          </button>
+          <a class="hud-btn hub-return-link" href="../index.html" title="Retourner au Bwedverse Hub">
+            <span>Quitter le Village</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Controls Hint Card (Top Left below district) -->
+      <div class="controls-hint" id="controlsHint">
+        <div class="hint-row">
+          <kbd>Clic Gauche</kbd><span>Se déplacer case par case (Style Dofus)</span>
+        </div>
+        <div class="hint-row">
+          <kbd>Z Q S D</kbd> / <kbd>Flèches</kbd><span>Déplacement direct libre</span>
+        </div>
+        <div class="hint-row">
+          <kbd>Espace</kbd><span>Sauter &amp; Dandinement</span>
+        </div>
+        <div class="hint-row">
+          <kbd>Molette</kbd><span>Zoomer / Dézoomer</span>
+        </div>
+      </div>
+
+      <!-- Building Interaction Modal / Floating Card -->
+      <div class="interaction-card" id="interactionCard" hidden>
+        <button class="close-card-btn" id="closeCardBtn" type="button">&times;</button>
+        <span class="card-kicker" id="cardKicker">LIEU EMBLÉMATIQUE</span>
+        <h3 id="cardTitle">Pâtisserie du Croissant d'Or</h3>
+        <p id="cardDesc">Boutique artisanale tenue par les maîtres boulangers. Croissants au beurre et fèves dorées.</p>
+        <div class="card-actions">
+          <button class="primary-card-action" id="cardActionBtn" type="button">
+            <span id="cardActionLabel">Entrer dans la Pâtisserie</span>
+            <b>&rarr;</b>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Chat Bar & Social Emotes -->
+      <footer class="hud-bottom">
+        <div class="emote-bar">
+          <button class="emote-btn" data-emote="wave" type="button" title="Faire un coucou">Coucou</button>
+          <button class="emote-btn" data-emote="jump" type="button" title="Sauter de joie">Sauter</button>
+          <button class="emote-btn" data-emote="cheer" type="button" title="Célébrer">Bravo</button>
+          <button class="emote-btn" data-emote="crumb" type="button" title="Semer des miettes">Miettes</button>
+        </div>
+
+        <form class="chat-form" id="chatForm">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Parler dans le village (appuyez sur Entrée pour afficher une bulle)..."
+            maxlength="70"
+            autocomplete="off"
+          />
+          <button class="chat-submit-btn" type="submit">Envoyer</button>
+        </form>
+      </footer>
+    </div>
+
+    <!-- Virtual Joystick for Mobile Touch Devices -->
+    <div class="virtual-joystick" id="virtualJoystick" hidden>
+      <div class="joystick-base">
+        <div class="joystick-thumb" id="joystickThumb"></div>
+      </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div class="village-loader" id="villageLoader">
+      <div class="loader-content">
+        <div class="loader-icon-frame">
+          <img src="../assets/bwed-avatar-canon.png" alt="Bwed Avatar" class="loader-bwed-spin" />
+        </div>
+        <h2>Génération du Bwed Village 3D</h2>
+        <p id="loaderStatus">Assemblage des tuiles sablées et des bâtisses gourmandes...</p>
+        <div class="loader-bar-wrap">
+          <div class="loader-bar" id="loaderBar"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./village.js"></script>
+  </body>
+</html>
