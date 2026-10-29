@@ -75,7 +75,7 @@ let tileCursorMesh, targetMarkerMesh;
 let playerMesh, playerBones = {};
 let chocoMaterial = null;
 const buildingObjects = [];
-const lanternPointLights = [];
+const landmarkPointLights = [];
 const speechBubbles = [];
 const particles = [];
 
@@ -96,12 +96,15 @@ function init() {
   camera = new THREE.PerspectiveCamera(40, aspect, 0.5, 320);
   updateCameraPosition(true);
 
-  // 3. Renderer
-  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  // 3. Renderer (Optimized for thermal efficiency: balanced DPR, standard PCF shadows)
+  renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    powerPreference: 'default'
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
   container.appendChild(renderer.domElement);
@@ -153,8 +156,8 @@ function setupLighting() {
   sunLight = new THREE.DirectionalLight(0xfff5e1, 1.55);
   sunLight.position.set(45, 65, 30);
   sunLight.castShadow = true;
-  sunLight.shadow.mapSize.width = 2048;
-  sunLight.shadow.mapSize.height = 2048;
+  sunLight.shadow.mapSize.width = 1024;
+  sunLight.shadow.mapSize.height = 1024;
   sunLight.shadow.camera.near = 5;
   sunLight.shadow.camera.far = 250;
   const d = 75;
@@ -162,42 +165,33 @@ function setupLighting() {
   sunLight.shadow.camera.right = d;
   sunLight.shadow.camera.top = d;
   sunLight.shadow.camera.bottom = -d;
-  sunLight.shadow.bias = -0.0005;
+  sunLight.shadow.bias = -0.0003;
   scene.add(sunLight);
 
-  // Spawn Street Lantern Point Lights
-  VILLAGE_LANTERNS.forEach(pos => {
-    const light = new THREE.PointLight(0xffaa44, 1.4, 14, 1.8);
-    light.position.set(pos.x * MAP_CONFIG.tileSize, 3.4, pos.z * MAP_CONFIG.tileSize);
-    light.castShadow = false;
-    scene.add(light);
-    lanternPointLights.push(light);
-
-    // Cute brass street lamp model
-    buildStreetLampPost(pos.x, pos.z);
-  });
+  // Instanced Street Lamps (2 draw calls total, glowing basic material bulbs)
+  buildInstancedStreetLamps();
 }
 
-// Landmark Key Colored Lights (Glows & Neon)
+// Landmark Key Colored Lights (Only 5 strategic dynamic lights for cool GPU operation)
 function setupLandmarkLights() {
   const lights = [
+    // Grand-Place: Warm Central Amber
+    { x: 25, z: 25, y: 5.5, color: 0xffb84d, intensity: 2.2, dist: 35 },
     // Pâtisserie: Warm Amber Glow
-    { x: 34, z: 25, y: 5.5, color: 0xff9933, intensity: 2.8, dist: 22 },
+    { x: 34, z: 25, y: 5.5, color: 0xff9933, intensity: 2.5, dist: 22 },
     // Taverne du Pot de Miel: Cozy Warm Hearth
-    { x: 39, z: 18, y: 5.0, color: 0xffaa22, intensity: 2.4, dist: 20 },
-    // Arcade BwedWare: Neon Cyan & Magenta
-    { x: 40, z: 41, y: 6.5, color: 0x00f0ff, intensity: 3.2, dist: 25 },
-    { x: 41, z: 42, y: 5.5, color: 0xff0088, intensity: 2.8, dist: 22 },
+    { x: 39, z: 18, y: 5.0, color: 0xffaa22, intensity: 2.2, dist: 20 },
+    // Arcade BwedWare: Neon Cyan
+    { x: 40, z: 41, y: 6.5, color: 0x00f0ff, intensity: 3.0, dist: 25 },
     // Observatoire Céleste: Mystic Purple
-    { x: 8, z: 42, y: 9.0, color: 0xaa44ff, intensity: 3.6, dist: 30 },
-    // Grand Phare du Canal: Golden Beacon
-    { x: 5, z: 7, y: 11.0, color: 0xfff0aa, intensity: 4.2, dist: 38 }
+    { x: 8, z: 42, y: 9.0, color: 0xaa44ff, intensity: 3.2, dist: 30 }
   ];
 
   lights.forEach(l => {
     const pl = new THREE.PointLight(l.color, l.intensity, l.dist, 2);
     pl.position.set(l.x * MAP_CONFIG.tileSize, l.y, l.z * MAP_CONFIG.tileSize);
     scene.add(pl);
+    landmarkPointLights.push(pl);
   });
 }
 
@@ -213,7 +207,7 @@ function setTimeOfDay(tod) {
     sunLight.color.set(0xfff5e1);
     sunLight.intensity = 1.55;
     sunLight.position.set(45, 65, 30);
-    lanternPointLights.forEach(l => l.intensity = 0.5);
+    landmarkPointLights.forEach(l => l.intensity = 0.5);
     todIcon.textContent = 'Soleil Doré';
   } else if (tod === 'golden') {
     scene.background.set(0x2d1109);
@@ -225,7 +219,7 @@ function setTimeOfDay(tod) {
     sunLight.color.set(0xff7722);
     sunLight.intensity = 1.6;
     sunLight.position.set(55, 35, 15);
-    lanternPointLights.forEach(l => l.intensity = 1.4);
+    landmarkPointLights.forEach(l => l.intensity = 1.4);
     todIcon.textContent = 'Heure Dorée';
   } else if (tod === 'night') {
     scene.background.set(0x0a0504);
@@ -237,7 +231,7 @@ function setTimeOfDay(tod) {
     sunLight.color.set(0x4466aa);
     sunLight.intensity = 0.4;
     sunLight.position.set(-30, 45, -30);
-    lanternPointLights.forEach(l => l.intensity = 2.8);
+    landmarkPointLights.forEach(l => l.intensity = 2.6);
     todIcon.textContent = 'Nuit Cosy';
   }
 }
@@ -292,7 +286,7 @@ function buildInstancedTileGrid() {
   const instancedMeshes = {};
   Object.keys(materials).forEach(type => {
     const mesh = new THREE.InstancedMesh(tileGeo, materials[type], totalTiles);
-    mesh.castShadow = true;
+    mesh.castShadow = false; // Optim: Ground tiles never cast shadows, saving 2500 shadow passes
     mesh.receiveShadow = true;
     scene.add(mesh);
     instancedMeshes[type] = { mesh, count: 0 };
@@ -326,33 +320,54 @@ function buildInstancedTileGrid() {
   });
 }
 
-// Street Lamp Post Prop
-function buildStreetLampPost(gridX, gridZ) {
-  const group = new THREE.Group();
-  const worldX = gridX * MAP_CONFIG.tileSize;
-  const worldZ = gridZ * MAP_CONFIG.tileSize;
-
-  const brassMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8, roughness: 0.3 });
+// Instanced Street Lamps (2 Draw Calls for all 24 lamps, 0 extra PointLights)
+function buildInstancedStreetLamps() {
+  const count = VILLAGE_LANTERNS.length;
+  const brassMat = new THREE.MeshStandardMaterial({
+    color: 0xd4af37,
+    metalness: 0.8,
+    roughness: 0.35
+  });
   const glowMat = new THREE.MeshBasicMaterial({ color: 0xffe277 });
 
-  // Brass Stem
-  const poleGeo = new THREE.CylinderGeometry(0.08, 0.12, 3.0, 12);
-  const pole = new THREE.Mesh(poleGeo, brassMat);
-  pole.position.y = 1.5;
-  pole.castShadow = true;
-  group.add(pole);
+  const poleGeo = new THREE.CylinderGeometry(0.08, 0.12, 3.0, 8);
+  const cageGeo = new THREE.SphereGeometry(0.35, 8, 8);
 
-  // Lantern Cage & Pearl
-  const cageGeo = new THREE.SphereGeometry(0.35, 12, 12);
-  const cage = new THREE.Mesh(cageGeo, glowMat);
-  cage.position.y = 3.1;
-  group.add(cage);
+  const poleInstanced = new THREE.InstancedMesh(poleGeo, brassMat, count);
+  poleInstanced.castShadow = true;
+  poleInstanced.receiveShadow = true;
 
-  group.position.set(worldX, 0, worldZ);
-  scene.add(group);
+  const cageInstanced = new THREE.InstancedMesh(cageGeo, glowMat, count);
+
+  const dummy = new THREE.Object3D();
+
+  VILLAGE_LANTERNS.forEach((pos, idx) => {
+    const wx = pos.x * MAP_CONFIG.tileSize;
+    const wz = pos.z * MAP_CONFIG.tileSize;
+    const tile = state.grid[pos.z] && state.grid[pos.z][pos.x];
+    const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
+
+    // Pole matrix
+    dummy.position.set(wx, wy + 1.5, wz);
+    dummy.scale.set(1, 1, 1);
+    dummy.rotation.set(0, 0, 0);
+    dummy.updateMatrix();
+    poleInstanced.setMatrixAt(idx, dummy.matrix);
+
+    // Glowing lantern cage matrix
+    dummy.position.set(wx, wy + 3.1, wz);
+    dummy.updateMatrix();
+    cageInstanced.setMatrixAt(idx, dummy.matrix);
+  });
+
+  poleInstanced.instanceMatrix.needsUpdate = true;
+  cageInstanced.instanceMatrix.needsUpdate = true;
+
+  scene.add(poleInstanced);
+  scene.add(cageInstanced);
 }
 
-// Procedural Brioche Trees & Flora
+// Instanced Brioche Trees (Only 4 Draw Calls for all 20 trees)
 function buildVillageVegetation() {
   const treePositions = [
     // Grand-Place Corners
@@ -377,83 +392,83 @@ function buildVillageVegetation() {
     { x: 4, z: 45 }, { x: 12, z: 46 }
   ];
 
-  const barkMat = new THREE.MeshStandardMaterial({
-    color: 0x5a2d12,
-    roughness: 0.85,
-    metalness: 0.05
-  });
+  const totalTrees = treePositions.length;
+  const barkMat = new THREE.MeshStandardMaterial({ color: 0x5a2d12, roughness: 0.85 });
+  const briocheMat = new THREE.MeshStandardMaterial({ color: 0xdd9738, roughness: 0.6 });
+  const pearlMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
 
-  const briocheMat = new THREE.MeshStandardMaterial({
-    color: 0xdd9738,
-    roughness: 0.6,
-    metalness: 0.08
-  });
+  const trunkGeo = new THREE.CylinderGeometry(0.22, 0.35, 2.2, 8);
+  const crownGeo = new THREE.SphereGeometry(1.15, 10, 8);
+  crownGeo.scale(1.1, 0.85, 1.1);
+  const sideBunGeo = new THREE.SphereGeometry(0.65, 8, 6);
+  sideBunGeo.scale(0.9, 0.75, 0.9);
+  const pearlGeo = new THREE.SphereGeometry(0.22, 6, 6);
 
-  const matchaMat = new THREE.MeshStandardMaterial({
-    color: 0x6e934a,
-    roughness: 0.7,
-    metalness: 0.04
-  });
+  const trunkInstanced = new THREE.InstancedMesh(trunkGeo, barkMat, totalTrees);
+  trunkInstanced.castShadow = true;
+  trunkInstanced.receiveShadow = true;
+
+  const crownInstanced = new THREE.InstancedMesh(crownGeo, briocheMat, totalTrees);
+  crownInstanced.castShadow = true;
+  crownInstanced.receiveShadow = true;
+
+  const sideBunsInstanced = new THREE.InstancedMesh(sideBunGeo, briocheMat, totalTrees * 3);
+  sideBunsInstanced.castShadow = true;
+  sideBunsInstanced.receiveShadow = true;
+
+  const pearlInstanced = new THREE.InstancedMesh(pearlGeo, pearlMat, totalTrees);
+
+  const dummy = new THREE.Object3D();
+  let sideBunCount = 0;
 
   treePositions.forEach((pos, idx) => {
-    const group = new THREE.Group();
     const wx = pos.x * MAP_CONFIG.tileSize;
     const wz = pos.z * MAP_CONFIG.tileSize;
-
-    // Get terrain elevation
     const tile = state.grid[pos.z] && state.grid[pos.z][pos.x];
     const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
-
-    // Cinnamon Bark Trunk
-    const trunkGeo = new THREE.CylinderGeometry(0.22, 0.35, 2.2, 10);
-    const trunk = new THREE.Mesh(trunkGeo, barkMat);
-    trunk.position.y = 1.1;
-    trunk.castShadow = true;
-    trunk.receiveShadow = true;
-    group.add(trunk);
-
-    // Fluffy Brioche Crown (Golden or Matcha variety)
-    const crownMat = (idx % 3 === 0) ? matchaMat : briocheMat;
-    const crownGroup = new THREE.Group();
-    crownGroup.position.y = 2.4;
-
-    // Main central loaf
-    const mainBun = new THREE.Mesh(new THREE.SphereGeometry(1.15, 14, 14), crownMat);
-    mainBun.scale.set(1.1, 0.85, 1.1);
-    mainBun.castShadow = true;
-    crownGroup.add(mainBun);
-
-    // 3 smaller side buns for authentic braided brioche look
-    for (let i = 0; i < 3; i++) {
-      const angle = (i * Math.PI * 2) / 3;
-      const sideBun = new THREE.Mesh(new THREE.SphereGeometry(0.65, 10, 10), crownMat);
-      sideBun.position.set(Math.cos(angle) * 0.7, 0.25, Math.sin(angle) * 0.7);
-      sideBun.scale.set(0.9, 0.75, 0.9);
-      sideBun.castShadow = true;
-      crownGroup.add(sideBun);
-    }
-
-    // Top Sugar / Pearl cluster
-    const pearlMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
-    const pearl = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), pearlMat);
-    pearl.position.y = 0.95;
-    crownGroup.add(pearl);
-
-    group.add(crownGroup);
-    group.position.set(wx, wy, wz);
-
-    // Random slight rotation & subtle scale variety
-    group.rotation.y = idx * 1.37;
     const s = 0.85 + (idx % 4) * 0.1;
-    group.scale.set(s, s, s);
 
-    scene.add(group);
+    // 1. Trunk
+    dummy.position.set(wx, wy + 1.1 * s, wz);
+    dummy.scale.set(s, s, s);
+    dummy.rotation.set(0, idx * 1.37, 0);
+    dummy.updateMatrix();
+    trunkInstanced.setMatrixAt(idx, dummy.matrix);
 
-    // Mark tile as occupied so Bwed doesn't walk into the trunk
-    if (tile) {
-      tile.walkable = false;
+    // 2. Crown
+    dummy.position.set(wx, wy + 2.4 * s, wz);
+    dummy.updateMatrix();
+    crownInstanced.setMatrixAt(idx, dummy.matrix);
+
+    // 3. Side Buns (3 around crown)
+    for (let i = 0; i < 3; i++) {
+      const angle = (i * Math.PI * 2) / 3 + idx * 1.37;
+      dummy.position.set(
+        wx + Math.cos(angle) * 0.7 * s,
+        wy + 2.65 * s,
+        wz + Math.sin(angle) * 0.7 * s
+      );
+      dummy.updateMatrix();
+      sideBunsInstanced.setMatrixAt(sideBunCount++, dummy.matrix);
     }
+
+    // 4. Pearl
+    dummy.position.set(wx, wy + 3.35 * s, wz);
+    dummy.updateMatrix();
+    pearlInstanced.setMatrixAt(idx, dummy.matrix);
+
+    if (tile) tile.walkable = false;
   });
+
+  trunkInstanced.instanceMatrix.needsUpdate = true;
+  crownInstanced.instanceMatrix.needsUpdate = true;
+  sideBunsInstanced.instanceMatrix.needsUpdate = true;
+  pearlInstanced.instanceMatrix.needsUpdate = true;
+
+  scene.add(trunkInstanced);
+  scene.add(crownInstanced);
+  scene.add(sideBunsInstanced);
+  scene.add(pearlInstanced);
 }
 
 // ============================================================================
@@ -1003,9 +1018,21 @@ function onPointerDown(e) {
 }
 
 // ============================================================================
-// MAIN ANIMATION LOOP
+// MAIN ANIMATION LOOP (CAPPED AT 60 FPS FOR COOL GPU THERMALS)
 // ============================================================================
-function animate() {
+let lastRenderTimestamp = 0;
+const targetFrameInterval = 1000 / 60; // ~16.66ms (limits GPU workload on 120Hz ProMotion Macs)
+
+function animate(timestamp) {
+  // Cap rendering to 60 FPS on high-refresh rate displays
+  if (timestamp) {
+    const elapsed = timestamp - lastRenderTimestamp;
+    if (elapsed < targetFrameInterval - 1.5) {
+      return;
+    }
+    lastRenderTimestamp = timestamp;
+  }
+
   const dt = Math.min(clock.getDelta(), 0.1);
 
   // 1. Process Inputs (Keyboard direct movement or Path following)
