@@ -17,24 +17,15 @@ import {
   VILLAGE_BARRELS_CRATES,
   VILLAGE_NPCS
 } from './village-map-data.js';
-import {
-  createWaffleTexture,
-  createCobbleTexture,
-  createGrassTexture,
-  createVichyTexture,
-  createCheckerTexture,
-  createWoodTexture,
-  createDirtTexture
-} from './village-textures.js';
 
 // --- GAME STATE ---
 const state = {
   grid: null,
   player: {
     gridX: 25,
-    gridZ: 22,
-    worldPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0.04, 22 * MAP_CONFIG.tileSize),
-    targetPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0.04, 22 * MAP_CONFIG.tileSize),
+    gridZ: 26,
+    worldPos: new THREE.Vector3(50.0, 0.05, 52.0),
+    targetPos: new THREE.Vector3(50.0, 0.05, 52.0),
     rotation: 0,
     targetRotation: 0,
     isMoving: false,
@@ -150,10 +141,10 @@ function init() {
     loadSavedState();
     state.grid = generateVillageGrid();
 
-    // 1. Scene & Atmosphere (Warm, Luminous Ghibli/Animal Crossing Bakery Palette)
+    // 1. Scene & Atmosphere (Pastel Celestial Daylight Palette with Crisp Ground Contrast)
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xfcf5e8); // Luminous soft honey-cream daylight sky
-    scene.fog = new THREE.FogExp2(0xf6ebe0, 0.0035); // Gentle atmospheric perspective
+    scene.background = new THREE.Color(0xbfe0f7); // Luminous soft sky blue (Animal Crossing daylight)
+    scene.fog = new THREE.Fog(0xd4edfc, 55, 140); // Gentle distant haze, leaving foreground 100% crisp!
 
     // 2. Camera (Isometric Perspective with close diorama intimacy)
     const aspect = window.innerWidth / window.innerHeight;
@@ -242,11 +233,11 @@ function init() {
 // LIGHTING & ATMOSPHERE (WARM COZY SUNNY PALETTE)
 // ============================================================================
 function setupLighting() {
-  hemiLight = new THREE.HemisphereLight(0xfffaea, 0xd6aa70, 1.15);
+  hemiLight = new THREE.HemisphereLight(0xeaf4ff, 0xcaa066, 1.25);
   scene.add(hemiLight);
 
-  sunLight = new THREE.DirectionalLight(0xfffaed, 1.75);
-  sunLight.position.set(45, 65, 30);
+  sunLight = new THREE.DirectionalLight(0xfffaed, 1.85);
+  sunLight.position.set(50, 75, 35);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 1024;
   sunLight.shadow.mapSize.height = 1024;
@@ -290,21 +281,27 @@ function setupLandmarkLights() {
 function setTimeOfDay(tod) {
   state.timeOfDay = tod;
   if (tod === 'day') {
-    scene.background.set(0xfcf5e8);
-    scene.fog.color.set(0xf6ebe0);
-    scene.fog.density = 0.0035;
-    hemiLight.color.set(0xfffaea);
-    hemiLight.groundColor.set(0xd6aa70);
-    hemiLight.intensity = 1.15;
+    scene.background.set(0xbfe0f7);
+    if (scene.fog) {
+      scene.fog.color.set(0xd4edfc);
+      scene.fog.near = 55;
+      scene.fog.far = 140;
+    }
+    hemiLight.color.set(0xeaf4ff);
+    hemiLight.groundColor.set(0xcaa066);
+    hemiLight.intensity = 1.25;
     sunLight.color.set(0xfffaed);
-    sunLight.intensity = 1.75;
-    sunLight.position.set(45, 65, 30);
+    sunLight.intensity = 1.85;
+    sunLight.position.set(50, 75, 35);
     landmarkPointLights.forEach(l => (l.intensity = 0.6));
     todIcon.textContent = 'Soleil Doré';
   } else if (tod === 'golden') {
     scene.background.set(0xf8d4a8);
-    scene.fog.color.set(0xf5c391);
-    scene.fog.density = 0.0042;
+    if (scene.fog) {
+      scene.fog.color.set(0xf5c391);
+      scene.fog.near = 45;
+      scene.fog.far = 120;
+    }
     hemiLight.color.set(0xffaa55);
     hemiLight.groundColor.set(0x5a2310);
     hemiLight.intensity = 1.1;
@@ -315,8 +312,11 @@ function setTimeOfDay(tod) {
     todIcon.textContent = 'Heure Dorée';
   } else if (tod === 'night') {
     scene.background.set(0x131a2b);
-    scene.fog.color.set(0x131a2b);
-    scene.fog.density = 0.0055;
+    if (scene.fog) {
+      scene.fog.color.set(0x131a2b);
+      scene.fog.near = 40;
+      scene.fog.far = 110;
+    }
     hemiLight.color.set(0x3a4f77);
     hemiLight.groundColor.set(0x1a1210);
     hemiLight.intensity = 0.55;
@@ -336,7 +336,7 @@ let unifiedTerrainGroup = null;
 function loadUnifiedTerrainMap() {
   const loader = new GLTFLoader();
   loader.load(
-    './assets/maps/bwed-village-terrain.glb',
+    './assets/maps/bwed-village-diorama.glb',
     gltf => {
       unifiedTerrainGroup = gltf.scene;
 
@@ -345,15 +345,15 @@ function loadUnifiedTerrainMap() {
           child.receiveShadow = true;
           child.castShadow = true;
           if (child.material) {
-            child.material.roughness = Math.max(child.material.roughness, 0.45);
+            child.material.roughness = Math.max(child.material.roughness, 0.35);
           }
         }
       });
 
       scene.add(unifiedTerrainGroup);
       if (loaderStatus && !loaderEl.classList.contains('fade-out')) {
-        loaderStatus.textContent = 'Terrain sculpté & niveau 3D en place...';
-        loaderBar.style.width = '35%';
+        loaderStatus.textContent = 'Diorama stylisé 3D & niveau en place...';
+        loaderBar.style.width = '45%';
       }
     },
     undefined,
@@ -363,72 +363,77 @@ function loadUnifiedTerrainMap() {
   );
 }
 
-// Analytical terrain elevation query (0ms execution, millimeter accuracy)
+// Analytical terrain elevation query (0ms execution, millimeter accuracy matching 3D Diorama)
 function getTerrainElevation(x, z) {
-  // 1. Arched Wooden Bridges over Chocolate Canal (z ≈ 18)
-  const inCanalZ = Math.abs(z - 18.0) <= 4.5;
+  // 1. Arched Wooden Bridges over Chocolate Canal (canal center: z = 36.0m)
+  const inCanalZ = Math.abs(z - 36.0) <= 5.2;
   if (inCanalZ) {
-    if (Math.abs(x - 50.0) <= 2.8) {
+    if (Math.abs(x - 50.0) <= 3.3) {
       // Grand Center Bridge
-      const t = (z - 13.5) / 9.0;
-      return Math.sin(t * Math.PI) * 0.85 + 0.15;
+      const t = (z - 30.8) / 10.4;
+      return Math.sin(t * Math.PI) * 0.98 + 0.12;
     }
-    if (Math.abs(x - 20.0) <= 2.0) {
+    if (Math.abs(x - 20.0) <= 2.4) {
       // West Bridge
-      const t = (z - 14.0) / 8.0;
-      return Math.sin(t * Math.PI) * 0.65 + 0.15;
+      const t = (z - 31.0) / 10.0;
+      return Math.sin(t * Math.PI) * 0.75 + 0.12;
     }
-    if (Math.abs(x - 80.0) <= 2.0) {
+    if (Math.abs(x - 80.0) <= 2.4) {
       // East Bridge
-      const t = (z - 14.0) / 8.0;
-      return Math.sin(t * Math.PI) * 0.65 + 0.15;
+      const t = (z - 31.0) / 10.0;
+      return Math.sin(t * Math.PI) * 0.75 + 0.12;
     }
   }
 
-  let y = 0.0;
-
-  // 2. Chocolate River Trench (z between 14m and 22m)
-  const canalDist = Math.abs(z - 18.0);
+  // 2. Chocolate River Trench (z between 31.5m and 40.5m)
+  const canalDist = Math.abs(z - 36.0);
   if (canalDist < 4.5) {
-    y -= 1.35 * (1.0 - Math.pow(canalDist / 4.5, 2));
-  } else if (canalDist < 6.5) {
-    const bankFactor = (canalDist - 4.5) / 2.0;
-    y += (bankFactor - 1.0) * 0.25;
+    return -0.32; // Chocolate water surface
   }
 
-  // 3. Observatory Hill (South-West: x ≈ 22, z ≈ 78)
-  const distToHill = Math.hypot(x - 22.0, z - 78.0);
-  if (distToHill < 18.0) {
-    const hillFactor = 1.0 - Math.pow(distToHill / 18.0, 2);
-    const rawH = hillFactor * 4.2;
-    y += (rawH > 2.0) ? (2.0 + (rawH - 2.0) * 1.15) : rawH;
+  // 3. Observatory Hill (South-West: x=20, z=80)
+  const distObs = Math.hypot(x - 20.0, z - 80.0);
+  if (distObs < 13.0) {
+    if (distObs < 6.5) return 3.6;
+    if (distObs < 10.5) return 1.8 + (10.5 - distObs) / 4.0 * 0.4;
+    return (13.0 - distObs) / 2.5 * 1.8;
   }
 
-  // 4. Residential Rolling Elevation (North-West)
-  const distToRes = Math.hypot(x - 18.0, z - 36.0);
-  if (distToRes < 14.0) {
-    y += (1.0 - Math.pow(distToRes / 14.0, 2)) * 0.75;
+  // 4. Woods Hillocks (North-West: x=16, z=20)
+  const distWoods = Math.hypot(x - 16.0, z - 20.0);
+  if (distWoods < 11.0) {
+    return Math.cos(distWoods / 11.0 * Math.PI * 0.5) * 1.35;
   }
 
-  // 5. Grand-Place Platform (Center: x=50, z=50)
-  const plazaDist = Math.hypot(x - 50.0, z - 50.0);
-  if (plazaDist < 12.0) {
-    y += 0.22 * (1.0 - Math.pow(plazaDist / 12.0, 4));
+  // 5. East Gentle Hill (x=82, z=20)
+  const distEast = Math.hypot(x - 82.0, z - 20.0);
+  if (distEast < 9.0) {
+    return Math.cos(distEast / 9.0 * Math.PI * 0.5) * 0.85;
   }
 
-  return y;
+  // 6. Base Ground & Roads
+  return 0.05;
 }
 
 function isWalkable(x, z) {
-  if (x < 3.0 || x > 97.0 || z < 3.0 || z > 97.0) return false;
+  // Island boundaries
+  if (x < 6.0 || x > 94.0 || z < 6.0 || z > 94.0) return false;
 
-  // Canal boundary
-  if (Math.abs(z - 18.0) < 4.0) {
-    const onCenterBridge = Math.abs(x - 50.0) <= 2.8;
-    const onWestBridge = Math.abs(x - 20.0) <= 2.0;
-    const onEastBridge = Math.abs(x - 80.0) <= 2.0;
+  // Rounded diorama corners
+  const dx_c = Math.max(0, Math.abs(x - 50.0) - 38.0);
+  const dz_c = Math.max(0, Math.abs(z - 50.0) - 38.0);
+  if (Math.hypot(dx_c, dz_c) > 7.5) return false;
+
+  // Canal boundary: blocked unless on bridge
+  if (Math.abs(z - 36.0) < 4.2) {
+    const onCenterBridge = Math.abs(x - 50.0) <= 3.3;
+    const onWestBridge = Math.abs(x - 20.0) <= 2.4;
+    const onEastBridge = Math.abs(x - 80.0) <= 2.4;
     if (!onCenterBridge && !onWestBridge && !onEastBridge) return false;
   }
+
+  // Central fountain collision
+  if (Math.hypot(x - 50.0, z - 52.0) < 3.8) return false;
 
   // Buildings clearance
   for (let i = 0; i < buildingObjects.length; i++) {
@@ -882,6 +887,32 @@ const PAWN_FILES = {
   'whale-buddy': './assets/pawns/whale-buddy.glb'
 };
 
+let playerBlobShadow = null;
+let blobShadowMat = null;
+
+function getBlobShadowMaterial() {
+  if (!blobShadowMat) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createRadialGradient(32, 32, 4, 32, 32, 30);
+    grad.addColorStop(0, 'rgba(32, 16, 8, 0.62)');
+    grad.addColorStop(0.5, 'rgba(32, 16, 8, 0.28)');
+    grad.addColorStop(1, 'rgba(32, 16, 8, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(canvas);
+    blobShadowMat = new THREE.MeshBasicMaterial({
+      map: tex,
+      transparent: true,
+      opacity: 0.65,
+      depthWrite: false
+    });
+  }
+  return blobShadowMat;
+}
+
 function initPlayerAvatar() {
   playerMesh = new THREE.Group();
   playerMesh.position.copy(state.player.worldPos);
@@ -892,6 +923,13 @@ function initPlayerAvatar() {
   pawnPivot = new THREE.Group();
   pawnPivot.position.y = 0;
   playerMesh.add(pawnPivot);
+
+  // Soft Contact Blob Shadow beneath player (instant tactile grounding)
+  const shadowGeo = new THREE.PlaneGeometry(1.4, 1.4);
+  shadowGeo.rotateX(-Math.PI / 2);
+  playerBlobShadow = new THREE.Mesh(shadowGeo, getBlobShadowMaterial());
+  playerBlobShadow.position.set(state.player.worldPos.x, state.player.worldPos.y + 0.02, state.player.worldPos.z);
+  scene.add(playerBlobShadow);
 
   scene.add(playerMesh);
 
@@ -985,6 +1023,13 @@ function buildVillageNPCs() {
     npcGroup.add(npcPivot);
 
     scene.add(npcGroup);
+
+    // Contact Blob Shadow for NPC
+    const shadowGeo = new THREE.PlaneGeometry(1.3, 1.3);
+    shadowGeo.rotateX(-Math.PI / 2);
+    const npcShadow = new THREE.Mesh(shadowGeo, getBlobShadowMaterial());
+    npcShadow.position.set(worldX, targetGroundY + 0.015, worldZ);
+    scene.add(npcShadow);
 
     const tile = state.grid[npc.gridZ] && state.grid[npc.gridZ][npc.gridX];
     if (tile) {
@@ -1434,19 +1479,19 @@ function loadVillageBuildings() {
 // ============================================================================
 function navigateToWorldPos(targetX, targetZ) {
   const p = state.player;
-  targetX = THREE.MathUtils.clamp(targetX, 3.0, 97.0);
-  targetZ = THREE.MathUtils.clamp(targetZ, 3.0, 97.0);
+  targetX = THREE.MathUtils.clamp(targetX, 7.0, 93.0);
+  targetZ = THREE.MathUtils.clamp(targetZ, 7.0, 93.0);
 
   // If clicking directly into the chocolate river, snap to nearest bank
-  if (Math.abs(targetZ - 18.0) < 4.0) {
-    const isBridge = Math.abs(targetX - 50.0) <= 2.8 || Math.abs(targetX - 20.0) <= 2.0 || Math.abs(targetX - 80.0) <= 2.0;
+  if (Math.abs(targetZ - 36.0) < 4.2) {
+    const isBridge = Math.abs(targetX - 50.0) <= 3.3 || Math.abs(targetX - 20.0) <= 2.4 || Math.abs(targetX - 80.0) <= 2.4;
     if (!isBridge) {
-      targetZ = targetZ >= 18.0 ? 22.5 : 13.5;
+      targetZ = targetZ >= 36.0 ? 41.5 : 30.5;
     }
   }
 
   const pz = p.worldPos.z;
-  const crossesCanal = (pz < 18.0 && targetZ > 18.0) || (pz > 18.0 && targetZ < 18.0);
+  const crossesCanal = (pz < 36.0 && targetZ > 36.0) || (pz > 36.0 && targetZ < 36.0);
 
   const waypoints = [];
 
@@ -1463,12 +1508,12 @@ function navigateToWorldPos(targetX, targetZ) {
       }
     });
 
-    const startBankZ = pz < 18.0 ? 13.5 : 22.5;
-    const endBankZ = pz < 18.0 ? 22.5 : 13.5;
+    const startBankZ = pz < 36.0 ? 30.8 : 41.2;
+    const endBankZ = pz < 36.0 ? 41.2 : 30.8;
 
     // Route across bridge
     waypoints.push({ x: bestBridgeX, z: startBankZ });
-    waypoints.push({ x: bestBridgeX, z: 18.0 });
+    waypoints.push({ x: bestBridgeX, z: 36.0 });
     waypoints.push({ x: bestBridgeX, z: endBankZ });
     waypoints.push({ x: targetX, z: targetZ });
   } else {
@@ -1809,12 +1854,12 @@ function updateMovement(dt) {
 
     p.targetRotation = Math.atan2(moveX, moveZ);
 
-    const nextX = THREE.MathUtils.clamp(p.worldPos.x + moveX, 3.0, 97.0);
-    const nextZ = THREE.MathUtils.clamp(p.worldPos.z + moveZ, 3.0, 97.0);
+    const nextX = THREE.MathUtils.clamp(p.worldPos.x + moveX, 7.0, 93.0);
+    const nextZ = THREE.MathUtils.clamp(p.worldPos.z + moveZ, 7.0, 93.0);
 
-    // Canal crossing: allow only on bridges
-    const inCanal = Math.abs(nextZ - 18.0) < 4.0;
-    const isBridge = Math.abs(nextX - 50.0) <= 2.8 || Math.abs(nextX - 20.0) <= 2.0 || Math.abs(nextX - 80.0) <= 2.0;
+    // Canal crossing: allow only on bridges (canal center z = 36.0m)
+    const inCanal = Math.abs(nextZ - 36.0) < 4.2;
+    const isBridge = Math.abs(nextX - 50.0) <= 3.3 || Math.abs(nextX - 20.0) <= 2.4 || Math.abs(nextX - 80.0) <= 2.4;
 
     if (!inCanal || isBridge) {
       p.worldPos.x = nextX;
@@ -1874,6 +1919,17 @@ function updateMovement(dt) {
 
   playerMesh.position.copy(p.worldPos);
   playerMesh.rotation.y = p.rotation;
+
+  // Sync Contact Blob Shadow
+  if (playerBlobShadow) {
+    playerBlobShadow.position.x = p.worldPos.x;
+    playerBlobShadow.position.z = p.worldPos.z;
+    playerBlobShadow.position.y = targetGroundY + 0.02;
+    const jumpOffset = Math.max(0, p.worldPos.y - targetGroundY);
+    const shadowScale = Math.max(0.45, 1.0 - jumpOffset * 0.24);
+    playerBlobShadow.scale.set(shadowScale, shadowScale, shadowScale);
+    playerBlobShadow.material.opacity = Math.max(0.18, 0.65 - jumpOffset * 0.16);
+  }
 }
 
 // Bouncy Waddle Walk & Breathing Animations for 3D Hero Pawns
@@ -2145,12 +2201,12 @@ function playSfx(type) {
 // ============================================================================
 function fastTravelTo(districtId) {
   const coords = {
-    plaza: { x: 25, z: 25, name: 'La Grand-Place du Beurre Doré' },
-    gourmet: { x: 38, z: 24, name: 'Le Faubourg Gourmand & Marché' },
-    residential: { x: 10, z: 28, name: 'Le Village Fleuri des Pains' },
+    plaza: { x: 25, z: 26, name: 'La Grand-Place du Beurre Doré' },
+    gourmet: { x: 38, z: 25, name: 'Le Faubourg Gourmand & Marché' },
+    residential: { x: 10, z: 27, name: 'Le Village Fleuri des Pains' },
     woods: { x: 8, z: 16, name: 'Le Bois de Cannelle' },
-    port: { x: 25, z: 3, name: 'Le Port & Canal de Chocolat Chaud' },
-    arcade: { x: 40, z: 40, name: 'La Fête Foraine & BwedWare Arcade' },
+    port: { x: 25, z: 15, name: 'Le Port & Canal de Chocolat Chaud' },
+    arcade: { x: 40, z: 41, name: 'La Fête Foraine & BwedWare Arcade' },
     sanctuary: { x: 10, z: 40, name: 'La Colline de l\'Observatoire Céleste' }
   };
 
