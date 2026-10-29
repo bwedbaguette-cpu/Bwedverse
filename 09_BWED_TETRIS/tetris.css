@@ -51,6 +51,14 @@
   -webkit-user-select: none;
 }
 
+/* Force hiding of elements with hidden attribute regardless of display property */
+[hidden],
+.menu-overlay[hidden],
+.screen-hud[hidden],
+.screen-toast[hidden] {
+  display: none !important;
+}
+
 html, body {
   width: 100%;
   height: 100%;

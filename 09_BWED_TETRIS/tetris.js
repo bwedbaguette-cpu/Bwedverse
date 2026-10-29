@@ -1004,10 +1004,17 @@ class BwedBoyApp {
       this.dom.pauseMenu,
       this.dom.gameOverMenu
     ];
-    overlays.forEach(o => { if (o) o.hidden = true; });
+    overlays.forEach(o => {
+      if (o) {
+        o.hidden = true;
+        o.style.display = 'none';
+      }
+    });
 
     if (this.dom.screenHud) {
-      this.dom.screenHud.hidden = (newState !== 'PLAYING');
+      const isPlay = (newState === 'PLAYING');
+      this.dom.screenHud.hidden = !isPlay;
+      this.dom.screenHud.style.display = isPlay ? 'grid' : 'none';
     }
 
     if (this.screen3D) {
@@ -1016,25 +1023,43 @@ class BwedBoyApp {
 
     switch (newState) {
       case 'TITLE':
-        if (this.dom.titleMenu) this.dom.titleMenu.hidden = false;
+        if (this.dom.titleMenu) {
+          this.dom.titleMenu.hidden = false;
+          this.dom.titleMenu.style.display = 'flex';
+        }
         this.updateTitleMenuSelection();
         break;
       case 'LEVEL_SELECT':
-        if (this.dom.levelMenu) this.dom.levelMenu.hidden = false;
+        if (this.dom.levelMenu) {
+          this.dom.levelMenu.hidden = false;
+          this.dom.levelMenu.style.display = 'flex';
+        }
         this.updateLevelSelectUI();
         break;
       case 'SCORES':
-        if (this.dom.scoresMenu) this.dom.scoresMenu.hidden = false;
+        if (this.dom.scoresMenu) {
+          this.dom.scoresMenu.hidden = false;
+          this.dom.scoresMenu.style.display = 'flex';
+        }
         this.updateScoreRecordsUI();
         break;
       case 'HELP':
-        if (this.dom.helpMenu) this.dom.helpMenu.hidden = false;
+        if (this.dom.helpMenu) {
+          this.dom.helpMenu.hidden = false;
+          this.dom.helpMenu.style.display = 'flex';
+        }
         break;
       case 'PAUSED':
-        if (this.dom.pauseMenu) this.dom.pauseMenu.hidden = false;
+        if (this.dom.pauseMenu) {
+          this.dom.pauseMenu.hidden = false;
+          this.dom.pauseMenu.style.display = 'flex';
+        }
         break;
       case 'GAMEOVER':
-        if (this.dom.gameOverMenu) this.dom.gameOverMenu.hidden = false;
+        if (this.dom.gameOverMenu) {
+          this.dom.gameOverMenu.hidden = false;
+          this.dom.gameOverMenu.style.display = 'flex';
+        }
         if (this.dom.finalScoreVal) this.dom.finalScoreVal.textContent = this.score.toLocaleString('fr-FR');
         if (this.dom.finalLinesVal) this.dom.finalLinesVal.textContent = this.lines.toString();
         if (this.dom.finalRankLabel) this.dom.finalRankLabel.textContent = this.getRankName(this.score);
@@ -1373,9 +1398,11 @@ class BwedBoyApp {
     this.dom.toastTitle.textContent = title;
     this.dom.toastSub.textContent = sub;
     this.dom.screenToast.hidden = false;
+    this.dom.screenToast.style.display = 'block';
     clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => {
       this.dom.screenToast.hidden = true;
+      this.dom.screenToast.style.display = 'none';
     }, 1600);
   }
 
@@ -1406,10 +1433,16 @@ class BwedBoyApp {
       const ctx = this.holdCanvas.getContext('2d');
       ctx.clearRect(0, 0, this.holdCanvas.width, this.holdCanvas.height);
       if (this.heldPieceType) {
-        if (this.dom.holdEmptyText) this.dom.holdEmptyText.hidden = true;
+        if (this.dom.holdEmptyText) {
+          this.dom.holdEmptyText.hidden = true;
+          this.dom.holdEmptyText.style.display = 'none';
+        }
         this.drawPieceCanvas(ctx, this.heldPieceType, this.holdCanvas.width, this.holdCanvas.height);
       } else {
-        if (this.dom.holdEmptyText) this.dom.holdEmptyText.hidden = false;
+        if (this.dom.holdEmptyText) {
+          this.dom.holdEmptyText.hidden = false;
+          this.dom.holdEmptyText.style.display = 'block';
+        }
       }
     }
 
