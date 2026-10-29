@@ -6,7 +6,7 @@
 export const MAP_CONFIG = {
   width: 50,
   height: 50,
-  tileSize: 2.5, // 2.5 meters per tile for grand village scale (125m x 125m)
+  tileSize: 2.0, // 2.0 meters per tile: 50x50 grid maps to 100m x 100m diorama island with millimeter accuracy
   elevationStep: 1.2,
 };
 
@@ -27,13 +27,13 @@ export const TILE_TYPES = {
 
 // Districts Definition
 export const DISTRICTS = [
-  { id: 'plaza', name: 'La Grand-Place du Beurre Doré', bounds: { minX: 18, maxX: 32, minZ: 18, maxZ: 32 } },
-  { id: 'gourmet', name: 'Le Faubourg Gourmand & Grand Marché', bounds: { minX: 33, maxX: 49, minZ: 14, maxZ: 35 } },
+  { id: 'plaza', name: 'La Grand-Place du Beurre Doré', bounds: { minX: 18, maxX: 32, minZ: 20, maxZ: 33 } },
+  { id: 'gourmet', name: 'Le Faubourg Gourmand & Grand Marché', bounds: { minX: 33, maxX: 49, minZ: 20, maxZ: 35 } },
   { id: 'residential', name: 'Le Village Fleuri des Pains', bounds: { minX: 0, maxX: 17, minZ: 21, maxZ: 35 } },
-  { id: 'woods', name: 'Le Bois de Cannelle & Clairière Calme', bounds: { minX: 0, maxX: 17, minZ: 12, maxZ: 20 } },
-  { id: 'port', name: 'Le Port & Berges du Chocolat', bounds: { minX: 0, maxX: 49, minZ: 0, maxZ: 13 } },
-  { id: 'arcade', name: 'La Fête Foraine & BwedWare Arcade', bounds: { minX: 31, maxX: 49, minZ: 34, maxZ: 49 } },
-  { id: 'sanctuary', name: 'La Colline de l\'Observatoire Céleste', bounds: { minX: 0, maxX: 19, minZ: 34, maxZ: 49 } },
+  { id: 'woods', name: 'Le Bois de Cannelle & Clairière Calme', bounds: { minX: 0, maxX: 20, minZ: 0, maxZ: 14 } },
+  { id: 'port', name: 'Le Port & Berges du Chocolat', bounds: { minX: 0, maxX: 49, minZ: 14, maxZ: 21 } },
+  { id: 'arcade', name: 'La Fête Foraine & BwedWare Arcade', bounds: { minX: 31, maxX: 49, minZ: 36, maxZ: 49 } },
+  { id: 'sanctuary', name: 'La Colline de l\'Observatoire Céleste', bounds: { minX: 0, maxX: 19, minZ: 36, maxZ: 49 } },
 ];
 
 // Generate Expanded 50x50 Tile Grid
@@ -48,59 +48,59 @@ export function generateVillageGrid() {
       let heightLevel = 0;
       let walkable = true;
 
-      // 1. Grand Canal de Chocolat Chaud (z = 5 à 9)
-      if (z >= 5 && z <= 9) {
+      // 1. Grand Canal de Chocolat Chaud (z = 16 à 20, center z=18 / 36.0m)
+      if (z >= 16 && z <= 20) {
         type = TILE_TYPES.CHOCO_CANAL;
         walkable = false;
 
-        // Grand Pont Principal (x = 23 à 27)
+        // Grand Pont Principal (x = 23 à 27, center x=25 / 50.0m)
         if (x >= 23 && x <= 27) {
           type = TILE_TYPES.WOOD_PIER;
           walkable = true;
           heightLevel = 0.25;
         }
-        // Pont Ouest (x = 9 à 11)
+        // Pont Ouest (x = 9 à 11, center x=10 / 20.0m)
         else if (x >= 9 && x <= 11) {
           type = TILE_TYPES.WOOD_PIER;
           walkable = true;
           heightLevel = 0.25;
         }
-        // Pont Est (x = 39 à 41)
+        // Pont Est (x = 39 à 41, center x=40 / 80.0m)
         else if (x >= 39 && x <= 41) {
           type = TILE_TYPES.WOOD_PIER;
           walkable = true;
           heightLevel = 0.25;
         }
       }
-      // Berges de cassonade dorée au Nord et au Sud du canal (z = 4 et z = 10)
-      else if ((z === 4 || z === 10) && x >= 2 && x <= 47) {
+      // Berges de cassonade dorée au Nord et au Sud du canal (z = 14 et z = 22)
+      else if ((z === 14 || z === 22) && x >= 3 && x <= 47) {
         type = TILE_TYPES.CANE_SAND;
         walkable = true;
       }
-      // Grands Quais en Bois le long du Canal (z = 11)
-      else if (z === 11 && x >= 4 && x <= 45) {
+      // Grands Quais en Bois le long du Canal (z = 15 et z = 21)
+      else if ((z === 15 || z === 21) && x >= 4 && x <= 46) {
         type = TILE_TYPES.WOOD_PIER;
         walkable = true;
       }
-      // 2. Le Grand Bois de Cannelle & Promenade Calme (x: 2 à 16, z: 12 à 20)
-      else if (x >= 2 && x <= 16 && z >= 12 && z <= 20) {
+      // 2. Le Grand Bois de Cannelle & Promenade Calme (x: 2 à 16, z: 2 à 13)
+      else if (x >= 2 && x <= 16 && z >= 2 && z <= 13) {
         // Sentier sinueux en terre de cannelle
-        if ((z === 15 || z === 16) && x >= 3 && x <= 15) {
+        if ((z === 7 || z === 8) && x >= 3 && x <= 15) {
           type = TILE_TYPES.FOREST_DIRT;
-        } else if ((x === 6 || x === 7) && z >= 13 && z <= 19) {
+        } else if ((x === 6 || x === 7) && z >= 3 && z <= 12) {
           type = TILE_TYPES.FOREST_DIRT;
         } else {
           type = TILE_TYPES.MATCHA_GRASS;
         }
         walkable = true;
       }
-      // 3. La Grand-Place du Beurre Doré (x: 19-31, z: 19-31)
-      else if (x >= 19 && x <= 31 && z >= 19 && z <= 31) {
+      // 3. La Grand-Place du Beurre Doré (x: 18-32, z: 20-32)
+      else if (x >= 18 && x <= 32 && z >= 20 && z <= 32) {
         type = TILE_TYPES.WAFFLE_PLAZA;
         walkable = true;
       }
-      // 4. Parvis Damier de la Fête Foraine & Arcade (x: 35 à 45, z: 38 à 44)
-      else if (x >= 35 && x <= 45 && z >= 38 && z <= 44) {
+      // 4. Parvis Damier de la Fête Foraine & Arcade (x: 35 à 45, z: 38 à 46)
+      else if (x >= 35 && x <= 45 && z >= 38 && z <= 46) {
         type = TILE_TYPES.CHECKER_BOARD;
         walkable = true;
       }
@@ -109,29 +109,29 @@ export function generateVillageGrid() {
         type = TILE_TYPES.VICHY_PICNIC;
         walkable = true;
       }
-      // 6. Seuil en Damier devant la Pâtisserie (x: 33-35, z: 24-26)
-      else if (x >= 33 && x <= 35 && z >= 24 && z <= 26) {
+      // 6. Seuil en Damier devant la Pâtisserie (x: 33-35, z: 24-27)
+      else if (x >= 33 && x <= 35 && z >= 24 && z <= 27) {
         type = TILE_TYPES.CHECKER_BOARD;
         walkable = true;
       }
       // 7. Boulevards & Rues Principales (Pavés Sablés)
-      // Boulevard Central Nord-Sud (x = 24 à 26, z: 11 à 46)
-      else if ((x >= 24 && x <= 26) && z >= 11 && z <= 46) {
+      // Boulevard Central Nord-Sud (x = 24 à 26, z: 5 à 46)
+      else if ((x >= 24 && x <= 26) && z >= 5 && z <= 46) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
-      // Boulevard Transversal Est-Ouest (z = 24 à 26, x: 2 à 47)
-      else if ((z >= 24 && z <= 26) && x >= 2 && x <= 47) {
+      // Boulevard Transversal Est-Ouest (z = 25 à 27, x: 2 à 47)
+      else if ((z >= 25 && z <= 27) && x >= 2 && x <= 47) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
       // Avenue Résidentielle Ouest (x = 10 à 12, z: 12 à 34)
-      else if ((x >= 10 && x <= 12) && z >= 11 && z <= 34) {
+      else if ((x >= 10 && x <= 12) && z >= 12 && z <= 34) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
       // Avenue Gourmande Est (x = 38 à 40, z: 12 à 34)
-      else if ((x >= 38 && x <= 40) && z >= 11 && z <= 34) {
+      else if ((x >= 38 && x <= 40) && z >= 12 && z <= 34) {
         type = TILE_TYPES.COBBLE_SABLE;
         walkable = true;
       }
@@ -177,11 +177,11 @@ export const VILLAGE_BUILDINGS = [
     name: 'Monument Fleur d\'Or de la Grand-Place',
     category: 'monument',
     gridX: 25,
-    gridZ: 25,
+    gridZ: 21,
     sizeX: 3,
     sizeZ: 3,
     model: './assets/buildings/monument-golden-bloom.glb',
-    scale: 4.8, // Grand monument central
+    scale: 4.8, // Grand monument floral à l'entrée Nord de la place
     rotationY: 0,
     interaction: {
       title: 'Le Monument de la Fleur d\'Or',
@@ -194,7 +194,7 @@ export const VILLAGE_BUILDINGS = [
     name: 'Le Croissant d\'Or Impérial',
     category: 'monument',
     gridX: 25,
-    gridZ: 30,
+    gridZ: 31,
     sizeX: 3,
     sizeZ: 2,
     model: './assets/buildings/prop-golden-croissant.glb',
@@ -537,19 +537,20 @@ export const VILLAGE_BUILDINGS = [
 // 24 Street Lanterns Placed along Main Boulevards
 export const VILLAGE_LANTERNS = [
   // Grand-Place
-  { x: 21, z: 21 }, { x: 29, z: 21 },
-  { x: 21, z: 29 }, { x: 29, z: 29 },
+  { x: 21, z: 22 }, { x: 29, z: 22 },
+  { x: 21, z: 30 }, { x: 29, z: 30 },
   // Boulevard Central Nord-Sud
-  { x: 25, z: 14 }, { x: 25, z: 18 },
+  { x: 25, z: 11 }, { x: 25, z: 22 },
   { x: 25, z: 32 }, { x: 25, z: 36 }, { x: 25, z: 42 },
   // Boulevard Est-Ouest
-  { x: 16, z: 25 }, { x: 8, z: 25 },
-  { x: 34, z: 25 }, { x: 42, z: 25 },
-  // Entrées des Ponts du Canal
-  { x: 23, z: 10 }, { x: 27, z: 10 },
-  { x: 10, z: 10 }, { x: 40, z: 10 },
+  { x: 16, z: 26 }, { x: 8, z: 26 },
+  { x: 34, z: 26 }, { x: 42, z: 26 },
+  // Entrées des Ponts du Canal (Quais Nord & Sud)
+  { x: 23, z: 15 }, { x: 27, z: 15 },
+  { x: 23, z: 21 }, { x: 27, z: 21 },
+  { x: 10, z: 15 }, { x: 40, z: 15 },
   // Faubourg Gourmand & Marché
-  { x: 38, z: 16 }, { x: 38, z: 32 }, { x: 44, z: 23 },
+  { x: 38, z: 22 }, { x: 38, z: 32 }, { x: 44, z: 26 },
   // Fête Foraine
   { x: 36, z: 39 }, { x: 44, z: 39 },
   // Colline
@@ -564,6 +565,8 @@ export const CITIZEN_HOUSES = [
     name: 'Cottage Fraisier',
     gridX: 6,
     gridZ: 16,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 1.05,
     roofColor: 0xe65271, // Fraise glacée
     wallColor: 0xfbf1e3,
@@ -576,6 +579,8 @@ export const CITIZEN_HOUSES = [
     name: 'Villa Matcha & Pistache',
     gridX: 14,
     gridZ: 16,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 1.1,
     roofColor: 0x6e9544, // Vert matcha
     wallColor: 0xf5e6cc,
@@ -588,6 +593,8 @@ export const CITIZEN_HOUSES = [
     name: 'Maisonnette Myrtille Sauvage',
     gridX: 5,
     gridZ: 22,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 0.95,
     roofColor: 0x5a7ca8, // Myrtille
     wallColor: 0xfef7ea,
@@ -600,6 +607,8 @@ export const CITIZEN_HOUSES = [
     name: 'Pavillon Crème Vanillée',
     gridX: 8,
     gridZ: 25,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 1.0,
     roofColor: 0xfbd278, // Vanille dorée
     wallColor: 0xf8eedb,
@@ -612,6 +621,8 @@ export const CITIZEN_HOUSES = [
     name: 'Manoir Toffee & Caramel',
     gridX: 6,
     gridZ: 32,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 1.15,
     roofColor: 0xb5632a, // Caramel au beurre salé
     wallColor: 0xf3dfc5,
@@ -624,6 +635,8 @@ export const CITIZEN_HOUSES = [
     name: 'Chaumière Abricot Rôti',
     gridX: 14,
     gridZ: 32,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 0.9,
     roofColor: 0xf37f34, // Abricot
     wallColor: 0xfbf1e3,
@@ -637,6 +650,8 @@ export const CITIZEN_HOUSES = [
     name: 'L\'Atelier du Pâtissier Compagnon',
     gridX: 45,
     gridZ: 17,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 1.05,
     roofColor: 0x3d1d0e, // Chocolat noir
     wallColor: 0xf3e2cc,
@@ -649,6 +664,8 @@ export const CITIZEN_HOUSES = [
     name: 'Échoppe du Sucre Glace',
     gridX: 45,
     gridZ: 32,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 0.95,
     roofColor: 0xff8ca3, // Rose bonbon
     wallColor: 0xfffaef,
@@ -662,6 +679,8 @@ export const CITIZEN_HOUSES = [
     name: 'Cabane du Passeur de Chocolat',
     gridX: 9,
     gridZ: 13,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 0.9,
     roofColor: 0x76543d,
     wallColor: 0xeed9bf,
@@ -674,6 +693,8 @@ export const CITIZEN_HOUSES = [
     name: 'L\'Ermitage du Bois de Cannelle',
     gridX: 4,
     gridZ: 18,
+    sizeX: 2.4,
+    sizeZ: 2.4,
     scale: 0.85,
     roofColor: 0x5a7536,
     wallColor: 0xf2e0c9,
@@ -687,26 +708,27 @@ export const CITIZEN_HOUSES = [
 export const VILLAGE_BENCHES = [
   // Grand-Place
   { x: 21, z: 23, rot: 0 }, { x: 29, z: 23, rot: 0 },
-  { x: 21, z: 27, rot: Math.PI }, { x: 29, z: 27, rot: Math.PI },
-  // Promenade des Quais
-  { x: 17, z: 11, rot: 0 }, { x: 33, z: 11, rot: 0 },
+  { x: 21, z: 29, rot: Math.PI }, { x: 29, z: 29, rot: Math.PI },
+  // Promenade des Quais (Bois le long du canal)
+  { x: 17, z: 15, rot: 0 }, { x: 33, z: 15, rot: 0 },
+  { x: 17, z: 21, rot: Math.PI }, { x: 33, z: 21, rot: Math.PI },
   // Parc & Terrasses
   { x: 7, z: 29, rot: -Math.PI / 2 }, { x: 12, z: 29, rot: Math.PI / 2 },
   // Bois de Cannelle
-  { x: 6, z: 18, rot: 0.4 }, { x: 13, z: 18, rot: -0.4 },
+  { x: 6, z: 8, rot: 0.4 }, { x: 13, z: 8, rot: -0.4 },
   // Colline
-  { x: 11, z: 44, rot: Math.PI / 4 }
+  { x: 11, z: 42, rot: Math.PI / 4 }
 ];
 
 // Instanced Barrels, Crates & Flour Sacks
 export const VILLAGE_BARRELS_CRATES = [
   // Taverne du Pot de Miel
-  { x: 37, z: 18, type: 'barrel' }, { x: 37, z: 19, type: 'crate' },
+  { x: 37, z: 22, type: 'barrel' }, { x: 37, z: 23, type: 'crate' },
   // Pâtisserie
-  { x: 34, z: 27, type: 'sack' }, { x: 35, z: 27, type: 'sack' },
-  // Quais du Port
-  { x: 21, z: 11, type: 'barrel' }, { x: 29, z: 11, type: 'crate' },
-  { x: 38, z: 11, type: 'barrel' }, { x: 12, z: 11, type: 'sack' }
+  { x: 34, z: 28, type: 'sack' }, { x: 35, z: 28, type: 'sack' },
+  // Quais du Port (Bordure canal)
+  { x: 21, z: 15, type: 'barrel' }, { x: 29, z: 15, type: 'crate' },
+  { x: 38, z: 15, type: 'barrel' }, { x: 12, z: 15, type: 'sack' }
 ];
 
 // Living Village NPCs (Placed around landmarks with interactive cozy dialogues)
@@ -717,7 +739,7 @@ export const VILLAGE_NPCS = [
     name: 'Maître Émile le Boulanger',
     role: 'Chef Pâtissier',
     gridX: 36,
-    gridZ: 25,
+    gridZ: 26,
     rotationY: -Math.PI / 2,
     dialogues: [
       "Bonjour voyageur ! Notre croissant d'or sort tout juste du four, l'odeur du beurre est divine aujourd'hui !",
@@ -743,8 +765,8 @@ export const VILLAGE_NPCS = [
     pawnId: 'brave-firefighter',
     name: 'Caporal Brioche',
     role: 'Sapeur Pompier Gourmand',
-    gridX: 22,
-    gridZ: 11,
+    gridX: 23,
+    gridZ: 15,
     rotationY: 0,
     dialogues: [
       "Prudence le long du canal ! La température du chocolat fondu est idéale, mais les berges sont glissantes.",
@@ -770,7 +792,7 @@ export const VILLAGE_NPCS = [
     name: 'Kenshin de la Griotte',
     role: 'Garde d\'Élite',
     gridX: 45,
-    gridZ: 25,
+    gridZ: 26,
     rotationY: -Math.PI / 2,
     dialogues: [
       "Honneur et tradition ! Nul ne dérobera la farine ancestrale tant que mon sabre veillera.",
@@ -795,8 +817,8 @@ export const VILLAGE_NPCS = [
     pawnId: 'cloud-ninja',
     name: 'Zéphir la Brume',
     role: 'Éclaireur des Toits',
-    gridX: 15,
-    gridZ: 37,
+    gridX: 14,
+    gridZ: 36,
     rotationY: -Math.PI / 2,
     dialogues: [
       "Léger comme la farine tamisée, rapide comme l'éclair... Admire la vue d'ici !",
@@ -808,8 +830,8 @@ export const VILLAGE_NPCS = [
     pawnId: 'choco-drip',
     name: 'Gaston Chocolat',
     role: 'Flâneur Épicurien',
-    gridX: 9,
-    gridZ: 18,
+    gridX: 10,
+    gridZ: 15,
     rotationY: 0,
     dialogues: [
       "Installe-toi sur un banc, respire la cannelle fraîche... C'est l'endroit le plus relaxant du monde.",

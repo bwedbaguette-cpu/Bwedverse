@@ -28,7 +28,7 @@
         <div class="district-badge" id="districtBadge" title="Votre quartier actuel">
           <span class="district-pin"></span>
           <div class="district-text">
-            <small>BWED VILLAGE 3D</small>
+            <small>BWED VILLAGE 3D <span class="compass-tag" id="compassTag">Nord</span></small>
             <strong id="districtName">La Grand-Place du Beurre Doré</strong>
           </div>
         </div>
@@ -313,86 +313,104 @@
     <!-- ==================================================================== -->
     <!-- 2. MODAL CARTE DU VILLAGE & VOYAGE RAPIDE -->
     <!-- ==================================================================== -->
-    <div class="bwed-modal" id="mapModal" hidden role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+    <div class="bwed-modal map-expanded-modal" id="mapModal" hidden role="dialog" aria-modal="true" aria-labelledby="mapTitle">
       <div class="modal-header">
         <div>
-          <span class="modal-kicker">CADASTRE &amp; TÉLÉPORTATION</span>
+          <span class="modal-kicker">CADASTRE INTERACTIF &amp; TÉLÉPORTATION</span>
           <h2 class="modal-title" id="mapTitle">Carte du Village de Bwedville</h2>
         </div>
         <button class="modal-close-btn" data-close="map" type="button" aria-label="Fermer la carte">&times;</button>
       </div>
 
-      <div class="modal-content">
-        <p class="tab-helper">Sélectionnez un quartier pour vous y rendre instantanément en voyage rapide :</p>
-        <div class="districts-grid" id="districtsGrid">
-          <div class="district-card" data-target="plaza">
-            <div class="dcard-header">
-              <span class="dcard-tag">CENTRE HISTORIQUE</span>
-              <span class="dcard-coords">[25, 25]</span>
+      <div class="modal-content map-modal-layout">
+        <!-- Colonne Gauche : Cadastre Stylisé en Direct -->
+        <div class="map-cadastre-column">
+          <div class="cadastre-canvas-wrapper">
+            <canvas id="villageMapCanvas" width="460" height="460"></canvas>
+            <div class="cadastre-legend">
+              <span class="legend-item"><span class="legend-dot dot-player"></span> Vous êtes ici</span>
+              <span class="legend-item"><span class="legend-dot dot-landmark"></span> Monuments</span>
+              <span class="legend-item"><span class="legend-dot dot-bridge"></span> Ponts &amp; Canal</span>
             </div>
-            <h4>La Grand-Place du Beurre Doré</h4>
-            <p>Fontaine au beurre, dalles en gaufre caramélisée et pavillons officiels.</p>
-            <button class="travel-btn" type="button">Voyage Rapide</button>
+            <div class="cadastre-hint">
+              <span>Astuce : Cliquez n'importe où sur l'île pour vous y téléporter instantanément</span>
+            </div>
           </div>
+        </div>
 
-          <div class="district-card" data-target="gourmet">
-            <div class="dcard-header">
-              <span class="dcard-tag">ARTISANAT</span>
-              <span class="dcard-coords">[38, 24]</span>
+        <!-- Colonne Droite : Liste des Quartiers -->
+        <div class="map-districts-column">
+          <p class="tab-helper">Sélectionnez un quartier pour vous y rendre instantanément en voyage rapide :</p>
+          <div class="districts-grid" id="districtsGrid">
+            <div class="district-card" data-target="plaza">
+              <div class="dcard-header">
+                <span class="dcard-tag">CENTRE HISTORIQUE</span>
+                <span class="dcard-coords">[25, 26]</span>
+              </div>
+              <h4>La Grand-Place du Beurre Doré</h4>
+              <p>Fontaine au beurre, dalles en gaufre caramélisée et pavillons officiels.</p>
+              <button class="travel-btn" type="button">Voyage Rapide</button>
             </div>
-            <h4>Le Faubourg Gourmand &amp; Marché</h4>
-            <p>Pâtisserie du Croissant d'Or, Taverne du Miel et échoppes d'arômes.</p>
-            <button class="travel-btn" type="button">Voyage Rapide</button>
-          </div>
 
-          <div class="district-card" data-target="residential">
-            <div class="dcard-header">
-              <span class="dcard-tag">HABITATIONS</span>
-              <span class="dcard-coords">[10, 28]</span>
+            <div class="district-card" data-target="gourmet">
+              <div class="dcard-header">
+                <span class="dcard-tag">ARTISANAT</span>
+                <span class="dcard-coords">[34, 26]</span>
+              </div>
+              <h4>Le Faubourg Gourmand &amp; Marché</h4>
+              <p>Pâtisserie du Croissant d'Or, Taverne du Miel et échoppes d'arômes.</p>
+              <button class="travel-btn" type="button">Voyage Rapide</button>
             </div>
-            <h4>Le Village Fleuri des Pains</h4>
-            <p>Maisons citoyennes briochées, ruelles pavées de sablé et jardins calmes.</p>
-            <button class="travel-btn" type="button">Voyage Rapide</button>
-          </div>
 
-          <div class="district-card" data-target="woods">
-            <div class="dcard-header">
-              <span class="dcard-tag">NATURE PAISIBLE</span>
-              <span class="dcard-coords">[8, 16]</span>
+            <div class="district-card" data-target="residential">
+              <div class="dcard-header">
+                <span class="dcard-tag">HABITATIONS</span>
+                <span class="dcard-coords">[10, 27]</span>
+              </div>
+              <h4>Le Village Fleuri des Pains</h4>
+              <p>Maisons citoyennes briochées, ruelles pavées de sablé et jardins calmes.</p>
+              <button class="travel-btn" type="button">Voyage Rapide</button>
             </div>
-            <h4>Le Bois de Cannelle &amp; Clairière</h4>
-            <p>Arbres briochés géants, sentiers de cacao et bancs de contemplation.</p>
-            <button class="travel-btn" type="button">Voyage Rapide</button>
-          </div>
 
-          <div class="district-card" data-target="port">
-            <div class="dcard-header">
-              <span class="dcard-tag">MARITIME</span>
-              <span class="dcard-coords">[25, 3]</span>
+            <div class="district-card" data-target="woods">
+              <div class="dcard-header">
+                <span class="dcard-tag">NATURE PAISIBLE</span>
+                <span class="dcard-coords">[8, 10]</span>
+              </div>
+              <h4>Le Bois de Cannelle &amp; Clairière</h4>
+              <p>Arbres briochés géants, sentiers de cacao et bancs de contemplation.</p>
+              <button class="travel-btn" type="button">Voyage Rapide</button>
             </div>
-            <h4>Le Port &amp; Canal de Chocolat Chaud</h4>
-            <p>Quais en bois de hêtre, bateaux viennois et doux remous chocolatés.</p>
-            <button class="travel-btn" type="button">Voyage Rapide</button>
-          </div>
 
-          <div class="district-card" data-target="arcade">
-            <div class="dcard-header">
-              <span class="dcard-tag">LOISIRS &amp; JEUX</span>
-              <span class="dcard-coords">[40, 40]</span>
+            <div class="district-card" data-target="port">
+              <div class="dcard-header">
+                <span class="dcard-tag">MARITIME</span>
+                <span class="dcard-coords">[25, 15]</span>
+              </div>
+              <h4>Le Port &amp; Canal de Chocolat Chaud</h4>
+              <p>Quais en bois de hêtre, bateaux viennois et doux remous chocolatés.</p>
+              <button class="travel-btn" type="button">Voyage Rapide</button>
             </div>
-            <h4>La Fête Foraine &amp; BwedWare Arcade</h4>
-            <p>Auto-tamponneuses beignets, carrousel bretzel et mini-jeux d'arcade.</p>
-            <button class="travel-btn" type="button">Voyage Rapide</button>
-          </div>
 
-          <div class="district-card" data-target="sanctuary">
-            <div class="dcard-header">
-              <span class="dcard-tag">HAUTEURS</span>
-              <span class="dcard-coords">[10, 40]</span>
+            <div class="district-card" data-target="arcade">
+              <div class="dcard-header">
+                <span class="dcard-tag">LOISIRS &amp; JEUX</span>
+                <span class="dcard-coords">[40, 41]</span>
+              </div>
+              <h4>La Fête Foraine &amp; BwedWare Arcade</h4>
+              <p>Auto-tamponneuses beignets, carrousel bretzel et mini-jeux d'arcade.</p>
+              <button class="travel-btn" type="button">Voyage Rapide</button>
             </div>
-            <h4>La Colline de l'Observatoire Céleste</h4>
-            <p>Dôme astronomique en sucre glace, escaliers gaufrettes et vue plongeante.</p>
-            <button class="travel-btn" type="button">Voyage Rapide</button>
+
+            <div class="district-card" data-target="sanctuary">
+              <div class="dcard-header">
+                <span class="dcard-tag">HAUTEURS</span>
+                <span class="dcard-coords">[10, 40]</span>
+              </div>
+              <h4>La Colline de l'Observatoire Céleste</h4>
+              <p>Dôme astronomique en sucre glace, escaliers gaufrettes et vue plongeante.</p>
+              <button class="travel-btn" type="button">Voyage Rapide</button>
+            </div>
           </div>
         </div>
       </div>
