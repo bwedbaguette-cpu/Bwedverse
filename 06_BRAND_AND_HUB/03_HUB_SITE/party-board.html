@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11100f" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Crumb Run — BWED Party</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./party-board.css?v=3.0.0" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="./party-board.js?v=3.0.0"></script>
+  </head>
+  <body>
+    <div class="front-door" id="frontDoor">
+      <div class="front-door-glow front-door-glow-a"></div>
+      <div class="front-door-glow front-door-glow-b"></div>
+      <header class="front-header">
+        <a class="front-back-link" href="./index.html">← BWEDVERSE HUB</a>
+        <span class="front-status"><i></i> BAKERY KINGDOM / ONLINE</span>
+      </header>
+      <div class="protocol-warning" id="protocolWarning" hidden>
+        <strong>LOCAL SERVER REQUIRED</strong>
+        <span>Run <code>python3 -m http.server 4173</code> from the project root to play.</span>
+      </div>
+
+      <main class="menu-frame">
+        <section class="menu-screen home-screen is-active" data-screen="home">
+          <div class="menu-copy">
+            <div class="front-live-pill">
+              <span class="live-pulse"></span>
+              <strong>BWEDVILLE 3D TOWN V2.8</strong>
+              <small>18 Portraits PFP 3D · Têtes Intégrales &amp; Safe Margins · Standings Modernisé</small>
+            </div>
+            <span class="menu-kicker"><i></i> BWED BAKERY PRESENTS</span>
+            <h2>Choose your<br /><em>slice of chaos.</em></h2>
+            <p class="menu-lead">
+              Welcome to the Bakery Grand Prix! Roll across a living 3D kitchen diorama, outsmart your friends in 5-second BwedWare micro-games, and claim the Golden Loaf.
+            </p>
+            <div class="menu-actions">
+              <button class="primary-menu-button" id="playButton" type="button">
+                <span>PLAY PARTY MODE</span><b>&rarr;</b>
+              </button>
+              <button class="secondary-menu-button direct-select-button" id="directSelectButton" type="button">
+                <span>HEROES (18 3D PAWNS)</span><b>&rarr;</b>
+              </button>
+              <button class="secondary-menu-button direct-board-button" id="directBoardButton" type="button">
+                <span>VIEW 3D BOARD</span><b>&rarr;</b>
+              </button>
+              <button class="secondary-menu-button arcade-menu-button" id="arcadeButton" type="button">
+                <span>BWEDWARE RUSH</span><b>&rarr;</b>
+              </button>
+              <button class="secondary-menu-button" id="settingsButton" type="button">
+                <span>SETTINGS</span><b>&rarr;</b>
+              </button>
+              <button class="text-menu-button" id="helpButton" type="button">
+                How to play <b>?</b>
+              </button>
+            </div>
+            <div class="menu-proof">
+              <span>18</span><i></i><span>PLAYABLE HEROES</span><i></i><span>06</span><i></i><span>BWEDWARE GAMES</span>
+            </div>
+          </div>
+          <div class="menu-art">
+            <div class="menu-art-frame">
+              <img src="./assets/references/bakery-reference.jpg" alt="Two Bweds in a warm bakery interior" />
+              <div class="menu-art-wash"></div>
+              <div class="menu-art-label">
+                <span>GRAND PRIX EDITION</span>
+                <strong>THE BAKERY<br />KINGDOM</strong>
+              </div>
+              <span class="menu-art-stamp">BWED<br /><small>PARTY!</small></span>
+            </div>
+            <div class="menu-art-caption">
+              <span>3D BOARD + MINI-GAMES + BOUTIQUE</span>
+              <b>100% FRESH MIE</b>
+            </div>
+          </div>
+        </section>
+
+        <section class="menu-screen player-count-screen" data-screen="count" hidden>
+          <div class="screen-topline">
+            <button class="back-menu-button" id="backHomeButton" type="button">← BACK</button>
+            <span>STEP 01 — PARTY SIZE</span>
+            <span class="screen-step">01 <i></i> 02</span>
+          </div>
+          <div class="count-heading">
+            <span class="menu-kicker"><i></i> SOLO OR COUCH MULTIPLAYER</span>
+            <h2>How many<br /><em>bakers?</em></h2>
+            <p>Play solo against smart CPU Bots or pass the controls with up to 6 friends. Every round ends with an all-out BwedWare micro-game!</p>
+          </div>
+          <div class="player-count-grid" id="playerCountGrid">
+            <button class="player-count-card" data-player-count="2" type="button"><strong>02</strong><span>DUO DUEL</span><small>Fast &amp; tense</small></button>
+            <button class="player-count-card" data-player-count="3" type="button"><strong>03</strong><span>TRIO CREW</span><small>Classic chaos</small></button>
+            <button class="player-count-card is-selected" data-player-count="4" type="button"><strong>04</strong><span>PARTY SHIFT</span><small>Ideal balance</small></button>
+            <button class="player-count-card" data-player-count="5" type="button"><strong>05</strong><span>RUSH HOUR</span><small>High energy</small></button>
+            <button class="player-count-card" data-player-count="6" type="button"><strong>06</strong><span>FULL BAKERY</span><small>Maximum crumbs</small></button>
+          </div>
+          <div class="count-footer">
+            <span id="countSummary">04 PLAYERS / PARTY SHIFT</span>
+            <button class="primary-menu-button" id="continueToSelectionButton" type="button">
+              <span>CHOOSE HEROES</span><b>↗</b>
+            </button>
+          </div>
+        </section>
+
+        <section class="menu-screen select-screen" data-screen="select" hidden>
+          <div class="screen-topline">
+            <button class="back-menu-button" id="backCountButton" type="button">← PLAYERS</button>
+            <span>STEP 02 — PICK YOUR HEROES</span>
+            <span class="screen-step">02 <i></i> 02</span>
+          </div>
+          <div class="select-heading">
+            <div>
+              <span class="menu-kicker"><i></i> 18 UNIQUE BWED HEROES</span>
+              <h2>Pick your<br /><em>champion.</em></h2>
+            </div>
+            <p>Every Bwed has a signature power you can trigger once per game. Toggle any slot between Human and CPU Bot.</p>
+          </div>
+          <div class="selection-layout">
+            <div class="slot-column">
+              <div class="slot-column-header">
+                <span class="section-label">PARTY LINEUP</span>
+                <button class="random-party-button" id="randomizePartyButton" type="button">RANDOMIZE</button>
+              </div>
+              <div class="slot-tabs" id="playerSlots"></div>
+              <div class="selection-note">
+                <span>PRO TIP</span>
+                <p>Click <b>HUMAN / BOT</b> on any slot to customize how many real players and AI rivals join the board.</p>
+              </div>
+            </div>
+            <div class="selection-stage">
+              <div class="selection-preview" id="selectionPreview">
+                <div class="preview-grid"></div>
+                <span class="preview-tag">3D TURNTABLE</span>
+              </div>
+              <div class="selected-character">
+                <div class="selected-header-row">
+                  <span class="selected-role" id="selectedPawnRole">THE GOLDEN ONE</span>
+                  <button class="bot-toggle-pill" id="selectedSlotBotToggle" type="button">HUMAN</button>
+                </div>
+                <h3 id="selectedPawnName">Glow Toast</h3>
+                <p id="selectedPawnDescription">Optimistic, shiny and suspiciously good at landing on bonus tiles.</p>
+                <div class="selected-talent">
+                  <span>SIGNATURE POWER · 1× PER GAME</span>
+                  <strong id="selectedPawnTalent">GOLDEN RISE</strong>
+                  <p id="selectedPawnTalentDescription">Add +2 to your next dice roll.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pawn-catalog" id="pawnCatalog"></div>
+          <div class="select-footer">
+            <span id="selectionProgress">1 HUMAN · 3 BOTS · READY TO BAKE</span>
+            <button class="primary-menu-button start-party-button" id="startGameButton" type="button">
+              <span>ENTER THE BOARD</span><b>↗</b>
+            </button>
+          </div>
+        </section>
+      </main>
+      <footer class="front-footer">
+        <span>CRUMB RUN · BWED PARTY GRAND PRIX</span>
+        <span>THE SLICE IS ALIVE</span>
+      </footer>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal-backdrop" id="settingsModal" hidden>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <button class="modal-close" data-close-modal="settingsModal" type="button" aria-label="Close settings">×</button>
+        <span class="menu-kicker"><i></i> BAKERY CONTROL ROOM</span>
+        <h2 id="settingsTitle">Settings<span>.</span></h2>
+        <div class="settings-list">
+          <label class="setting-row"><span><strong>Music</strong><small>Warm bakery synth groove</small></span><input id="musicRange" type="range" min="0" max="100" value="55" /><output id="musicValue">55</output></label>
+          <label class="setting-row"><span><strong>Effects</strong><small>Dice, coins &amp; BwedWare SFX</small></span><input id="sfxRange" type="range" min="0" max="100" value="80" /><output id="sfxValue">80</output></label>
+          <label class="setting-row"><span><strong>Camera sensitivity</strong><small>Orbit &amp; pan speed</small></span><input id="cameraRange" type="range" min="30" max="150" value="100" /><output id="cameraValue">100</output></label>
+          <label class="setting-row toggle-row"><span><strong>Reduced motion</strong><small>Calmer board animations</small></span><input id="motionToggle" type="checkbox" /><i class="toggle-ui"></i></label>
+        </div>
+        <button class="secondary-menu-button modal-done" data-close-modal="settingsModal" type="button"><span>SAVE &amp; CLOSE</span><b>&rarr;</b></button>
+      </section>
+    </div>
+
+    <!-- HELP MODAL -->
+    <div class="modal-backdrop" id="helpModal" hidden>
+      <section class="modal-card help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+        <button class="modal-close" data-close-modal="helpModal" type="button" aria-label="Close help">&times;</button>
+        <span class="menu-kicker"><i></i> THE BAKERY RULEBOOK</span>
+        <h2 id="helpTitle">How to play<span>.</span></h2>
+        <div class="rule-cards">
+          <article><b>01</b><h3>Roll &amp; Roam</h3><p>Roll the 3D dice block, trigger cosmic portals, and stop by the Bakery Boutique for items.</p></article>
+          <article><b>02</b><h3>Golden Loaves</h3><p>Reach the glowing Golden Crumb trophy on the board to score Golden Loaves (★) and coins!</p></article>
+          <article><b>03</b><h3>BwedWare!</h3><p>After every round (or on VS arcade tiles), face off in 5-second micro-games for bonus loot!</p></article>
+          <article><b>04</b><h3>Final Feast</h3><p>End-of-game Bonus Stars can flip the podium. Most ★ Golden Loaves wins the crown!</p></article>
+        </div>
+        <button class="secondary-menu-button modal-done" data-close-modal="helpModal" type="button"><span>LET'S GO!</span><b>&rarr;</b></button>
+      </section>
+    </div>
+
+    <!-- BAKERY SHOP MODAL -->
+    <div class="modal-backdrop" id="shopModal" hidden>
+      <section class="modal-card shop-card" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+        <span class="menu-kicker"><i></i> BWED BAKERY BOUTIQUE</span>
+        <h2 id="shopTitle">Fresh <em>Power-Ups!</em></h2>
+        <p class="shop-subtitle" id="shopSubtitle">Spend your coins on a crispy advantage for this turn or next.</p>
+        <div class="shop-grid" id="shopGrid"></div>
+        <button class="secondary-menu-button modal-done" id="skipShopButton" type="button"><span>SAVE MY COINS</span><b>&rarr;</b></button>
+      </section>
+    </div>
+
+    <!-- WARIOWARE MICRO-GAME MODAL ("BWED WARE!") -->
+    <div class="modal-backdrop minigame-backdrop" id="minigameModal" hidden>
+      <section class="minigame-card" role="dialog" aria-modal="true" aria-label="BwedWare Micro-game">
+        <header class="minigame-header">
+          <div class="minigame-badge"><span>BWEDWARE SHOWDOWN</span><strong id="minigameCategory">ALL PLAY</strong></div>
+          <div class="minigame-timer-wrap">
+            <span id="minigameTimerText">5.0s</span>
+            <div class="minigame-timer-track"><div class="minigame-timer-fill" id="minigameTimerFill"></div></div>
+          </div>
+          <button class="minigame-close" id="closeMinigameButton" type="button" hidden aria-label="Exit Arcade">&times;</button>
+        </header>
+
+        <div class="minigame-stage" id="minigameStage">
+          <div class="minigame-prompt-banner" id="minigamePromptBanner">
+            <span class="prompt-sub" id="minigameTitle">TOAST TIMING</span>
+            <strong class="prompt-main" id="minigameDirective">POP IT!</strong>
+          </div>
+          <canvas id="minigameCanvas" width="760" height="420"></canvas>
+          <div class="minigame-results-overlay" id="minigameResults" hidden>
+            <span class="menu-kicker"><i></i> MICRO-GAME STANDINGS</span>
+            <h3 id="minigameResultHeading">CRISPY VICTORY!</h3>
+            <div class="minigame-podium" id="minigamePodium"></div>
+            <div class="minigame-result-actions">
+              <button class="primary-menu-button" id="minigameContinueButton" type="button"><span>CONTINUE PARTY</span><b>&rarr;</b></button>
+              <button class="secondary-menu-button" id="minigameNextArcadeButton" type="button" hidden><span>NEXT MICRO-GAME</span><b>&rarr;</b></button>
+            </div>
+          </div>
+        </div>
+
+        <footer class="minigame-footer">
+          <span id="minigameControlsHint">CONTROLS: CLICK / TAP OR SPACEBAR</span>
+          <span id="minigameLiveScore">SCORE: 0</span>
+        </footer>
+      </section>
+    </div>
+
+    <!-- FRUIT TART WHEEL OF FORTUNE MODAL -->
+    <div class="modal-backdrop wheel-backdrop" id="wheelModal" hidden>
+      <section class="modal-card wheel-card" role="dialog" aria-modal="true" aria-labelledby="wheelTitle">
+        <span class="menu-kicker"><i></i> MYSTERY PORTAL &amp; EVENT</span>
+        <h2 id="wheelTitle">Fruit Tart <em>Roulette!</em></h2>
+        <p class="wheel-subtitle" id="wheelSubtitle">Spin the golden fruit-tart wheel to claim your pastry fortune.</p>
+        <div class="wheel-stage">
+          <div class="wheel-pointer">▼</div>
+          <canvas id="wheelCanvas" width="340" height="340"></canvas>
+        </div>
+        <div class="wheel-result-banner" id="wheelResultBanner" hidden>
+          <strong id="wheelResultTitle">JACKPOT!</strong>
+          <span id="wheelResultDesc">+1 ★ Golden Loaf</span>
+        </div>
+        <div class="wheel-actions">
+          <button class="primary-menu-button wheel-spin-button" id="wheelSpinButton" type="button">
+            <span>SPIN THE WHEEL</span><b>&rarr;</b>
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- FINALE MODAL -->
+    <div class="modal-backdrop" id="finaleModal" hidden>
+      <section class="modal-card finale-card" role="dialog" aria-modal="true" aria-labelledby="finaleTitle">
+        <span class="menu-kicker"><i></i> GRAND PRIX RESULTS</span>
+        <h2 id="finaleTitle">Final<br /><em>feast.</em></h2>
+        <p class="finale-winner-label">CHAMPION OF THE BAKERY</p>
+        <strong class="finale-winner" id="winnerName">Glow Toast</strong>
+        <p id="winnerSummary">The bakery crown belongs to this slice.</p>
+        <div class="bonus-stars-box" id="bonusStarsBox"></div>
+        <div class="finale-standings" id="finaleStandings"></div>
+        <button class="primary-menu-button modal-done" id="playAgainButton" type="button"><span>PLAY ANOTHER PARTY</span><b>↗</b></button>
+      </section>
+    </div>
+
+    <!-- MAIN 3D BOARD GAME SHELL -->
+    <div class="game-shell" id="gameShell">
+      <header class="game-header">
+        <div class="header-left-group">
+          <a class="back-link" href="./index.html">&larr; BWED HUB</a>
+          <button class="back-link menu-return-button" id="returnMenuButton" type="button">MENU</button>
+        </div>
+        <div class="game-title">
+          <span class="eyebrow"><i></i> BWEDVILLE 3D TOWN EDITION</span>
+          <h1>CRUMB <em>RUN</em></h1>
+        </div>
+        <div class="game-header-actions">
+          <button class="quick-minigame-button" id="triggerMinigameButton" type="button">PLAY BWEDWARE</button>
+          <div class="header-chip bank-vault-chip" id="bankVaultChip">VAULT: 6c</div>
+          <div class="header-chip" id="goldDistanceChip">★ JACKPOT: 9 SPACES</div>
+          <button class="game-settings-button" id="gameSettingsButton" type="button" aria-label="Open settings">OPTS</button>
+        </div>
+      </header>
+
+      <main class="game-layout">
+        <aside class="game-panel left-panel">
+          <div class="panel-header-row">
+            <span class="panel-kicker"><i></i> LIVE STANDINGS</span>
+            <span class="panel-subpill" id="turnOrderPill">TURN 1/4</span>
+          </div>
+
+          <div class="turn-card" id="activeTurnCard">
+            <div class="turn-avatar" id="turnAvatar"></div>
+            <div class="turn-card-copy">
+              <span class="muted-label" id="turnRoleLabel">ACTIVE BAKER</span>
+              <strong id="turnLabel">GLOW TOAST</strong>
+              <small class="turn-location-label" id="turnLocationLabel">#01 Grand Oven Hall</small>
+            </div>
+          </div>
+
+          <div class="player-list" id="playerList" aria-label="Players"></div>
+
+          <div class="talent-card">
+            <div class="talent-card-top">
+              <span class="muted-label">SIGNATURE POWER</span>
+              <small id="talentStatus">READY · 1× PER PARTY</small>
+            </div>
+            <strong id="talentLabel">GOLDEN RISE</strong>
+            <button class="talent-button" id="talentButton" type="button"><span>ACTIVATE HERO POWER</span><b>&rarr;</b></button>
+          </div>
+
+          <button class="roll-button" id="rollButton" type="button">
+            <div class="roll-button-copy">
+              <span>ROLL THE DICE</span>
+              <small>PRESS SPACE OR CLICK</small>
+            </div>
+            <b>ROLL</b>
+          </button>
+          <button class="reset-button" id="resetButton" type="button">↻ Restart match</button>
+        </aside>
+
+        <section class="viewport-shell" aria-label="3D Crumb Run board">
+          <div id="viewport" class="viewport"></div>
+
+          <div class="viewport-actions">
+            <button id="autoCamButton" class="is-toggled" type="button">Cam: AUTO</button>
+            <button id="cutawayButton" class="is-toggled" type="button">Roofs: SMART</button>
+            <button id="focusCurrentButton" type="button">Focus Hero</button>
+            <button id="topViewButton" type="button">Map View</button>
+            <button id="resetCameraButton" type="button">Overview</button>
+          </div>
+
+          <div class="dice-result" id="diceResult" aria-live="polite">
+            <span class="dice-label">DICE ROLL</span>
+            <strong>—</strong>
+          </div>
+
+          <!-- Interactive 3D Building / Space Inspector -->
+          <div class="space-inspector" id="spaceInspector" aria-live="polite">
+            <span class="inspector-badge" id="inspectorBadge">#01 · START</span>
+            <div class="inspector-copy">
+              <strong id="inspectorTitle">Grand Oven City Hall</strong>
+              <span id="inspectorDesc">Pass for +3c · Land here for +1★ Loaf &amp; +3c!</span>
+            </div>
+          </div>
+
+          <div class="viewport-hint">
+            <span>DRAG</span> orbit <i></i> <span>HOVER BUILDING</span> inspect <i></i> <span>CLICK HERO</span> focus <i></i> <span>WHEEL</span> zoom
+          </div>
+
+          <div class="turn-banner" id="turnBanner" aria-live="polite"></div>
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </section>
+
+        <aside class="game-panel right-panel">
+          <div class="round-progress-card">
+            <div class="round-card">
+              <div>
+                <span class="muted-label">TOWN ROUND</span>
+                <span id="roundLabelDetail">OF 08 / FIRST LOAF</span>
+              </div>
+              <strong id="roundLabel">01</strong>
+            </div>
+            <div class="round-progress-track">
+              <div class="round-progress-fill" id="roundProgressFill" style="width: 12.5%"></div>
+            </div>
+          </div>
+
+          <div class="twist-card">
+            <span class="muted-label">ACTIVE TOWN MODIFIER</span>
+            <strong id="roundTwist">DOUBLE BAKE</strong>
+            <span id="roundTwistDetail">Patisserie buildings pay double (+4c) this round!</span>
+          </div>
+
+          <div class="panel-header-row">
+            <span class="panel-kicker"><i></i> TOWN BUILDINGS</span>
+            <span class="panel-subpill">26 LOTS</span>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><i class="legend-dot coin"></i><div><strong>Golden Patisserie</strong><small>+2c (+4c on Double Bake)</small></div></div>
+            <div class="legend-item"><i class="legend-dot shop"></i><div><strong>Galeries Boutique</strong><small>Buy power-ups &amp; ★ Loaves</small></div></div>
+            <div class="legend-item"><i class="legend-dot event"></i><div><strong>Astral Observatory</strong><small>Cosmic Portal mystery</small></div></div>
+            <div class="legend-item"><i class="legend-dot duel"></i><div><strong>BwedWare Arcade</strong><small>Instant 5s micro-game</small></div></div>
+            <div class="legend-item"><i class="legend-dot risk"></i><div><strong>Inferno Furnace</strong><small>+1★ Jackpot or -2c burn</small></div></div>
+            <div class="legend-item"><i class="legend-dot golden"></i><div><strong>★ Golden Loaf Trophy</strong><small>Capture on the street!</small></div></div>
+          </div>
+
+          <div class="panel-header-row">
+            <span class="panel-kicker"><i></i> LIVE FEED</span>
+          </div>
+          <div class="event-log" id="eventLog" aria-live="polite"></div>
+        </aside>
+      </main>
+
+      <footer class="game-footer">
+        <span>CRUMB RUN · BWEDVILLE 3D PARTY &amp; BWEDWARE</span>
+        <span>THE SLICE IS ALIVE</span>
+      </footer>
+    </div>
+  </body>
+</html>
