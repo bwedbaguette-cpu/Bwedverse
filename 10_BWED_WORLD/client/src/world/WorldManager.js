@@ -32,10 +32,77 @@ export class WorldManager {
     this.animatedProps = [];
     this.groundMesh = null;
 
+    // Zones interactives avec le joueur (Jalon 3)
+    this.interactionZones = [
+      {
+        id: 'bakery',
+        title: 'La Fournée Dorée (Boulangerie)',
+        actionLabel: 'Entrer dans la Boulangerie',
+        x: -27,
+        z: -2,
+        radius: 7.5,
+        targetOverlay: 'bakeryModal'
+      },
+      {
+        id: 'cafe',
+        title: 'Le Café Le Toast Joyeux',
+        actionLabel: 'S installer au Salon Communautaire',
+        x: 27,
+        z: -2,
+        radius: 7.5,
+        targetOverlay: 'cafeModal'
+      },
+      {
+        id: 'mill',
+        title: 'Le Moulin du Levain',
+        actionLabel: 'Consulter l Histoire & Roadmap',
+        x: 24,
+        z: -24,
+        radius: 7.0,
+        targetOverlay: 'millModal'
+      },
+      {
+        id: 'train_station',
+        title: 'La Gare du Train Chocolat',
+        actionLabel: 'Consulter les Lignes du Train',
+        x: -18,
+        z: 84,
+        radius: 8.0,
+        targetOverlay: 'trainModal'
+      },
+      {
+        id: 'portal',
+        title: 'Portail des Mini-Jeux du Bwedverse',
+        actionLabel: 'Entrer dans le Portail Mini-Jeux',
+        x: 0,
+        z: 118,
+        radius: 6.5,
+        targetOverlay: 'minigameModal'
+      }
+    ];
+
     this.initAtmosphere();
     this.buildZone1VillageCenter();
     this.buildTransitionPassage();
     this.buildZone2CacaoForest();
+  }
+
+  getNearestInteraction(playerPos) {
+    if (!playerPos) return null;
+    let closest = null;
+    let minDistance = Infinity;
+
+    for (let i = 0; i < this.interactionZones.length; i++) {
+      const zone = this.interactionZones[i];
+      const dx = playerPos.x - zone.x;
+      const dz = playerPos.z - zone.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist <= zone.radius && dist < minDistance) {
+        minDistance = dist;
+        closest = zone;
+      }
+    }
+    return closest;
   }
 
   /* --------------------------------------------------------------------------
@@ -59,11 +126,11 @@ export class WorldManager {
     this.sunLight.shadow.mapSize.width = 2048;
     this.sunLight.shadow.mapSize.height = 2048;
     this.sunLight.shadow.camera.near = 1;
-    this.sunLight.shadow.camera.far = 160;
-    this.sunLight.shadow.camera.left = -55;
-    this.sunLight.shadow.camera.right = 55;
-    this.sunLight.shadow.camera.top = 55;
-    this.sunLight.shadow.camera.bottom = -55;
+    this.sunLight.shadow.camera.far = 240;
+    this.sunLight.shadow.camera.left = -80;
+    this.sunLight.shadow.camera.right = 80;
+    this.sunLight.shadow.camera.top = 80;
+    this.sunLight.shadow.camera.bottom = -80;
     this.sunLight.shadow.bias = -0.0006;
     this.worldGroup.add(this.sunLight);
 

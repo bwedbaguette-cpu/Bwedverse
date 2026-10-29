@@ -162,13 +162,13 @@ export const CONFIG = {
       kicker: 'QUARTIER CENTRAL',
       skyColor: 0xfff4e6,
       fogColor: 0xf5dfc6,
-      fogNear: 35,
-      fogFar: 110,
+      fogNear: 60,
+      fogFar: 220,
       ambientColor: 0xffecd1,
       ambientIntensity: 1.45,
       sunColor: 0xffeed6,
       sunIntensity: 2.3,
-      sunPosition: [28, 42, 24]
+      sunPosition: [40, 65, 35]
     },
     'cacao-forest': {
       id: 'cacao-forest',
@@ -176,13 +176,13 @@ export const CONFIG = {
       kicker: 'QUARTIER GOURMAND & NATURE',
       skyColor: 0x1d2e24,
       fogColor: 0x18241c,
-      fogNear: 25,
-      fogFar: 90,
+      fogNear: 50,
+      fogFar: 190,
       ambientColor: 0x88c278,
       ambientIntensity: 1.3,
       sunColor: 0x9be882,
       sunIntensity: 1.9,
-      sunPosition: [-24, 38, -32]
+      sunPosition: [-35, 55, -45]
     }
   }
 };

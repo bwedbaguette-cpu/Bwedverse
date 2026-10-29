@@ -26,7 +26,7 @@ export class CameraController {
   initZoomListener() {
     window.addEventListener('wheel', (e) => {
       // Zoom fluide avec la molette
-      const zoomDelta = e.deltaY * 0.015;
+      const zoomDelta = e.deltaY * 0.025;
       this.distance = THREE.MathUtils.clamp(
         this.distance + zoomDelta,
         CAMERA.MIN_DISTANCE,
@@ -34,6 +34,16 @@ export class CameraController {
       );
       this.updateOffset();
     }, { passive: true });
+  }
+
+  zoomIn(step = 5.0) {
+    this.distance = THREE.MathUtils.clamp(this.distance - step, CAMERA.MIN_DISTANCE, CAMERA.MAX_DISTANCE);
+    this.updateOffset();
+  }
+
+  zoomOut(step = 5.0) {
+    this.distance = THREE.MathUtils.clamp(this.distance + step, CAMERA.MIN_DISTANCE, CAMERA.MAX_DISTANCE);
+    this.updateOffset();
   }
 
   updateOffset() {

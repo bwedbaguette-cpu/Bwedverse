@@ -365,11 +365,507 @@
   color: var(--gold-main);
 }
 
+/* Bulle d'interaction avec le décor (Jalon 3) */
+.interaction-prompt {
+  align-self: center;
+  background: rgba(20, 10, 5, 0.92);
+  border: 1.5px solid var(--gold-main);
+  border-radius: 999px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(255, 209, 90, 0.35);
+  pointer-events: auto;
+  cursor: pointer;
+  animation: promptPulse 1.8s infinite ease-in-out;
+  margin-bottom: 12px;
+}
+
+@keyframes promptPulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 4px 18px rgba(255, 209, 90, 0.3);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(255, 209, 90, 0.55);
+  }
+}
+
+.interact-key {
+  background: var(--gold-main);
+  color: #1a0802;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+}
+
+.interact-text {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+/* Boutons de zoom interactifs */
+.hud-zoom-controls {
+  position: fixed;
+  right: 20px;
+  bottom: 74px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.zoom-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid var(--border-gold);
+  color: var(--gold-main);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+}
+
+.zoom-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--gold-main);
+  transform: scale(1.1);
+}
+
+/* Overlays des Bâtiments (Jalon 3) */
+.section-overlay-card {
+  max-width: 620px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.overlay-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--gold-main);
+  letter-spacing: 0.12em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* Grille des Pâtisseries (Boulangerie) */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.product-item {
+  background: rgba(18, 8, 4, 0.7);
+  border: 1px solid rgba(255, 209, 90, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.product-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: rgba(255, 209, 90, 0.15);
+  border: 1px solid rgba(255, 209, 90, 0.4);
+  color: var(--gold-main);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.product-name {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--cream);
+  padding-right: 60px;
+}
+
+.product-desc {
+  font-size: 11.5px;
+  color: var(--cream-soft);
+  line-height: 1.35;
+}
+
+.product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 209, 90, 0.18);
+}
+
+.product-price {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-main);
+}
+
+.modal-btn.tiny {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+/* Cartes Communautaires (Café) */
+.community-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.community-card {
+  background: rgba(18, 8, 4, 0.7);
+  border: 1px solid rgba(255, 209, 90, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.community-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-main);
+}
+
+.community-desc {
+  font-size: 12px;
+  color: var(--cream-soft);
+  line-height: 1.4;
+}
+
+.community-tag {
+  align-self: flex-start;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+  border-radius: 6px;
+}
+
+/* Roadmap (Moulin) */
+.roadmap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.roadmap-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(18, 8, 4, 0.6);
+  border: 1px solid rgba(255, 209, 90, 0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.roadmap-step.done {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.roadmap-step.current {
+  border-color: var(--gold-main);
+  background: rgba(255, 209, 90, 0.08);
+}
+
+.roadmap-bullet {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2a150b;
+  border: 1px solid var(--border-gold);
+  color: var(--gold-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.roadmap-step.done .roadmap-bullet {
+  background: #14532d;
+  border-color: #22c55e;
+  color: #86efac;
+}
+
+.roadmap-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.roadmap-content strong {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13.5px;
+  color: var(--cream);
+}
+
+.roadmap-content span {
+  font-size: 11.5px;
+  color: var(--cream-soft);
+  line-height: 1.35;
+}
+
+/* Lignes de Train (Gare) */
+.train-lines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.train-line-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(18, 8, 4, 0.7);
+  border: 1px solid rgba(255, 209, 90, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.line-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #e59b24;
+  color: #1a0802;
+  flex-shrink: 0;
+}
+
+.line-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.line-info strong {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13.5px;
+  color: var(--cream);
+}
+
+.line-info span {
+  font-size: 11.5px;
+  color: var(--cream-soft);
+}
+
+.line-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.line-status.open {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.line-status.wait {
+  background: rgba(150, 100, 50, 0.2);
+  color: var(--cream-soft);
+  border: 1px solid rgba(255, 209, 90, 0.2);
+}
+
+/* Modale du Portail Mini-Jeux */
+.minigame-portal-card {
+  max-width: 680px;
+  max-height: 90vh;
+  padding: 20px 22px;
+}
+
+.minigames-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.minigame-choice-card {
+  background: rgba(18, 8, 4, 0.85);
+  border: 1.5px solid rgba(255, 209, 90, 0.3);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  text-align: left;
+}
+
+.minigame-choice-card.active-game {
+  border-color: var(--gold-main);
+  box-shadow: 0 0 16px rgba(255, 209, 90, 0.2);
+}
+
+.game-choice-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 209, 90, 0.15);
+  border: 1px solid var(--gold-main);
+  color: var(--gold-main);
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.game-choice-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 15px;
+  color: var(--cream);
+  padding-right: 70px;
+}
+
+.game-choice-desc {
+  font-size: 12px;
+  color: var(--cream-soft);
+  line-height: 1.35;
+}
+
+.game-choice-stats {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  color: var(--gold-main);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 6px 0;
+}
+
+/* Zone de Canvas du Mini-Jeu Actif */
+.active-game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.active-game-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-main);
+}
+
+.active-game-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.canvas-wrap {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--border-gold);
+  background: #110703;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.game-controls-help {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  color: var(--cream-soft);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Résultat de Fin de Partie */
+.result-box {
+  background: rgba(18, 8, 4, 0.95);
+  border: 2px solid var(--gold-main);
+  border-radius: 16px;
+  padding: 26px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.result-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--gold-main);
+  letter-spacing: 0.15em;
+}
+
+.result-score {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 38px;
+  font-weight: 700;
+  color: #fff9f0;
+  text-shadow: 0 0 16px rgba(255, 209, 90, 0.6);
+}
+
+.result-summary {
+  font-size: 13.5px;
+  color: var(--cream-soft);
+}
+
+.result-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
 @media (max-width: 600px) {
   .hud-layer {
     padding: 12px;
   }
-  .wardrobe-card {
+  .wardrobe-card,
+  .section-overlay-card,
+  .minigame-portal-card {
     max-height: 92vh;
     padding: 14px 14px;
   }
@@ -377,6 +873,10 @@
     grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
     gap: 8px;
     max-height: 64vh;
+  }
+  .products-grid,
+  .minigames-selection-grid {
+    grid-template-columns: 1fr;
   }
   .pawn-card-thumb {
     width: 46px;
@@ -394,5 +894,13 @@
   }
   .controls-hint-pill {
     font-size: 9px;
+  }
+  .interaction-prompt {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .hud-zoom-controls {
+    right: 12px;
+    bottom: 65px;
   }
 }

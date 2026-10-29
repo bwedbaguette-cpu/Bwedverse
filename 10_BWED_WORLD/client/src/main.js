@@ -11,10 +11,12 @@ import { VirtualJoystick } from './ui/VirtualJoystick.js';
 import { NETWORK } from '../../shared/constants.js';
 
 /* ==========================================================================
-   POINT D'ENTRÉE PRINCIPAL — BWED WORLD (JALON 2)
+   POINT D'ENTRÉE PRINCIPAL — BWED WORLD (JALON 3)
    - 18 Pions jouables avec sélection instantanée
    - 2 Biomes connectés par le Pont du Beurre d'Amande
-   - Fondu progressif d'ambiance et synchronisation multi-joueurs à 15 Hz
+   - Caméra panoramique large et dé-zoomée (distance 46m, contrôles +/- et molette)
+   - Portail des Mini-Jeux (Salle d'arcade dédiée Bwed Catch en lazy-load)
+   - Overlays de bâtiments interactifs (Boulangerie, Café, Moulin, Gare)
    ========================================================================== */
 
 class BwedWorldApp {
@@ -50,7 +52,7 @@ class BwedWorldApp {
     const canvasContainer = document.getElementById('canvasContainer');
     this.engine = new Engine(canvasContainer);
 
-    // 3. Physique & Monde multi-biomes
+    // 3. Physique & Monde multi-biomes avec détection de quartier
     this.physics = new PhysicsWorld();
     this.world = new WorldManager(this.engine.scene, this.physics, ({ kicker, name }) => {
       this.hud?.setDistrict(kicker, name);
@@ -75,7 +77,7 @@ class BwedWorldApp {
     this.localPlayer.setPosition(Math.cos(spawnAngle) * spawnDist, 0, Math.sin(spawnAngle) * spawnDist);
     this.cameraController.setInstantTarget(this.localPlayer.position);
 
-    // 8. Interface utilisateur (HUD) & Garde-robe
+    // 8. Interface utilisateur (HUD), Garde-robe & Contrôles
     this.hud = new HUD({
       playerName,
       currentAvatarId: avatarId,
@@ -88,6 +90,12 @@ class BwedWorldApp {
         this.localPlayer.changeAvatar(newAvatarId);
         localStorage.setItem('bwed_world_avatar', newAvatarId);
         this.network?.setAvatar(newAvatarId);
+      },
+      onZoomIn: () => {
+        this.cameraController.zoomIn(6.0);
+      },
+      onZoomOut: () => {
+        this.cameraController.zoomOut(6.0);
       }
     });
 
@@ -167,12 +175,22 @@ class BwedWorldApp {
     this.cameraController.setTarget(this.localPlayer.position);
     this.cameraController.update(delta);
 
-    // 4. Joueurs distants interpolés
+    // 4. Détection des zones interactives (bâtiments et portail)
+    const activeZone = this.world.getNearestInteraction(this.localPlayer.position);
+    if (activeZone) {
+      this.hud.showInteractionPrompt(activeZone.actionLabel, () => {
+        this.hud.openModal(activeZone.targetOverlay);
+      });
+    } else {
+      this.hud.hideInteractionPrompt();
+    }
+
+    // 5. Joueurs distants interpolés
     for (const remote of this.remotePlayers.values()) {
       remote.update(delta);
     }
 
-    // 5. Envoi réseau cadencé à 15 Hz
+    // 6. Envoi réseau cadencé à 15 Hz
     const now = performance.now();
     if (now - this.lastNetworkTick >= NETWORK.TICK_INTERVAL_MS) {
       this.lastNetworkTick = now;

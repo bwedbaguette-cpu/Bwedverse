@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CAMERA } from '../../../shared/constants.js';
 
 /* ==========================================================================
    MOTEUR DE RENDU 3D THREE.JS — BWED WORLD
@@ -26,11 +27,11 @@ export class Engine {
     // Scène
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xfff4e6);
-    this.scene.fog = new THREE.Fog(0xf5dfc6, 25, 85);
+    this.scene.fog = new THREE.Fog(0xf5dfc6, 55, 180);
 
-    // Caméra perspective
-    this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 200);
-    this.camera.position.set(12, 14, 12);
+    // Caméra perspective large panoramique
+    this.camera = new THREE.PerspectiveCamera(CAMERA.FOV, width / height, 0.5, 500);
+    this.camera.position.set(24, 30, 24);
     this.camera.lookAt(0, 0, 0);
 
     // Renderer WebGL
