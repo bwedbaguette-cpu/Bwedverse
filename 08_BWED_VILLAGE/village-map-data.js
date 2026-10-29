@@ -143,7 +143,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 25,
     sizeX: 3,
     sizeZ: 3,
-    model: '../07_3D_MODEL/buildings/monument-golden-bloom.glb',
+    model: './assets/buildings/monument-golden-bloom.glb',
     scale: 4.8, // Grand monument central
     rotationY: 0,
     interaction: {
@@ -160,7 +160,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 30,
     sizeX: 3,
     sizeZ: 2,
-    model: '../07_3D_MODEL/buildings/prop-golden-croissant.glb',
+    model: './assets/buildings/prop-golden-croissant.glb',
     scale: 4.2,
     rotationY: 0,
     interaction: {
@@ -181,7 +181,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 25,
     sizeX: 5,
     sizeZ: 4,
-    model: '../07_3D_MODEL/buildings/patisserie-coin.glb',
+    model: './assets/buildings/patisserie-coin.glb',
     scale: 6.2, // Grand bâtiment imposant à 2 étages
     rotationY: -Math.PI / 2,
     interaction: {
@@ -198,7 +198,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 18,
     sizeX: 5,
     sizeZ: 5,
-    model: '../07_3D_MODEL/buildings/honey-pot-tavern.glb',
+    model: './assets/buildings/honey-pot-tavern.glb',
     scale: 9.5, // Échelle ajustée pour correspondre au gabarit
     rotationY: Math.PI,
     interaction: {
@@ -215,7 +215,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 30,
     sizeX: 5,
     sizeZ: 5,
-    model: '../07_3D_MODEL/buildings/galeries-boutique.glb',
+    model: './assets/buildings/galeries-boutique.glb',
     scale: 6.0,
     rotationY: -Math.PI / 2,
     interaction: {
@@ -232,7 +232,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 25,
     sizeX: 4,
     sizeZ: 4,
-    model: '../07_3D_MODEL/buildings/jam-jar-apothecary.glb',
+    model: './assets/buildings/jam-jar-apothecary.glb',
     scale: 5.6,
     rotationY: 0,
     interaction: {
@@ -249,7 +249,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 23,
     sizeX: 2,
     sizeZ: 2,
-    model: '../07_3D_MODEL/buildings/npc-shopkeeper-toaster-bot.glb',
+    model: './assets/buildings/npc-shopkeeper-toaster-bot.glb',
     scale: 2.8,
     rotationY: Math.PI / 4,
     interaction: {
@@ -270,7 +270,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 25,
     sizeX: 5,
     sizeZ: 5,
-    model: '../07_3D_MODEL/buildings/milk-carton-apartments.glb',
+    model: './assets/buildings/milk-carton-apartments.glb',
     scale: 6.2,
     rotationY: Math.PI / 2,
     interaction: {
@@ -287,7 +287,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 18,
     sizeX: 4,
     sizeZ: 4,
-    model: '../07_3D_MODEL/buildings/shop-barber-chantilly.glb',
+    model: './assets/buildings/shop-barber-chantilly.glb',
     scale: 5.8,
     rotationY: Math.PI / 2,
     interaction: {
@@ -304,7 +304,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 30,
     sizeX: 5,
     sizeZ: 5,
-    model: '../07_3D_MODEL/buildings/teacup-gazebo-park.glb',
+    model: './assets/buildings/teacup-gazebo-park.glb',
     scale: 6.0,
     rotationY: 0,
     interaction: {
@@ -325,7 +325,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 41,
     sizeX: 6,
     sizeZ: 6,
-    model: '../07_3D_MODEL/buildings/arcade-duel.glb',
+    model: './assets/buildings/arcade-duel.glb',
     scale: 6.8, // Borne géante majestueuse
     rotationY: -Math.PI / 4,
     interaction: {
@@ -342,7 +342,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 41,
     sizeX: 5,
     sizeZ: 5,
-    model: '../07_3D_MODEL/buildings/ride-bumper-cars-donut.glb',
+    model: './assets/buildings/ride-bumper-cars-donut.glb',
     scale: 5.6,
     rotationY: 0,
     interaction: {
@@ -359,7 +359,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 35,
     sizeX: 4,
     sizeZ: 4,
-    model: '../07_3D_MODEL/buildings/arcade-podium-tiered-cake.glb',
+    model: './assets/buildings/arcade-podium-tiered-cake.glb',
     scale: 5.0,
     rotationY: 0,
     interaction: {
@@ -380,7 +380,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 42,
     sizeX: 6,
     sizeZ: 6,
-    model: '../07_3D_MODEL/buildings/portal-observatory.glb',
+    model: './assets/buildings/portal-observatory.glb',
     scale: 7.8, // Tour majestueuse dominant la colline
     rotationY: Math.PI / 4,
     interaction: {
@@ -397,7 +397,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 38,
     sizeX: 4,
     sizeZ: 3,
-    model: '../07_3D_MODEL/buildings/terrain-stairs-wafer-ramp.glb',
+    model: './assets/buildings/terrain-stairs-wafer-ramp.glb',
     scale: 4.8,
     rotationY: Math.PI / 2,
     interaction: {
@@ -414,7 +414,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 45,
     sizeX: 2,
     sizeZ: 2,
-    model: '../07_3D_MODEL/buildings/bwed-dice.glb',
+    model: './assets/buildings/bwed-dice.glb',
     scale: 3.2,
     rotationY: Math.PI / 6,
     interaction: {
@@ -435,7 +435,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 10,
     sizeX: 3,
     sizeZ: 3,
-    model: '../07_3D_MODEL/buildings/board-cannon-sugar-blast.glb',
+    model: './assets/buildings/board-cannon-sugar-blast.glb',
     scale: 4.6,
     rotationY: 0,
     interaction: {
@@ -452,7 +452,7 @@ export const VILLAGE_BUILDINGS = [
     gridZ: 10,
     sizeX: 2,
     sizeZ: 2,
-    model: '../07_3D_MODEL/buildings/mascot-captain-bean.glb',
+    model: './assets/buildings/mascot-captain-bean.glb',
     scale: 2.8,
     rotationY: Math.PI,
     interaction: {

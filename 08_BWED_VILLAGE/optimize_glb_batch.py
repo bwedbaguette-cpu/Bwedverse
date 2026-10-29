@@ -3,7 +3,7 @@ import os
 import glob
 import time
 
-buildings_dir = os.path.abspath('07_3D_MODEL/buildings')
+buildings_dir = os.path.abspath('08_BWED_VILLAGE/assets/buildings')
 glb_files = sorted(glob.glob(os.path.join(buildings_dir, '*.glb')))
 
 print(f"=== STARTING BATCH OPTIMIZATION FOR {len(glb_files)} GLB FILES ===")
