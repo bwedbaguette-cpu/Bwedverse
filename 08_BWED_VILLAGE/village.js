@@ -130,7 +130,9 @@ let audioContext = null;
 const npcInstances = [];
 const chimneySmokeParticles = [];
 const canalFloatingBuoys = [];
+const fountainDroplets = [];
 let pollenPoints = null;
+let footstepDist = 0;
 
 // ============================================================================
 // INITIALIZATION
@@ -192,6 +194,7 @@ function init() {
     // 12. Build Living Village Systems (Chimney Smoke, Canal Buoys, Bunting, Pollen)
     buildChimneySmoke();
     buildChocolateCanalProps();
+    buildGrandPlaceFountain();
     buildStreetBunting();
     buildFloatingPollenParticles();
 
@@ -471,8 +474,7 @@ function buildInstancedStreetLamps() {
   VILLAGE_LANTERNS.forEach((pos, idx) => {
     const wx = pos.x * MAP_CONFIG.tileSize;
     const wz = pos.z * MAP_CONFIG.tileSize;
-    const tile = state.grid[pos.z] && state.grid[pos.z][pos.x];
-    const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
+    const wy = getTerrainElevation(wx, wz);
 
     // Pole matrix
     dummy.position.set(wx, wy + 1.5, wz);
@@ -494,29 +496,28 @@ function buildInstancedStreetLamps() {
   scene.add(cageInstanced);
 }
 
-// Instanced Brioche Trees (Only 4 Draw Calls for all 20 trees)
+// Instanced Brioche Trees (Only 4 Draw Calls for all 28 trees)
 function buildVillageVegetation() {
   const treePositions = [
-    // Grand-Place Corners
-    { x: 19, z: 19 }, { x: 31, z: 19 },
-    { x: 19, z: 31 }, { x: 31, z: 31 },
+    // Grand-Place Promenade Corners
+    { x: 20, z: 22 }, { x: 30, z: 22 },
+    { x: 20, z: 30 }, { x: 30, z: 30 },
     // Boulevard Central Nord-Sud
-    { x: 23, z: 15 }, { x: 27, z: 15 },
+    { x: 23, z: 16 }, { x: 27, z: 16 },
     { x: 23, z: 34 }, { x: 27, z: 34 },
-    { x: 23, z: 44 }, { x: 27, z: 44 },
-    // Boulevard Est-Ouest
-    { x: 14, z: 23 }, { x: 14, z: 27 },
-    { x: 36, z: 23 }, { x: 36, z: 27 },
-    // Parc Macarons (Faubourg Ouest)
-    { x: 8, z: 28 }, { x: 14, z: 28 },
-    { x: 8, z: 33 }, { x: 14, z: 33 },
-    // Quai du Canal
-    { x: 6, z: 12 }, { x: 16, z: 12 },
-    { x: 34, z: 12 }, { x: 44, z: 12 },
-    // Fête Foraine Perimeter
-    { x: 46, z: 36 }, { x: 46, z: 44 },
+    // Bois de Cannelle (Nord-Ouest)
+    { x: 6, z: 8 }, { x: 9, z: 8 },
+    { x: 6, z: 12 }, { x: 10, z: 12 },
+    { x: 7, z: 15 }, { x: 11, z: 15 },
+    // Quai du Canal Promenades (Nord & Sud)
+    { x: 12, z: 14 }, { x: 22, z: 14 }, { x: 38, z: 14 },
+    { x: 12, z: 22 }, { x: 22, z: 22 }, { x: 38, z: 22 },
+    // Verger d'Agrumes Est
+    { x: 41, z: 8 }, { x: 45, z: 9 }, { x: 43, z: 13 },
+    // Fête Foraine & Allée Arcade
+    { x: 37, z: 38 }, { x: 44, z: 38 }, { x: 44, z: 44 },
     // Colline de l'Observatoire
-    { x: 4, z: 45 }, { x: 12, z: 46 }
+    { x: 8, z: 38 }, { x: 12, z: 42 }, { x: 6, z: 44 }
   ];
 
   const totalTrees = treePositions.length;
@@ -1152,23 +1153,24 @@ function spawnNpcSpeechBubble(npc, text) {
   }
 
   const el = document.createElement('div');
-  el.className = 'speech-bubble npc-bubble';
-  el.innerHTML = `<strong>${npc.config.name}</strong><span>${text}</span>`;
+  el.className = 'npc-bubble';
+  el.innerHTML = `<span class="npc-bubble-name">${npc.config.name} — ${npc.config.role || 'Citoyen'}</span><span>${text}</span>`;
   container.appendChild(el);
   npc.bubbleEl = el;
 }
 
 // ============================================================================
-// LIVING VILLAGE SYSTEMS (SMOKE, CANAL BUOYS, BUNTING, POLLEN)
+// LIVING VILLAGE SYSTEMS (SMOKE, CANAL BUOYS, FOUNTAIN, BUNTING, POLLEN)
 // ============================================================================
 function buildChimneySmoke() {
   const chimneyOrigins = [
-    new THREE.Vector3(21 * 2, 7.8, 25 * 2), // Grande Pâtisserie
-    new THREE.Vector3(37 * 2, 7.2, 23 * 2), // Taverne du Miel
-    new THREE.Vector3(6 * 2, 5.0, 16 * 2),  // Cottage Fraisier
-    new THREE.Vector3(14 * 2, 5.0, 16 * 2), // Villa Matcha
-    new THREE.Vector3(8 * 2, 5.0, 32 * 2),  // Manoir Pain d'Épices
-    new THREE.Vector3(42 * 2, 5.0, 34 * 2)  // Comptoir Sucré
+    new THREE.Vector3(68, 7.5, 50), // Pâtisserie du Croissant d'Or
+    new THREE.Vector3(78, 6.8, 36), // Taverne du Miel
+    new THREE.Vector3(12, 4.8, 32), // Cottage Fraisier
+    new THREE.Vector3(28, 4.8, 32), // Villa Matcha
+    new THREE.Vector3(16, 4.8, 50), // Manoir Vanille
+    new THREE.Vector3(12, 4.8, 64), // Lodge Caramel
+    new THREE.Vector3(90, 6.5, 50)  // Apothicaire
   ];
 
   const puffGeo = new THREE.SphereGeometry(0.22, 7, 7);
@@ -1226,28 +1228,44 @@ function updateChimneySmoke(dt) {
 
 function buildChocolateCanalProps() {
   const buoyGeo = new THREE.CylinderGeometry(0.55, 0.65, 0.35, 12);
-  const buoyMatA = new THREE.MeshStandardMaterial({ color: 0xffe8d6, roughness: 0.3 }); // Chamallow vanille
-  const buoyMatB = new THREE.MeshStandardMaterial({ color: 0xff99c8, roughness: 0.3 }); // Guimauve fraise
+  const buoyMatA = new THREE.MeshStandardMaterial({ color: 0xffe8d6, roughness: 0.25 }); // Chamallow vanille
+  const buoyMatB = new THREE.MeshStandardMaterial({ color: 0xff99c8, roughness: 0.25 }); // Guimauve fraise
+  const raftGeo = new THREE.BoxGeometry(1.6, 0.15, 1.2);
+  const raftMat = new THREE.MeshStandardMaterial({ color: 0x8a4b23, roughness: 0.65 });
+  const lanternGeo = new THREE.SphereGeometry(0.2, 8, 8);
+  const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffe277 });
 
   const buoyLocations = [
-    { x: 5, z: 10, phase: 0 },
-    { x: 17, z: 10, phase: 1.2 },
-    { x: 31, z: 10, phase: 2.5 },
-    { x: 44, z: 10, phase: 4.1 }
+    { x: 10, z: 36.0, type: 'marshmallow', phase: 0 },
+    { x: 26, z: 36.0, type: 'raft', phase: 1.5 },
+    { x: 34, z: 36.0, type: 'marshmallow', phase: 2.8 },
+    { x: 64, z: 36.0, type: 'raft', phase: 3.9 },
+    { x: 74, z: 36.0, type: 'marshmallow', phase: 4.6 },
+    { x: 88, z: 36.0, type: 'marshmallow', phase: 5.4 }
   ];
 
   buoyLocations.forEach((loc, idx) => {
-    const mesh = new THREE.Mesh(buoyGeo, idx % 2 === 0 ? buoyMatA : buoyMatB);
-    const wx = loc.x * MAP_CONFIG.tileSize;
-    const wz = loc.z * MAP_CONFIG.tileSize;
-    mesh.position.set(wx, -0.4, wz);
+    let mesh;
+    if (loc.type === 'raft') {
+      mesh = new THREE.Group();
+      const raft = new THREE.Mesh(raftGeo, raftMat);
+      mesh.add(raft);
+      const lantern = new THREE.Mesh(lanternGeo, lanternMat);
+      lantern.position.y = 0.35;
+      mesh.add(lantern);
+    } else {
+      mesh = new THREE.Mesh(buoyGeo, idx % 2 === 0 ? buoyMatA : buoyMatB);
+    }
+
+    mesh.position.set(loc.x, -0.28, loc.z);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     scene.add(mesh);
 
     canalFloatingBuoys.push({
       mesh,
-      baseY: -0.4,
+      baseX: loc.x,
+      baseY: -0.28,
       phase: loc.phase
     });
   });
@@ -1257,9 +1275,97 @@ function updateCanalBuoys(dt) {
   const t = clock.elapsedTime;
   for (let i = 0; i < canalFloatingBuoys.length; i++) {
     const b = canalFloatingBuoys[i];
-    b.mesh.position.y = b.baseY + Math.sin(t * 2.2 + b.phase) * 0.05;
-    b.mesh.rotation.z = Math.sin(t * 1.8 + b.phase) * 0.08;
-    b.mesh.rotation.x = Math.cos(t * 1.5 + b.phase) * 0.06;
+    b.mesh.position.y = b.baseY + Math.sin(t * 2.0 + b.phase) * 0.04;
+    b.mesh.position.x = b.baseX + Math.sin(t * 0.4 + b.phase) * 0.4;
+    b.mesh.rotation.z = Math.sin(t * 1.6 + b.phase) * 0.07;
+    b.mesh.rotation.x = Math.cos(t * 1.4 + b.phase) * 0.05;
+  }
+}
+
+function buildGrandPlaceFountain() {
+  const fx = 50.0;
+  const fz = 52.0;
+  const fy = 0.05;
+
+  // Central Spout Pillar in Fountain Basin
+  const columnGeo = new THREE.CylinderGeometry(0.45, 0.65, 1.1, 12);
+  const columnMat = new THREE.MeshStandardMaterial({
+    color: 0xf5eee1,
+    roughness: 0.55
+  });
+  const columnMesh = new THREE.Mesh(columnGeo, columnMat);
+  columnMesh.position.set(fx, fy + 0.55, fz);
+  columnMesh.castShadow = true;
+  columnMesh.receiveShadow = true;
+  scene.add(columnMesh);
+
+  // Golden Butter Topper
+  const topperGeo = new THREE.SphereGeometry(0.35, 12, 10);
+  topperGeo.scale(1.2, 0.85, 0.9);
+  const topperMat = new THREE.MeshStandardMaterial({
+    color: 0xffd15a,
+    roughness: 0.25,
+    metalness: 0.35
+  });
+  const topperMesh = new THREE.Mesh(topperGeo, topperMat);
+  topperMesh.position.set(fx, fy + 1.25, fz);
+  scene.add(topperMesh);
+
+  // Warm Amber Glow at Fountain Center
+  const fountainLight = new THREE.PointLight(0xffea78, 1.8, 14, 2);
+  fountainLight.position.set(fx, fy + 1.6, fz);
+  scene.add(fountainLight);
+
+  // Animated Butter Droplets
+  const dropGeo = new THREE.SphereGeometry(0.08, 6, 5);
+  const dropMat = new THREE.MeshBasicMaterial({
+    color: 0xfff099,
+    transparent: true,
+    opacity: 0.85
+  });
+
+  for (let i = 0; i < 28; i++) {
+    const mesh = new THREE.Mesh(dropGeo, dropMat);
+    scene.add(mesh);
+    const angle = (i / 28) * Math.PI * 2 + Math.random() * 0.2;
+    const speed = 1.1 + Math.random() * 0.8;
+    fountainDroplets.push({
+      mesh,
+      origin: new THREE.Vector3(fx, fy + 1.35, fz),
+      angle,
+      speed,
+      vy: 2.2 + Math.random() * 0.8,
+      currentY: fy + 1.35,
+      dist: 0,
+      life: (i / 28) * 1.3,
+      maxLife: 1.3
+    });
+  }
+}
+
+function updateGrandPlaceFountain(dt) {
+  const fy = 0.05;
+  for (let i = 0; i < fountainDroplets.length; i++) {
+    const d = fountainDroplets[i];
+    d.life += dt;
+    if (d.life >= d.maxLife || d.currentY < fy + 0.28) {
+      d.life = 0;
+      d.currentY = d.origin.y;
+      d.vy = 2.2 + Math.random() * 0.8;
+      d.dist = 0;
+    }
+
+    d.vy -= 7.5 * dt; // Gravity
+    d.currentY += d.vy * dt;
+    d.dist += d.speed * dt;
+
+    const px = d.origin.x + Math.cos(d.angle) * d.dist;
+    const pz = d.origin.z + Math.sin(d.angle) * d.dist;
+
+    d.mesh.position.set(px, d.currentY, pz);
+    const progress = d.life / d.maxLife;
+    const sc = Math.max(0.4, 1.0 - progress * 0.5);
+    d.mesh.scale.set(sc, sc, sc);
   }
 }
 
@@ -1812,13 +1918,19 @@ function animate(timestamp) {
     const s = 1 + Math.sin(clock.elapsedTime * 6) * 0.04;
     tileCursorMesh.scale.set(s, s, 1);
   }
+  if (targetMarkerMesh && targetMarkerMesh.visible) {
+    targetMarkerMesh.rotation.z += dt * 2.8;
+    const s = 1.0 + Math.sin(clock.elapsedTime * 8) * 0.12;
+    targetMarkerMesh.scale.set(s, s, 1);
+  }
 
   // 8. Liquid Chocolate Canal Shimmer Animation
   if (chocoMaterial) {
     chocoMaterial.roughness = 0.22 + Math.sin(clock.elapsedTime * 1.8) * 0.08;
   }
 
-  // 9. Update Living Village Systems (NPCs, Chimney Smoke, Canal Buoys, Pollen)
+  // 9. Update Living Village Systems (Fountain, NPCs, Chimney Smoke, Canal Buoys, Pollen)
+  updateGrandPlaceFountain(dt);
   updateVillageNPCs(dt);
   updateChimneySmoke(dt);
   updateCanalBuoys(dt);
@@ -1929,6 +2041,17 @@ function updateMovement(dt) {
     const shadowScale = Math.max(0.45, 1.0 - jumpOffset * 0.24);
     playerBlobShadow.scale.set(shadowScale, shadowScale, shadowScale);
     playerBlobShadow.material.opacity = Math.max(0.18, 0.65 - jumpOffset * 0.16);
+  }
+
+  // Soft rhythmic footstep sound when walking on ground
+  if (p.isMoving && p.isGrounded) {
+    footstepDist += p.speed * dt;
+    if (footstepDist >= 2.6) {
+      footstepDist = 0;
+      playSfx('step');
+    }
+  } else {
+    footstepDist = 0;
   }
 }
 
@@ -2193,6 +2316,23 @@ function playSfx(type) {
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
     osc.start(now);
     osc.stop(now + 0.05);
+  } else if (type === 'step') {
+    osc.type = 'triangle';
+    const f = 140 + Math.random() * 30;
+    osc.frequency.setValueAtTime(f, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.035);
+    gain.gain.setValueAtTime(vol * 0.16, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+    osc.start(now);
+    osc.stop(now + 0.035);
+  } else if (type === 'splash') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(120, now + 0.09);
+    gain.gain.setValueAtTime(vol * 0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+    osc.start(now);
+    osc.stop(now + 0.09);
   }
 }
 
