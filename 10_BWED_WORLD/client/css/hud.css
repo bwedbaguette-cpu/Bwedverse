@@ -859,13 +859,224 @@
   margin-top: 8px;
 }
 
+/* Mini-Map & Boussole Radiale */
+.hud-minimap-wrap {
+  position: fixed;
+  top: 74px;
+  right: 20px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+  transition: all 0.2s ease;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hud-minimap-wrap:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(255, 209, 90, 0.4);
+}
+
+.hud-minimap-wrap canvas {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: block;
+}
+
+.minimap-hint {
+  margin-top: -12px;
+  background: rgba(20, 10, 5, 0.9);
+  border: 1px solid var(--gold-main);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--gold-main);
+  letter-spacing: 0.1em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+/* Modale Carte du Monde & Téléportation */
+.world-map-card {
+  max-width: 740px;
+  max-height: 88vh;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teleport-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 4px;
+}
+
+.teleport-card {
+  background: rgba(18, 8, 4, 0.75);
+  border: 1.5px solid rgba(255, 209, 90, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.teleport-card:hover {
+  background: rgba(38, 18, 9, 0.95);
+  border-color: var(--gold-main);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.teleport-card.highlight {
+  border-color: var(--gold-main);
+  background: linear-gradient(180deg, rgba(255, 209, 90, 0.1) 0%, rgba(18, 8, 4, 0.8) 100%);
+}
+
+.teleport-zone-tag {
+  align-self: flex-start;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  background: rgba(255, 209, 90, 0.15);
+  border: 1px solid rgba(255, 209, 90, 0.35);
+  color: var(--gold-main);
+  border-radius: 4px;
+}
+
+.teleport-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--cream);
+  line-height: 1.25;
+}
+
+.teleport-coords {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--cream-soft);
+}
+
+/* Modale Paramètres & Configuration */
+.settings-card {
+  max-width: 540px;
+  max-height: 86vh;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 4px;
+}
+
+.settings-group {
+  background: rgba(18, 8, 4, 0.65);
+  border: 1px solid rgba(255, 209, 90, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-group-title {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--gold-main);
+  border-bottom: 1px dashed rgba(255, 209, 90, 0.2);
+  padding-bottom: 6px;
+  margin: 0;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.settings-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.settings-label strong {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13px;
+  color: var(--cream);
+}
+
+.settings-label span {
+  font-size: 11px;
+  color: var(--cream-soft);
+  line-height: 1.25;
+}
+
+.settings-select {
+  background: #140804;
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+}
+
+.settings-slider {
+  width: 140px;
+  accent-color: var(--gold-main);
+  cursor: pointer;
+}
+
 @media (max-width: 600px) {
   .hud-layer {
     padding: 12px;
   }
+  .hud-minimap-wrap {
+    top: auto;
+    bottom: 65px;
+    right: 68px;
+    width: 100px;
+    height: 100px;
+  }
+  .hud-minimap-wrap canvas {
+    width: 100px;
+    height: 100px;
+  }
   .wardrobe-card,
   .section-overlay-card,
-  .minigame-portal-card {
+  .minigame-portal-card,
+  .world-map-card,
+  .settings-card {
     max-height: 92vh;
     padding: 14px 14px;
   }
@@ -875,7 +1086,8 @@
     max-height: 64vh;
   }
   .products-grid,
-  .minigames-selection-grid {
+  .minigames-selection-grid,
+  .teleport-grid {
     grid-template-columns: 1fr;
   }
   .pawn-card-thumb {

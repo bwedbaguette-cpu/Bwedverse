@@ -52,6 +52,22 @@ export class Engine {
     window.addEventListener('resize', () => this.onResize());
   }
 
+  setShadowsEnabled(enabled) {
+    if (!this.renderer) return;
+    this.renderer.shadowMap.enabled = !!enabled;
+    this.scene.traverse((child) => {
+      if (child.material) {
+        child.material.needsUpdate = true;
+      }
+    });
+  }
+
+  setHighResolution(isHigh) {
+    if (!this.renderer) return;
+    const ratio = isHigh ? Math.min(window.devicePixelRatio, 2) : 1;
+    this.renderer.setPixelRatio(ratio);
+  }
+
   onResize() {
     if (!this.container || !this.renderer || !this.camera) return;
     const width = this.container.clientWidth || window.innerWidth;

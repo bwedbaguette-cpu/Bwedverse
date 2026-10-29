@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/world.css?v=2.0.0" />
-    <link rel="stylesheet" href="./css/hud.css?v=2.0.0" />
+    <link rel="stylesheet" href="./css/world.css?v=2.1.0" />
+    <link rel="stylesheet" href="./css/hud.css?v=2.1.0" />
     <script type="importmap">
       {
         "imports": {
@@ -52,14 +52,23 @@
             <strong id="currentAvatarName">Chef Émile</strong>
           </button>
 
-          <button class="hud-pill" id="changeNameBtn" type="button" title="Changer votre pseudo">
-            <span>Pseudo :</span>
-            <strong id="currentPlayerName">Chef Émile</strong>
+          <button class="hud-pill" id="openWorldMapBtn" type="button" title="Carte du Monde & Téléportation">
+            <span>Carte &amp; TP</span>
+          </button>
+
+          <button class="hud-pill" id="openSettingsBtn" type="button" title="Paramètres et Options">
+            <span>Paramètres</span>
           </button>
 
           <a class="hud-pill back-link" href="../../index.html" title="Retourner au Hub Bwedverse">&larr; Hub Bwedverse</a>
         </div>
       </header>
+
+      <!-- Mini-Map & Boussole Radiale Interactive -->
+      <div class="hud-minimap-wrap" id="miniMapWrap" title="Cliquer pour ouvrir la Carte du Monde et voyager rapidement">
+        <canvas id="miniMapCanvas" width="140" height="140"></canvas>
+        <div class="minimap-hint">CARTE &middot; TP</div>
+      </div>
 
       <!-- Bulle d'Interaction avec le Décor -->
       <div class="interaction-prompt" id="interactionPrompt" hidden>
@@ -80,7 +89,7 @@
           <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd>
           <span>/</span>
           <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd>
-          <span>&middot; Course : <kbd>Shift</kbd> &middot; Mobile : Joystick tactile &middot; Zoom : Molette ou boutons +/-</span>
+          <span>&middot; Course : <kbd>Shift</kbd> &middot; Mobile : Joystick &middot; Zoom : +/- &middot; Menu : <kbd>Échap</kbd></span>
         </div>
       </footer>
     </div>
@@ -106,6 +115,161 @@
         </div>
         <p class="modal-subtitle">Sélectionnez votre pion 3D pour explorer le Bwedverse :</p>
         <div class="wardrobe-grid" id="wardrobeGrid"></div>
+      </div>
+    </div>
+
+    <!-- Modale Carte du Monde & Téléportation (Fast Travel) -->
+    <div class="modal-overlay" id="worldMapModal" hidden>
+      <div class="modal-card world-map-card">
+        <div class="modal-header">
+          <div>
+            <span class="overlay-kicker">NAVIGATION &middot; VOYAGE RAPIDE</span>
+            <h2 class="modal-title">Carte du Bwedverse &amp; Téléportation</h2>
+          </div>
+          <button class="modal-close-btn" data-close-modal="worldMapModal" type="button" title="Fermer">&times;</button>
+        </div>
+        <p class="modal-subtitle">Cliquez sur un lieu remarquable pour vous y téléporter instantanément :</p>
+        <div class="teleport-grid">
+          <!-- Zone 1 -->
+          <div class="teleport-card" data-tp-x="0" data-tp-z="4">
+            <span class="teleport-zone-tag">Quartier Central</span>
+            <h4 class="teleport-title">La Fontaine au Beurre Fondant</h4>
+            <span class="teleport-coords">Coordonnées : X: 0 &middot; Z: 0</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+
+          <div class="teleport-card" data-tp-x="-22" data-tp-z="-2">
+            <span class="teleport-zone-tag">Quartier Central</span>
+            <h4 class="teleport-title">La Fournée Dorée (Boulangerie)</h4>
+            <span class="teleport-coords">Coordonnées : X: -27 &middot; Z: -2</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+
+          <div class="teleport-card" data-tp-x="22" data-tp-z="-2">
+            <span class="teleport-zone-tag">Quartier Central</span>
+            <h4 class="teleport-title">Le Café « Le Toast Joyeux »</h4>
+            <span class="teleport-coords">Coordonnées : X: 27 &middot; Z: -2</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+
+          <div class="teleport-card" data-tp-x="20" data-tp-z="-20">
+            <span class="teleport-zone-tag">Quartier Central</span>
+            <h4 class="teleport-title">Le Moulin du Levain</h4>
+            <span class="teleport-coords">Coordonnées : X: 24 &middot; Z: -24</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+
+          <!-- Transition -->
+          <div class="teleport-card highlight" data-tp-x="0" data-tp-z="41">
+            <span class="teleport-zone-tag">Passage du Canal</span>
+            <h4 class="teleport-title">Le Pont du Beurre d'Amande</h4>
+            <span class="teleport-coords">Coordonnées : X: 0 &middot; Z: 41</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+
+          <!-- Zone 2 -->
+          <div class="teleport-card" data-tp-x="-14" data-tp-z="84">
+            <span class="teleport-zone-tag">Quartier Cacao</span>
+            <h4 class="teleport-title">La Gare du Train Chocolat</h4>
+            <span class="teleport-coords">Coordonnées : X: -18 &middot; Z: 84</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+
+          <div class="teleport-card" data-tp-x="14" data-tp-z="92">
+            <span class="teleport-zone-tag">Quartier Cacao</span>
+            <h4 class="teleport-title">La Clairière des Chamallows</h4>
+            <span class="teleport-coords">Coordonnées : X: 18 &middot; Z: 92</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+
+          <div class="teleport-card highlight" data-tp-x="0" data-tp-z="112">
+            <span class="teleport-zone-tag">Quartier Cacao</span>
+            <h4 class="teleport-title">L'Arche du Portail Mini-Jeux</h4>
+            <span class="teleport-coords">Coordonnées : X: 0 &middot; Z: 118</span>
+            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Paramètres & Options -->
+    <div class="modal-overlay" id="settingsModal" hidden>
+      <div class="modal-card settings-card">
+        <div class="modal-header">
+          <div>
+            <span class="overlay-kicker">CONFIGURATION &middot; OPTIONS</span>
+            <h2 class="modal-title">Paramètres du Monde 3D</h2>
+          </div>
+          <button class="modal-close-btn" data-close-modal="settingsModal" type="button" title="Fermer">&times;</button>
+        </div>
+        <p class="modal-subtitle">Ajustez vos préférences graphiques, votre caméra et vos commandes :</p>
+
+        <div class="settings-sections">
+          <!-- Section 1 : Graphismes -->
+          <div class="settings-group">
+            <h3 class="settings-group-title">Rendu &amp; Graphismes</h3>
+            
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Ombres dynamiques</strong>
+                <span>Désactiver pour un gain de fluidité sur petit appareil</span>
+              </div>
+              <div class="settings-control">
+                <select class="settings-select" id="shadowsSettingSelect">
+                  <option value="true" selected>Activées (Doux)</option>
+                  <option value="false">Désactivées (Rapide)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Qualité de Résolution</strong>
+                <span>Rendu haute densité Retina ou économique</span>
+              </div>
+              <div class="settings-control">
+                <select class="settings-select" id="resolutionSettingSelect">
+                  <option value="high" selected>Élevée (Retina 2x)</option>
+                  <option value="standard">Standard (1x)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Distance de Caméra Panoramique</strong>
+                <span id="camDistanceDisplay">Distance : 46 mètres</span>
+              </div>
+              <div class="settings-control">
+                <input class="settings-slider" id="camDistanceSlider" type="range" min="18" max="85" value="46" step="1" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2 : Identité & Session -->
+          <div class="settings-group">
+            <h3 class="settings-group-title">Session &amp; Multijoueur</h3>
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Pseudo en jeu</strong>
+                <span id="settingsCurrentPseudo">Chef Émile</span>
+              </div>
+              <div class="settings-control">
+                <button class="modal-btn tiny" id="settingsChangePseudoBtn" type="button">Modifier</button>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Réapparition au centre</strong>
+                <span>Vous replace sur la place en cas de blocage</span>
+              </div>
+              <div class="settings-control">
+                <button class="modal-btn tiny primary" id="settingsRespawnBtn" type="button">Réapparaître</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -218,25 +382,25 @@
               <span>Grand-Place du Beurre Doré reliée au Quartier Cacao par le Pont d'Amande, fondu d'atmosphère ciel/brouillard et 18 pions jouables.</span>
             </div>
           </div>
-          <div class="roadmap-step current">
-            <div class="roadmap-bullet">&rarr;</div>
+          <div class="roadmap-step done">
+            <div class="roadmap-bullet">&check;</div>
             <div class="roadmap-content">
               <strong>Jalon 3 &middot; Portail Mini-Jeux & Overlays de Bâtiments</strong>
               <span>Portail de la clairière ouvrant une salle d'arcade dédiée, mini-jeu Bwed Catch en lazy-load et fenêtres interactives sur chaque boutique.</span>
             </div>
           </div>
-          <div class="roadmap-step future">
-            <div class="roadmap-bullet">&bull;</div>
+          <div class="roadmap-step current">
+            <div class="roadmap-bullet">&rarr;</div>
             <div class="roadmap-content">
-              <strong>Jalon 4 &middot; Pipeline d'Assets & Mode Éditeur dans le Navigateur</strong>
-              <span>Validation automatique des GLB de communauté, placement d'objets en glisser-déposer 3D et export JSON direct.</span>
+              <strong>Jalon 4 &middot; Mini-Map Boussole, Téléportation & Paramètres</strong>
+              <span>Radar interactif avec boussole tournante, carte de voyage rapide, menu de réglages complet et outils d'administration.</span>
             </div>
           </div>
           <div class="roadmap-step future">
             <div class="roadmap-bullet">&bull;</div>
             <div class="roadmap-content">
-              <strong>Jalon 5 &middot; Vie du Monde : Cycle Jour/Nuit, PNJ & Mini-Carte</strong>
-              <span>Horloge synchronisée, personnages non-joueurs avec dialogues cosy, système d'emotes et mini-carte d'exploration.</span>
+              <strong>Jalon 5 &middot; Vie du Monde : Cycle Jour/Nuit & PNJ vivants</strong>
+              <span>Horloge synchronisée, personnages non-joueurs avec dialogues cosy et système d'emotes.</span>
             </div>
           </div>
         </div>
@@ -283,7 +447,7 @@
       </div>
     </div>
 
-    <!-- Modale Portail des Mini-Jeux (Jalon 3) -->
+    <!-- Modale Portail des Mini-Jeux -->
     <div class="modal-overlay" id="minigameModal" hidden>
       <div class="modal-card minigame-portal-card">
         <div class="modal-header">
@@ -354,6 +518,6 @@
     </div>
 
     <!-- Moteur Principal du Monde -->
-    <script type="module" src="./src/main.js?v=2.0.0"></script>
+    <script type="module" src="./src/main.js?v=2.1.0"></script>
   </body>
 </html>

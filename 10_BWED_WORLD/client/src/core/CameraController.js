@@ -46,6 +46,11 @@ export class CameraController {
     this.updateOffset();
   }
 
+  setDistance(dist) {
+    this.distance = THREE.MathUtils.clamp(dist, CAMERA.MIN_DISTANCE, CAMERA.MAX_DISTANCE);
+    this.updateOffset();
+  }
+
   updateOffset() {
     const horizontalDist = this.distance * Math.cos(this.pitch);
     const y = this.distance * Math.sin(this.pitch);

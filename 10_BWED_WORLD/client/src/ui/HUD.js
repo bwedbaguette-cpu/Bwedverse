@@ -1,11 +1,14 @@
 import { CONFIG } from '../config.js';
+import { MiniMap } from './MiniMap.js';
 
 /* ==========================================================================
-   GESTIONNAIRE DE L'INTERFACE 2D (HUD) & MINI-JEUX — BWED WORLD (JALON 3)
+   GESTIONNAIRE DE L'INTERFACE 2D (HUD) & MINI-JEUX — BWED WORLD
    - Overlays HTML légers (Boulangerie, Café, Moulin, Gare)
    - Garde-robe 18 pions
    - Bulle d'interaction contextuelle
-   - Contrôles de zoom
+   - Mini-Map & Boussole rotative temps réel
+   - Carte du Monde & Voyage Rapide (Téléportation)
+   - Menu des Paramètres (Ombres, Résolution, Distance caméra, Respawn)
    - Salle d'arcade Mini-Jeu Bwed Catch avec chargement dynamique
    ========================================================================== */
 
@@ -19,6 +22,10 @@ export class HUD {
     this.onAvatarChange = options.onAvatarChange || null;
     this.onZoomIn = options.onZoomIn || null;
     this.onZoomOut = options.onZoomOut || null;
+    this.onTeleport = options.onTeleport || null;
+    this.onToggleShadows = options.onToggleShadows || null;
+    this.onToggleResolution = options.onToggleResolution || null;
+    this.onCameraDistance = options.onCameraDistance || null;
 
     // Interaction courante
     this.currentInteractionTrigger = null;
@@ -26,6 +33,7 @@ export class HUD {
 
     // Mini-jeu instance
     this.activeMinigame = null;
+    this.miniMap = null;
 
     this.dom = {
       districtKicker: document.getElementById('districtKicker'),
@@ -44,6 +52,23 @@ export class HUD {
       wardrobeModal: document.getElementById('wardrobeModal'),
       closeWardrobeBtn: document.getElementById('closeWardrobeBtn'),
       wardrobeGrid: document.getElementById('wardrobeGrid'),
+
+      // Navigation & Carte du Monde
+      openWorldMapBtn: document.getElementById('openWorldMapBtn'),
+      worldMapModal: document.getElementById('worldMapModal'),
+      miniMapCanvas: document.getElementById('miniMapCanvas'),
+      miniMapWrap: document.getElementById('miniMapWrap'),
+
+      // Paramètres
+      openSettingsBtn: document.getElementById('openSettingsBtn'),
+      settingsModal: document.getElementById('settingsModal'),
+      shadowsSettingSelect: document.getElementById('shadowsSettingSelect'),
+      resolutionSettingSelect: document.getElementById('resolutionSettingSelect'),
+      camDistanceSlider: document.getElementById('camDistanceSlider'),
+      camDistanceDisplay: document.getElementById('camDistanceDisplay'),
+      settingsCurrentPseudo: document.getElementById('settingsCurrentPseudo'),
+      settingsChangePseudoBtn: document.getElementById('settingsChangePseudoBtn'),
+      settingsRespawnBtn: document.getElementById('settingsRespawnBtn'),
 
       // Bulle d'interaction
       interactionPrompt: document.getElementById('interactionPrompt'),
@@ -71,6 +96,7 @@ export class HUD {
       finalSummaryText: document.getElementById('finalSummaryText')
     };
 
+    this.initMiniMap();
     this.initWardrobeGrid();
     this.initScores();
     this.bindEvents();
@@ -80,7 +106,24 @@ export class HUD {
   }
 
   /* --------------------------------------------------------------------------
-     1. IDENTITÉ DU JOUEUR & QUARTIER
+     1. MINI-MAP BOUSSOLE
+     -------------------------------------------------------------------------- */
+  initMiniMap() {
+    if (this.dom.miniMapCanvas) {
+      this.miniMap = new MiniMap(this.dom.miniMapCanvas, () => {
+        this.openModal('worldMapModal');
+      });
+    }
+  }
+
+  updateMiniMap(playerPos, playerRotY, cameraYaw, remotePlayers) {
+    if (this.miniMap) {
+      this.miniMap.update(playerPos, playerRotY, cameraYaw, remotePlayers);
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+     2. IDENTITÉ DU JOUEUR & QUARTIER
      -------------------------------------------------------------------------- */
   setPlayerName(name) {
     this.playerName = name;
@@ -89,6 +132,9 @@ export class HUD {
     }
     if (this.dom.playerNameInput) {
       this.dom.playerNameInput.value = name;
+    }
+    if (this.dom.settingsCurrentPseudo) {
+      this.dom.settingsCurrentPseudo.textContent = name;
     }
   }
 
@@ -129,7 +175,7 @@ export class HUD {
   }
 
   /* --------------------------------------------------------------------------
-     2. GARDE-ROBE DES 18 PIONS
+     3. GARDE-ROBE DES 18 PIONS
      -------------------------------------------------------------------------- */
   initWardrobeGrid() {
     if (!this.dom.wardrobeGrid) return;
@@ -160,7 +206,7 @@ export class HUD {
   }
 
   /* --------------------------------------------------------------------------
-     3. INTERACTIONS CONTEXTUELLES & OVERLAYS
+     4. INTERACTIONS CONTEXTUELLES & OVERLAYS
      -------------------------------------------------------------------------- */
   showInteractionPrompt(label, onTrigger) {
     if (!this.dom.interactionPrompt) return;
@@ -216,7 +262,7 @@ export class HUD {
   }
 
   /* --------------------------------------------------------------------------
-     4. GESTION DU MINI-JEU BWED CATCH (SALLE DÉDIÉE)
+     5. GESTION DU MINI-JEU BWED CATCH (SALLE DÉDIÉE)
      -------------------------------------------------------------------------- */
   initScores() {
     const best = localStorage.getItem('bwed_catch_best_score') || '0';
@@ -231,7 +277,6 @@ export class HUD {
     if (this.dom.minigameActiveView) this.dom.minigameActiveView.hidden = false;
 
     if (!this.activeMinigame) {
-      // Chargement dynamique du module (lazy-load)
       const { BwedCatchGame } = await import('../minigames/BwedCatchGame.js');
       this.activeMinigame = new BwedCatchGame(this.dom.catchGameCanvas, (results) => {
         this.onMinigameOver(results);
@@ -245,7 +290,6 @@ export class HUD {
     const score = results.score || 0;
     const maxCombo = results.maxCombo || 0;
 
-    // Enregistrement des scores
     localStorage.setItem('bwed_catch_last_score', score.toString());
     const prevBest = parseInt(localStorage.getItem('bwed_catch_best_score') || '0', 10);
     if (score > prevBest) {
@@ -275,7 +319,7 @@ export class HUD {
   }
 
   /* --------------------------------------------------------------------------
-     5. ÉCOUTEURS D'ÉVÉNEMENTS
+     6. ÉCOUTEURS D'ÉVÉNEMENTS
      -------------------------------------------------------------------------- */
   bindEvents() {
     // 1. Changement de pseudo
@@ -314,12 +358,75 @@ export class HUD {
       this.closeModal('wardrobeModal');
     });
 
-    // 3. Bulle d'interaction
+    // 3. Carte du Monde & Téléportation
+    this.dom.openWorldMapBtn?.addEventListener('click', () => {
+      this.openModal('worldMapModal');
+    });
+
+    this.dom.miniMapWrap?.addEventListener('click', () => {
+      this.openModal('worldMapModal');
+    });
+
+    // Clics sur les cartes de téléportation
+    document.querySelectorAll('.teleport-card[data-tp-x]').forEach((card) => {
+      card.addEventListener('click', () => {
+        const x = parseFloat(card.getAttribute('data-tp-x') || '0');
+        const z = parseFloat(card.getAttribute('data-tp-z') || '0');
+        if (this.onTeleport) {
+          this.onTeleport({ x, z });
+        }
+        this.closeModal('worldMapModal');
+      });
+    });
+
+    // 4. Menu des Paramètres
+    this.dom.openSettingsBtn?.addEventListener('click', () => {
+      this.openModal('settingsModal');
+    });
+
+    this.dom.settingsChangePseudoBtn?.addEventListener('click', () => {
+      this.closeModal('settingsModal');
+      this.openModal('nameModal');
+      this.dom.playerNameInput?.focus();
+    });
+
+    this.dom.settingsRespawnBtn?.addEventListener('click', () => {
+      if (this.onTeleport) {
+        this.onTeleport({ x: 0, z: 4 });
+      }
+      this.closeModal('settingsModal');
+    });
+
+    this.dom.shadowsSettingSelect?.addEventListener('change', (e) => {
+      const enabled = e.target.value === 'true';
+      if (this.onToggleShadows) {
+        this.onToggleShadows(enabled);
+      }
+    });
+
+    this.dom.resolutionSettingSelect?.addEventListener('change', (e) => {
+      const isHigh = e.target.value === 'high';
+      if (this.onToggleResolution) {
+        this.onToggleResolution(isHigh);
+      }
+    });
+
+    this.dom.camDistanceSlider?.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      if (this.dom.camDistanceDisplay) {
+        this.dom.camDistanceDisplay.textContent = `Distance : ${val} mètres`;
+      }
+      if (this.onCameraDistance) {
+        this.onCameraDistance(val);
+      }
+    });
+
+    // 5. Bulle d'interaction
     this.dom.interactionPrompt?.addEventListener('click', () => {
       this.triggerCurrentInteraction();
     });
 
-    // 4. Zoom interactif
+    // 6. Zoom interactif
     this.dom.zoomInBtn?.addEventListener('click', () => {
       if (this.onZoomIn) this.onZoomIn();
     });
@@ -328,7 +435,7 @@ export class HUD {
       if (this.onZoomOut) this.onZoomOut();
     });
 
-    // 5. Fermeture automatique des modales avec data-close-modal
+    // 7. Fermeture automatique des modales avec data-close-modal
     document.querySelectorAll('[data-close-modal]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const modalId = btn.getAttribute('data-close-modal');
@@ -338,7 +445,7 @@ export class HUD {
       });
     });
 
-    // 6. Mini-jeu d'arcade
+    // 8. Mini-jeu d'arcade
     this.dom.launchCatchGameBtn?.addEventListener('click', () => {
       this.launchMinigame();
     });
@@ -363,12 +470,15 @@ export class HUD {
       this.exitMinigameToHub();
     });
 
-    // 7. Touches globales : Échap pour fermer, Espace pour interagir
+    // 9. Touches globales : Échap pour fermer/ouvrir paramètres, Espace pour interagir
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        this.closeAllModals();
+        if (this.activeModalId) {
+          this.closeAllModals();
+        } else {
+          this.openModal('settingsModal');
+        }
       } else if (e.key === ' ' || e.key === 'Spacebar') {
-        // Espace déclenche l'interaction si aucune modale n'est ouverte
         if (!this.activeModalId && this.currentInteractionTrigger) {
           e.preventDefault();
           this.triggerCurrentInteraction();

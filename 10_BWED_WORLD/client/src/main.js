@@ -11,12 +11,13 @@ import { VirtualJoystick } from './ui/VirtualJoystick.js';
 import { NETWORK } from '../../shared/constants.js';
 
 /* ==========================================================================
-   POINT D'ENTRÉE PRINCIPAL — BWED WORLD (JALON 3)
+   POINT D'ENTRÉE PRINCIPAL — BWED WORLD
+   - Mini-Map & Boussole rotative temps réel
+   - Carte du Monde interactive & Téléportation rapide (Fast Travel)
+   - Menu complet des Paramètres (Ombres, Résolution, Distance caméra, Respawn)
    - 18 Pions jouables avec sélection instantanée
    - 2 Biomes connectés par le Pont du Beurre d'Amande
-   - Caméra panoramique large et dé-zoomée (distance 46m, contrôles +/- et molette)
-   - Portail des Mini-Jeux (Salle d'arcade dédiée Bwed Catch en lazy-load)
-   - Overlays de bâtiments interactifs (Boulangerie, Café, Moulin, Gare)
+   - Portail des Mini-Jeux & Overlays de boutiques
    ========================================================================== */
 
 class BwedWorldApp {
@@ -77,7 +78,7 @@ class BwedWorldApp {
     this.localPlayer.setPosition(Math.cos(spawnAngle) * spawnDist, 0, Math.sin(spawnAngle) * spawnDist);
     this.cameraController.setInstantTarget(this.localPlayer.position);
 
-    // 8. Interface utilisateur (HUD), Garde-robe & Contrôles
+    // 8. Interface utilisateur (HUD), Mini-Map & Paramètres
     this.hud = new HUD({
       playerName,
       currentAvatarId: avatarId,
@@ -96,6 +97,22 @@ class BwedWorldApp {
       },
       onZoomOut: () => {
         this.cameraController.zoomOut(6.0);
+      },
+      onTeleport: ({ x, z }) => {
+        this.localPlayer.setPosition(x, 0, z);
+        this.cameraController.setInstantTarget(this.localPlayer.position);
+        if (this.network) {
+          this.network.sendUpdate(this.localPlayer.getNetworkPacket());
+        }
+      },
+      onToggleShadows: (enabled) => {
+        this.engine.setShadowsEnabled(enabled);
+      },
+      onToggleResolution: (isHigh) => {
+        this.engine.setHighResolution(isHigh);
+      },
+      onCameraDistance: (dist) => {
+        this.cameraController.setDistance(dist);
       }
     });
 
@@ -185,12 +202,20 @@ class BwedWorldApp {
       this.hud.hideInteractionPrompt();
     }
 
-    // 5. Joueurs distants interpolés
+    // 5. Mise à jour de la mini-map boussole
+    this.hud.updateMiniMap(
+      this.localPlayer.position,
+      this.localPlayer.rotationY,
+      this.cameraController.yaw,
+      Array.from(this.remotePlayers.values())
+    );
+
+    // 6. Joueurs distants interpolés
     for (const remote of this.remotePlayers.values()) {
       remote.update(delta);
     }
 
-    // 6. Envoi réseau cadencé à 15 Hz
+    // 7. Envoi réseau cadencé à 15 Hz
     const now = performance.now();
     if (now - this.lastNetworkTick >= NETWORK.TICK_INTERVAL_MS) {
       this.lastNetworkTick = now;
