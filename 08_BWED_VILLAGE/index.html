@@ -6,7 +6,7 @@
     <title>Bwed Village 3D — Le Hub Isométrique</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./village.css" />
     <script type="importmap">
       {
@@ -23,9 +23,9 @@
 
     <!-- HUD Overlay -->
     <div class="village-hud">
-      <!-- Top Bar: District & Time -->
+      <!-- Top Bar: District & Main Navigation Actions -->
       <header class="hud-top">
-        <div class="district-badge" id="districtBadge">
+        <div class="district-badge" id="districtBadge" title="Votre quartier actuel">
           <span class="district-pin"></span>
           <div class="district-text">
             <small>BWED VILLAGE 3D</small>
@@ -34,17 +34,34 @@
         </div>
 
         <div class="hud-top-actions">
-          <button class="hud-btn" id="todBtn" type="button" title="Changer l'heure de la journée">
+          <button class="hud-btn" id="wardrobeBtn" type="button" title="Personnaliser votre avatar ou choisir un héros">
+            <span class="hud-icon">☖</span>
+            <span>Garde-Robe</span>
+          </button>
+          <button class="hud-btn" id="mapBtn" type="button" title="Carte du Village & Voyage Rapide">
+            <span class="hud-icon">⚐</span>
+            <span>Carte</span>
+          </button>
+          <button class="hud-btn" id="questBtn" type="button" title="Journal de Quêtes & Découverte">
+            <span class="hud-icon">✦</span>
+            <span>Quêtes</span>
+            <span class="hud-badge" id="questCountBadge">0/5</span>
+          </button>
+          <button class="hud-btn" id="settingsBtn" type="button" title="Paramètres Graphiques, Audio & Contrôles">
+            <span class="hud-icon">⚙</span>
+            <span>Options</span>
+          </button>
+          <button class="hud-btn" id="todBtn" type="button" title="Changer l'ambiance lumineuse (Jour / Couché / Nuit)">
             <span id="todIcon">Soleil Doré</span>
           </button>
-          <button class="hud-btn" id="camRotateBtn" type="button" title="Pivoter la vue (Touche Q / E)">
+          <button class="hud-btn" id="camRotateBtn" type="button" title="Pivoter la vue isométrique (Touche Q / E)">
             <span>Pivoter 45°</span>
           </button>
-          <button class="hud-btn" id="audioBtn" type="button" title="Ambiance sonore boulangerie">
-            <span id="audioIcon">Musique : ON</span>
+          <button class="hud-btn" id="audioBtn" type="button" title="Musique d'ambiance de la boulangerie">
+            <span id="audioIcon">Musique : OFF</span>
           </button>
-          <a class="hud-btn hub-return-link" href="../index.html" title="Retourner au Bwedverse Hub">
-            <span>Quitter le Village</span>
+          <a class="hud-btn hub-return-link" href="../index.html" title="Retourner au Hub Bwedverse">
+            <span>Quitter</span>
           </a>
         </div>
       </header>
@@ -52,22 +69,22 @@
       <!-- Controls Hint Card (Top Left below district) -->
       <div class="controls-hint" id="controlsHint">
         <div class="hint-row">
-          <kbd>Clic Gauche</kbd><span>Se déplacer case par case (Style Dofus)</span>
+          <kbd>Clic Gauche</kbd><span>Déplacement case par case (Style Dofus)</span>
         </div>
         <div class="hint-row">
-          <kbd>Z Q S D</kbd> / <kbd>Flèches</kbd><span>Déplacement direct libre</span>
+          <kbd>Z Q S D</kbd> / <kbd>Flèches</kbd><span>Marche libre continue</span>
         </div>
         <div class="hint-row">
           <kbd>Espace</kbd><span>Sauter &amp; Dandinement</span>
         </div>
         <div class="hint-row">
-          <kbd>Molette</kbd><span>Zoomer / Dézoomer</span>
+          <kbd>Molette</kbd><span>Zoomer / Dézoomer la vue</span>
         </div>
       </div>
 
       <!-- Building Interaction Modal / Floating Card -->
       <div class="interaction-card" id="interactionCard" hidden>
-        <button class="close-card-btn" id="closeCardBtn" type="button">&times;</button>
+        <button class="close-card-btn" id="closeCardBtn" type="button" aria-label="Fermer la fiche">&times;</button>
         <span class="card-kicker" id="cardKicker">LIEU EMBLÉMATIQUE</span>
         <h3 id="cardTitle">Pâtisserie du Croissant d'Or</h3>
         <p id="cardDesc">Boutique artisanale tenue par les maîtres boulangers. Croissants au beurre et fèves dorées.</p>
@@ -82,9 +99,9 @@
       <!-- Bottom Chat Bar & Social Emotes -->
       <footer class="hud-bottom">
         <div class="emote-bar">
-          <button class="emote-btn" data-emote="wave" type="button" title="Faire un coucou">Coucou</button>
-          <button class="emote-btn" data-emote="jump" type="button" title="Sauter de joie">Sauter</button>
-          <button class="emote-btn" data-emote="cheer" type="button" title="Célébrer">Bravo</button>
+          <button class="emote-btn" data-emote="wave" type="button" title="Saluer le village">Coucou</button>
+          <button class="emote-btn" data-emote="jump" type="button" title="Bondir de joie">Sauter</button>
+          <button class="emote-btn" data-emote="cheer" type="button" title="Applaudir">Bravo</button>
           <button class="emote-btn" data-emote="crumb" type="button" title="Semer des miettes">Miettes</button>
         </div>
 
@@ -92,13 +109,418 @@
           <input
             type="text"
             id="chatInput"
-            placeholder="Parler dans le village (appuyez sur Entrée pour afficher une bulle)..."
+            placeholder="Écrivez un message (Entrée pour faire apparaître une bulle au-dessus de vous)..."
             maxlength="70"
             autocomplete="off"
           />
           <button class="chat-submit-btn" type="submit">Envoyer</button>
         </form>
       </footer>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div class="village-toast" id="villageToast" hidden>
+      <div class="toast-icon" id="toastIcon">✦</div>
+      <div class="toast-body">
+        <strong id="toastTitle">Quête accomplie !</strong>
+        <p id="toastMessage">Vous avez découvert la Grand-Place.</p>
+      </div>
+    </div>
+
+    <!-- Modals Overlay Backdrop -->
+    <div class="modal-backdrop" id="modalBackdrop" hidden></div>
+
+    <!-- ==================================================================== -->
+    <!-- 1. MODAL GARDE-ROBE & AVATAR -->
+    <!-- ==================================================================== -->
+    <div class="bwed-modal" id="wardrobeModal" hidden role="dialog" aria-modal="true" aria-labelledby="wardrobeTitle">
+      <div class="modal-header">
+        <div>
+          <span class="modal-kicker">PERSONNALISATION DU HÉROS</span>
+          <h2 class="modal-title" id="wardrobeTitle">Garde-Robe de Bwedville</h2>
+        </div>
+        <button class="modal-close-btn" data-close="wardrobe" type="button" aria-label="Fermer la garde-robe">&times;</button>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-wardrobe-tab="custom" type="button">Bwed Gourmand (Sur Mesure)</button>
+        <button class="modal-tab-btn" data-wardrobe-tab="pawns" type="button">Héros du Bwedverse (Pions 3D)</button>
+      </div>
+
+      <!-- Tab Content: Custom Bwed -->
+      <div class="modal-content tab-panel active" id="wardrobePanelCustom">
+        <div class="customizer-section">
+          <label class="customizer-label">Couleur des Baskets Rouges Iconiques</label>
+          <div class="swatch-grid" id="sneakerSwatches">
+            <button class="swatch-btn active" data-color="0xcc291e" style="--swatch-c: #cc291e;" title="Rouge Fraise Original">
+              <span class="swatch-check">✓</span>
+            </button>
+            <button class="swatch-btn" data-color="0x2ec4b6" style="--swatch-c: #2ec4b6;" title="Matcha &amp; Pistache">
+              <span class="swatch-check">✓</span>
+            </button>
+            <button class="swatch-btn" data-color="0xffb703" style="--swatch-c: #ffb703;" title="Miel &amp; Caramel Doré">
+              <span class="swatch-check">✓</span>
+            </button>
+            <button class="swatch-btn" data-color="0x3a86ff" style="--swatch-c: #3a86ff;" title="Myrtille Sauvage">
+              <span class="swatch-check">✓</span>
+            </button>
+            <button class="swatch-btn" data-color="0x26140d" style="--swatch-c: #26140d;" title="Chocolat Noir &amp; Sésame">
+              <span class="swatch-check">✓</span>
+            </button>
+            <button class="swatch-btn" data-color="0xff70a6" style="--swatch-c: #ff70a6;" title="Glaçage Barbe à Papa">
+              <span class="swatch-check">✓</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="customizer-section">
+          <label class="customizer-label">Fournée &amp; Cuisson de la Mie</label>
+          <div class="pill-group" id="crustPills">
+            <button class="pill-btn active" data-crust="classic" type="button">Pain de Campagne Doré</button>
+            <button class="pill-btn" data-crust="brioche" type="button">Brioche Pur Beurre</button>
+            <button class="pill-btn" data-crust="chocolate" type="button">Pain au Cacao Foncé</button>
+            <button class="pill-btn" data-crust="matcha" type="button">Pâte au Thé Vert Matcha</button>
+          </div>
+        </div>
+
+        <div class="customizer-section">
+          <label class="customizer-label">Chapeau &amp; Décoration Sucrée</label>
+          <div class="pill-group" id="hatPills">
+            <button class="pill-btn active" data-hat="none" type="button">Aucun (Tête Nue)</button>
+            <button class="pill-btn" data-hat="toque" type="button">Toque de Grand Chef</button>
+            <button class="pill-btn" data-hat="butter" type="button">Noisette de Beurre Fondant</button>
+            <button class="pill-btn" data-hat="strawberry" type="button">Fraise Confite Givrée</button>
+            <button class="pill-btn" data-hat="crown" type="button">Couronne Royale de Sucre</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: GLB Hero Pawns -->
+      <div class="modal-content tab-panel" id="wardrobePanelPawns" hidden>
+        <p class="tab-helper">Sélectionnez l'un des 6 héros légendaires du Bwedverse modélisés en pion 3D :</p>
+        <div class="pawn-grid" id="pawnGrid">
+          <button class="pawn-card" data-pawn="tiny-baker" type="button">
+            <span class="pawn-badge">MAÎTRE</span>
+            <h4>Le Petit Boulanger</h4>
+            <p>Le gardien des secrets du levain d'antan, armé de sa toque immaculée.</p>
+          </button>
+          <button class="pawn-card" data-pawn="super-hero-bwed" type="button">
+            <span class="pawn-badge">HÉROS</span>
+            <h4>Super Bwed</h4>
+            <p>Cape en drap de sucre et masque protecteur prêt à défendre le village.</p>
+          </button>
+          <button class="pawn-card" data-pawn="shadow-ninja" type="button">
+            <span class="pawn-badge">FURTIF</span>
+            <h4>Ninja de l'Ombre</h4>
+            <p>Silencieux comme la levée d'une pâte de nuit, agile sur les toits sablés.</p>
+          </button>
+          <button class="pawn-card" data-pawn="crimson-samurai" type="button">
+            <span class="pawn-badge">GUERRIER</span>
+            <h4>Samouraï Écarlate</h4>
+            <p>Armure laquée aux éclats de griottes et code d'honneur boulanger.</p>
+          </button>
+          <button class="pawn-card" data-pawn="brave-firefighter" type="button">
+            <span class="pawn-badge">SECOURS</span>
+            <h4>Pompier Gourmand</h4>
+            <p>Casque renforcé et dévoué à éteindre les fours trop ardents.</p>
+          </button>
+          <button class="pawn-card" data-pawn="crimson-mage" type="button">
+            <span class="pawn-badge">ARCANES</span>
+            <h4>Mage Cramoisi</h4>
+            <p>Maîtrise les sortilèges de caramélisation et de téléportation sucrée.</p>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- 2. MODAL CARTE DU VILLAGE & VOYAGE RAPIDE -->
+    <!-- ==================================================================== -->
+    <div class="bwed-modal" id="mapModal" hidden role="dialog" aria-modal="true" aria-labelledby="mapTitle">
+      <div class="modal-header">
+        <div>
+          <span class="modal-kicker">CADASTRE &amp; TÉLÉPORTATION</span>
+          <h2 class="modal-title" id="mapTitle">Carte du Village de Bwedville</h2>
+        </div>
+        <button class="modal-close-btn" data-close="map" type="button" aria-label="Fermer la carte">&times;</button>
+      </div>
+
+      <div class="modal-content">
+        <p class="tab-helper">Sélectionnez un quartier pour vous y rendre instantanément en voyage rapide :</p>
+        <div class="districts-grid" id="districtsGrid">
+          <div class="district-card" data-target="plaza">
+            <div class="dcard-header">
+              <span class="dcard-tag">CENTRE HISTORIQUE</span>
+              <span class="dcard-coords">[25, 25]</span>
+            </div>
+            <h4>La Grand-Place du Beurre Doré</h4>
+            <p>Fontaine au beurre, dalles en gaufre caramélisée et pavillons officiels.</p>
+            <button class="travel-btn" type="button">Voyage Rapide</button>
+          </div>
+
+          <div class="district-card" data-target="gourmet">
+            <div class="dcard-header">
+              <span class="dcard-tag">ARTISANAT</span>
+              <span class="dcard-coords">[38, 24]</span>
+            </div>
+            <h4>Le Faubourg Gourmand &amp; Marché</h4>
+            <p>Pâtisserie du Croissant d'Or, Taverne du Miel et échoppes d'arômes.</p>
+            <button class="travel-btn" type="button">Voyage Rapide</button>
+          </div>
+
+          <div class="district-card" data-target="residential">
+            <div class="dcard-header">
+              <span class="dcard-tag">HABITATIONS</span>
+              <span class="dcard-coords">[10, 28]</span>
+            </div>
+            <h4>Le Village Fleuri des Pains</h4>
+            <p>Maisons citoyennes briochées, ruelles pavées de sablé et jardins calmes.</p>
+            <button class="travel-btn" type="button">Voyage Rapide</button>
+          </div>
+
+          <div class="district-card" data-target="woods">
+            <div class="dcard-header">
+              <span class="dcard-tag">NATURE PAISIBLE</span>
+              <span class="dcard-coords">[8, 16]</span>
+            </div>
+            <h4>Le Bois de Cannelle &amp; Clairière</h4>
+            <p>Arbres briochés géants, sentiers de cacao et bancs de contemplation.</p>
+            <button class="travel-btn" type="button">Voyage Rapide</button>
+          </div>
+
+          <div class="district-card" data-target="port">
+            <div class="dcard-header">
+              <span class="dcard-tag">MARITIME</span>
+              <span class="dcard-coords">[25, 3]</span>
+            </div>
+            <h4>Le Port &amp; Canal de Chocolat Chaud</h4>
+            <p>Quais en bois de hêtre, bateaux viennois et doux remous chocolatés.</p>
+            <button class="travel-btn" type="button">Voyage Rapide</button>
+          </div>
+
+          <div class="district-card" data-target="arcade">
+            <div class="dcard-header">
+              <span class="dcard-tag">LOISIRS &amp; JEUX</span>
+              <span class="dcard-coords">[40, 40]</span>
+            </div>
+            <h4>La Fête Foraine &amp; BwedWare Arcade</h4>
+            <p>Auto-tamponneuses beignets, carrousel bretzel et mini-jeux d'arcade.</p>
+            <button class="travel-btn" type="button">Voyage Rapide</button>
+          </div>
+
+          <div class="district-card" data-target="sanctuary">
+            <div class="dcard-header">
+              <span class="dcard-tag">HAUTEURS</span>
+              <span class="dcard-coords">[10, 40]</span>
+            </div>
+            <h4>La Colline de l'Observatoire Céleste</h4>
+            <p>Dôme astronomique en sucre glace, escaliers gaufrettes et vue plongeante.</p>
+            <button class="travel-btn" type="button">Voyage Rapide</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- 3. MODAL JOURNAL DE QUÊTES -->
+    <!-- ==================================================================== -->
+    <div class="bwed-modal" id="questModal" hidden role="dialog" aria-modal="true" aria-labelledby="questTitle">
+      <div class="modal-header">
+        <div>
+          <span class="modal-kicker">CARNET D'AVENTURE</span>
+          <h2 class="modal-title" id="questTitle">Journal des Quêtes du Village</h2>
+        </div>
+        <button class="modal-close-btn" data-close="quest" type="button" aria-label="Fermer les quêtes">&times;</button>
+      </div>
+
+      <div class="modal-content">
+        <div class="quest-summary-card">
+          <div class="qsummary-info">
+            <strong id="questSummaryCount">0 / 5 Quêtes Accomplies</strong>
+            <p>Explorez les 7 quartiers pour accomplir les missions de découverte de Bwedville.</p>
+          </div>
+          <div class="quest-progress-track">
+            <div class="quest-progress-fill" id="questProgressFill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="quest-list" id="questList">
+          <!-- Quest 1 -->
+          <div class="quest-item" id="questCard-plaza">
+            <div class="quest-check-circle">✓</div>
+            <div class="quest-details">
+              <h4>Premier Pas Fariné</h4>
+              <p>Rejoignez le cœur battant du village sur la Grand-Place du Beurre Doré.</p>
+              <span class="quest-reward">Récompense : Titre de Citoyen du Beurre</span>
+            </div>
+            <span class="quest-status-badge">En attente</span>
+          </div>
+
+          <!-- Quest 2 -->
+          <div class="quest-item" id="questCard-patisserie">
+            <div class="quest-check-circle">✓</div>
+            <div class="quest-details">
+              <h4>Le Parfum du Croissant Chaud</h4>
+              <p>Rendez visite aux artisans devant la Pâtisserie du Croissant d'Or.</p>
+              <span class="quest-reward">Récompense : Fève Dorée Croustillante</span>
+            </div>
+            <span class="quest-status-badge">En attente</span>
+          </div>
+
+          <!-- Quest 3 -->
+          <div class="quest-item" id="questCard-canal">
+            <div class="quest-check-circle">✓</div>
+            <div class="quest-details">
+              <h4>L'Appel du Grand Canal</h4>
+              <p>Avancez sur les quais en bois jusqu'au bord du canal de chocolat chaud.</p>
+              <span class="quest-reward">Récompense : Diplôme de Navigateur Sucré</span>
+            </div>
+            <span class="quest-status-badge">En attente</span>
+          </div>
+
+          <!-- Quest 4 -->
+          <div class="quest-item" id="questCard-observatory">
+            <div class="quest-check-circle">✓</div>
+            <div class="quest-details">
+              <h4>Les Mystères Célestes</h4>
+              <p>Montez au sommet de la Colline de l'Observatoire contempler les étoiles de sucre.</p>
+              <span class="quest-reward">Récompense : Poudre d'Étoile Glacée</span>
+            </div>
+            <span class="quest-status-badge">En attente</span>
+          </div>
+
+          <!-- Quest 5 -->
+          <div class="quest-item" id="questCard-woods">
+            <div class="quest-check-circle">✓</div>
+            <div class="quest-details">
+              <h4>La Halte Sylvestre</h4>
+              <p>Trouvez un banc de contemplation dans la clairière du Bois de Cannelle.</p>
+              <span class="quest-reward">Récompense : Bâton de Cannelle Millénaire</span>
+            </div>
+            <span class="quest-status-badge">En attente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- 4. MODAL PARAMÈTRES & PERFORMANCES -->
+    <!-- ==================================================================== -->
+    <div class="bwed-modal" id="settingsModal" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-header">
+        <div>
+          <span class="modal-kicker">CONFIGURATION SYSTÈME</span>
+          <h2 class="modal-title" id="settingsTitle">Options du Village</h2>
+        </div>
+        <button class="modal-close-btn" data-close="settings" type="button" aria-label="Fermer les paramètres">&times;</button>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-settings-tab="graphics" type="button">Graphismes &amp; Confort</button>
+        <button class="modal-tab-btn" data-settings-tab="audio" type="button">Ambiance Audio</button>
+        <button class="modal-tab-btn" data-settings-tab="controls" type="button">Contrôles &amp; Caméra</button>
+      </div>
+
+      <!-- Graphics Settings -->
+      <div class="modal-content tab-panel active" id="settingsPanelGraphics">
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Qualité du Rendu (DPR)</strong>
+            <span>Ajuste la finesse d'affichage. Éco soulage fortement le processeur.</span>
+          </div>
+          <div class="pill-group" id="dprSetting">
+            <button class="pill-btn" data-val="1.0" type="button">Éco (1.0x)</button>
+            <button class="pill-btn active" data-val="1.25" type="button">Optimale (1.25x)</button>
+            <button class="pill-btn" data-val="1.5" type="button">Rétina (1.5x)</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Ombres Portées Dynamiques</strong>
+            <span>Active ou désactive le calcul des ombres temps réel des bâtiments.</span>
+          </div>
+          <label class="switch-control">
+            <input type="checkbox" id="shadowsToggle" checked />
+            <span class="slider round"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Limite de Fréquence d'Images</strong>
+            <span>30 FPS permet de garder l'appareil frais lors de longues sessions.</span>
+          </div>
+          <div class="pill-group" id="fpsCapSetting">
+            <button class="pill-btn" data-val="30" type="button">30 FPS (Éco)</button>
+            <button class="pill-btn active" data-val="60" type="button">60 FPS (Fluide)</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Brume Chaude de Boulangerie</strong>
+            <span>Effet de profondeur atmosphérique estompant l'horizon.</span>
+          </div>
+          <label class="switch-control">
+            <input type="checkbox" id="fogToggle" checked />
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Audio Settings -->
+      <div class="modal-content tab-panel" id="settingsPanelAudio" hidden>
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Musique d'Ambiance de Boulangerie</strong>
+            <span>Mélodie cosy au piano et guitare acoustique.</span>
+          </div>
+          <div class="range-control-group">
+            <input type="range" id="musicVolumeSlider" min="0" max="100" value="40" />
+            <span class="range-value" id="musicVolumeLabel">40%</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Bruitages &amp; Effets Sonores (SFX)</strong>
+            <span>Tintement des cloches et pas croustillants.</span>
+          </div>
+          <div class="range-control-group">
+            <input type="range" id="sfxVolumeSlider" min="0" max="100" value="60" />
+            <span class="range-value" id="sfxVolumeLabel">60%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Settings -->
+      <div class="modal-content tab-panel" id="settingsPanelControls" hidden>
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Vitesse de Déplacement</strong>
+            <span>Rythme de marche de votre avatar sur les pavés.</span>
+          </div>
+          <div class="pill-group" id="speedSetting">
+            <button class="pill-btn" data-val="5.5" type="button">Balade (5.5)</button>
+            <button class="pill-btn active" data-val="7.5" type="button">Normale (7.5)</button>
+            <button class="pill-btn" data-val="10.0" type="button">Vive (10.0)</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Inverser les Touches de Vue (Q / E)</strong>
+            <span>Inverse le sens de rotation de la caméra isométrique.</span>
+          </div>
+          <label class="switch-control">
+            <input type="checkbox" id="invertCamToggle" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Virtual Joystick for Mobile Touch Devices -->

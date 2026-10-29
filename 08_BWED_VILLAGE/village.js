@@ -57,7 +57,31 @@ const state = {
   hoveredTile: null,
   nearbyBuilding: null,
   timeOfDay: 'day', // 'day', 'golden', 'night'
-  audioPlaying: false
+  audioPlaying: false,
+  avatar: {
+    mode: 'custom', // 'custom' or 'pawn'
+    sneakerColor: '0xcc291e',
+    crustType: 'classic',
+    hat: 'none',
+    pawnId: 'tiny-baker'
+  },
+  settings: {
+    dpr: 1.25,
+    shadows: true,
+    fpsCap: 60,
+    fog: true,
+    musicVolume: 0.4,
+    sfxVolume: 0.6,
+    speed: 7.5,
+    invertCam: false
+  },
+  quests: {
+    plaza: false,
+    patisserie: false,
+    canal: false,
+    observatory: false,
+    woods: false
+  }
 };
 
 // --- DOM REFERENCES ---
@@ -80,22 +104,47 @@ const loaderEl = document.getElementById('villageLoader');
 const loaderBar = document.getElementById('loaderBar');
 const loaderStatus = document.getElementById('loaderStatus');
 
+// Top Bar Action Buttons & Modals
+const wardrobeBtn = document.getElementById('wardrobeBtn');
+const mapBtn = document.getElementById('mapBtn');
+const questBtn = document.getElementById('questBtn');
+const settingsBtn = document.getElementById('settingsBtn');
+const questCountBadge = document.getElementById('questCountBadge');
+const modalBackdrop = document.getElementById('modalBackdrop');
+const wardrobeModal = document.getElementById('wardrobeModal');
+const mapModal = document.getElementById('mapModal');
+const questModal = document.getElementById('questModal');
+const settingsModal = document.getElementById('settingsModal');
+
+// Toast Notification
+const villageToast = document.getElementById('villageToast');
+const toastIcon = document.getElementById('toastIcon');
+const toastTitle = document.getElementById('toastTitle');
+const toastMessage = document.getElementById('toastMessage');
+
 // --- THREE.JS GLOBALS ---
 let scene, camera, renderer, clock;
 let sunLight, hemiLight;
 let tileCursorMesh, targetMarkerMesh;
 let playerMesh, playerBones = {};
+const playerMaterials = {};
+let activePawnMesh = null;
+let activeHatMesh = null;
+const pawnCache = new Map();
 let chocoMaterial = null;
 const buildingObjects = [];
 const landmarkPointLights = [];
 const speechBubbles = [];
 const particles = [];
+let bgAudio = null;
+let audioContext = null;
 
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
 function init() {
   clock = new THREE.Clock();
+  loadSavedState();
   state.grid = generateVillageGrid();
 
   // 1. Scene & Fog (Warm bakery haze that reveals distant landmarks)
@@ -130,8 +179,9 @@ function init() {
   // 6. Build Grid Helpers & Cursors
   setupCursors();
 
-  // 7. Spawn Procedural Rigged Bwed Avatar
+  // 7. Spawn Procedural Rigged Bwed Avatar & Apply saved customizations
   buildProceduralBwed();
+  applyAvatarMode();
 
   // 8. Build Procedural Brioche Trees & Flora
   buildVillageVegetation();
@@ -152,7 +202,13 @@ function init() {
   // 13. Input & Event Listeners
   setupEventListeners();
 
-  // 12. Safety fallback timeout for loader
+  // 14. UI Modals, Audio System & Quests Initialization
+  initAudioSystem();
+  setupModals();
+  applySettings();
+  updateQuestsUI();
+
+  // 15. Safety fallback timeout for loader
   setTimeout(() => {
     if (!loaderEl.classList.contains('fade-out')) {
       loaderBar.style.width = '100%';
@@ -161,7 +217,7 @@ function init() {
     }
   }, 7000);
 
-  // 13. Start Loop
+  // 16. Start Loop
   renderer.setAnimationLoop(animate);
 }
 
@@ -913,9 +969,251 @@ function buildProceduralBwed() {
   playerBones.leftArm = leftArm;
   playerBones.rightArm = rightArm;
 
+  // Stash materials for live customizer
+  playerMaterials.crust = crustMat;
+  playerMaterials.crumb = crumbMat;
+  playerMaterials.shoe = shoeMat;
+
   // Set initial position
   playerMesh.position.copy(state.player.worldPos);
   scene.add(playerMesh);
+}
+
+// ============================================================================
+// AVATAR CUSTOMIZER & GLB HERO PAWN ENGINE
+// ============================================================================
+const CRUST_PALETTES = {
+  classic: { crust: 0x8a4522, crumb: 0xfef7ea },
+  brioche: { crust: 0xba6e38, crumb: 0xfff4db },
+  chocolate: { crust: 0x47261a, crumb: 0x824b2b },
+  matcha: { crust: 0x4f6b3b, crumb: 0xdbe8c8 }
+};
+
+const PAWN_FILES = {
+  'tiny-baker': './assets/pawns/tiny-baker.glb',
+  'super-hero-bwed': './assets/pawns/super-hero-bwed.glb',
+  'shadow-ninja': './assets/pawns/shadow-ninja.glb',
+  'crimson-samurai': './assets/pawns/crimson-samurai.glb',
+  'brave-firefighter': './assets/pawns/brave-firefighter.glb',
+  'crimson-mage': './assets/pawns/crimson-mage.glb'
+};
+
+function createHatMesh(type) {
+  if (type === 'none' || !type) return null;
+
+  const hatGroup = new THREE.Group();
+
+  if (type === 'toque') {
+    // Grand Chef Toque: white cylinder base + puffed top
+    const toqueMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
+    const baseGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.14, 16);
+    const base = new THREE.Mesh(baseGeo, toqueMat);
+    base.position.y = 0.07;
+    hatGroup.add(base);
+
+    const topGeo = new THREE.SphereGeometry(0.24, 16, 16);
+    topGeo.scale(1, 0.85, 1);
+    const top = new THREE.Mesh(topGeo, toqueMat);
+    top.position.y = 0.24;
+    hatGroup.add(top);
+
+    hatGroup.position.set(0, 0.58, 0);
+  } else if (type === 'butter') {
+    // Melting butter pat: soft golden rounded cube + dripping droplet
+    const butterMat = new THREE.MeshStandardMaterial({
+      color: 0xffd15a,
+      roughness: 0.25,
+      metalness: 0.1
+    });
+    const patGeo = new THREE.BoxGeometry(0.24, 0.1, 0.24);
+    const pat = new THREE.Mesh(patGeo, butterMat);
+    pat.rotation.set(0.1, 0.2, -0.15);
+    pat.position.set(0, 0.62, 0.04);
+    hatGroup.add(pat);
+
+    const dropGeo = new THREE.SphereGeometry(0.05, 8, 8);
+    dropGeo.scale(0.8, 1.4, 0.8);
+    const drop = new THREE.Mesh(dropGeo, butterMat);
+    drop.position.set(0.12, 0.52, 0.12);
+    hatGroup.add(drop);
+  } else if (type === 'strawberry') {
+    // Royal candied strawberry: red cone + green leaf sepals
+    const strawMat = new THREE.MeshStandardMaterial({ color: 0xff3b30, roughness: 0.35 });
+    const berryGeo = new THREE.ConeGeometry(0.16, 0.32, 14);
+    const berry = new THREE.Mesh(berryGeo, strawMat);
+    berry.rotation.x = Math.PI;
+    berry.position.set(0, 0.72, 0);
+    hatGroup.add(berry);
+
+    const sepalMat = new THREE.MeshStandardMaterial({ color: 0x2ec4b6, roughness: 0.6 });
+    for (let i = 0; i < 4; i++) {
+      const sepalGeo = new THREE.BoxGeometry(0.08, 0.02, 0.14);
+      const sepal = new THREE.Mesh(sepalGeo, sepalMat);
+      sepal.rotation.y = (i * Math.PI) / 2;
+      sepal.position.set(0, 0.85, 0);
+      hatGroup.add(sepal);
+    }
+  } else if (type === 'crown') {
+    // Golden sugar crown with 4 spikes and sugar pearls
+    const crownMat = new THREE.MeshStandardMaterial({ color: 0xffb703, roughness: 0.3, metalness: 0.5 });
+    const ringGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.08, 16, 1, true);
+    const ring = new THREE.Mesh(ringGeo, crownMat);
+    ring.position.y = 0.62;
+    hatGroup.add(ring);
+
+    for (let i = 0; i < 4; i++) {
+      const spikeGeo = new THREE.ConeGeometry(0.04, 0.12, 8);
+      const spike = new THREE.Mesh(spikeGeo, crownMat);
+      const angle = (i * Math.PI) / 2;
+      spike.position.set(Math.cos(angle) * 0.16, 0.70, Math.sin(angle) * 0.16);
+      hatGroup.add(spike);
+
+      const pearlGeo = new THREE.SphereGeometry(0.03, 8, 8);
+      const pearlMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const pearl = new THREE.Mesh(pearlGeo, pearlMat);
+      pearl.position.set(Math.cos(angle) * 0.16, 0.77, Math.sin(angle) * 0.16);
+      hatGroup.add(pearl);
+    }
+  }
+
+  return hatGroup;
+}
+
+function applyAvatarMode() {
+  if (!playerMesh) return;
+
+  if (state.avatar.mode === 'custom') {
+    // Show procedural body
+    if (playerBones.hips) playerBones.hips.visible = true;
+    if (activePawnMesh) activePawnMesh.visible = false;
+
+    // Apply sneaker color
+    if (playerMaterials.shoe) {
+      playerMaterials.shoe.color.setHex(parseInt(state.avatar.sneakerColor, 16) || 0xcc291e);
+    }
+
+    // Apply crust & crumb palette
+    const pal = CRUST_PALETTES[state.avatar.crustType] || CRUST_PALETTES.classic;
+    if (playerMaterials.crust) playerMaterials.crust.color.setHex(pal.crust);
+    if (playerMaterials.crumb) playerMaterials.crumb.color.setHex(pal.crumb);
+
+    // Apply hat
+    if (activeHatMesh && playerBones.body) {
+      playerBones.body.remove(activeHatMesh);
+      activeHatMesh = null;
+    }
+    const newHat = createHatMesh(state.avatar.hat);
+    if (newHat && playerBones.body) {
+      playerBones.body.add(newHat);
+      activeHatMesh = newHat;
+    }
+  } else if (state.avatar.mode === 'pawn') {
+    // Hide procedural body
+    if (playerBones.hips) playerBones.hips.visible = false;
+
+    const pawnId = state.avatar.pawnId || 'tiny-baker';
+    loadAndSetPawn(pawnId);
+  }
+}
+
+function loadAndSetPawn(pawnId) {
+  if (activePawnMesh) {
+    activePawnMesh.visible = false;
+  }
+
+  if (pawnCache.has(pawnId)) {
+    activePawnMesh = pawnCache.get(pawnId);
+    activePawnMesh.visible = true;
+    return;
+  }
+
+  const filePath = PAWN_FILES[pawnId];
+  if (!filePath) return;
+
+  const gltfLoader = new GLTFLoader();
+  gltfLoader.load(
+    filePath,
+    gltf => {
+      const pawnScene = gltf.scene;
+
+      // Compute bounding box to normalize scale to ~1.6m height
+      pawnScene.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(pawnScene);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const scaleFactor = 1.6 / (maxDim || 1);
+      pawnScene.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+      // Re-align base at y = 0
+      pawnScene.updateMatrixWorld(true);
+      const newBox = new THREE.Box3().setFromObject(pawnScene);
+      pawnScene.position.y -= newBox.min.y;
+
+      // Enable shadows
+      pawnScene.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      playerMesh.add(pawnScene);
+      pawnCache.set(pawnId, pawnScene);
+
+      // Only set as active if user hasn't switched away while loading
+      if (state.avatar.mode === 'pawn' && state.avatar.pawnId === pawnId) {
+        activePawnMesh = pawnScene;
+        activePawnMesh.visible = true;
+      } else {
+        pawnScene.visible = false;
+      }
+    },
+    undefined,
+    err => {
+      console.warn('Erreur chargement pion héroïque:', pawnId, err);
+    }
+  );
+}
+
+// Particle system for flour crumbs and teleportation effects
+function spawnCrumbBurst(position, count = 16) {
+  for (let i = 0; i < count; i++) {
+    const geo = new THREE.SphereGeometry(0.07 + Math.random() * 0.06, 6, 6);
+    const mat = new THREE.MeshBasicMaterial({
+      color: Math.random() > 0.5 ? 0xffd15a : 0xfff7ea
+    });
+    const p = new THREE.Mesh(geo, mat);
+    p.position.copy(position);
+    p.position.y += 0.5 + Math.random() * 0.5;
+    scene.add(p);
+
+    const vel = new THREE.Vector3(
+      (Math.random() - 0.5) * 4,
+      2.5 + Math.random() * 3,
+      (Math.random() - 0.5) * 4
+    );
+
+    particles.push({ mesh: p, vel, life: 1.0, maxLife: 1.0 });
+  }
+}
+
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const pt = particles[i];
+    pt.life -= dt;
+    if (pt.life <= 0) {
+      scene.remove(pt.mesh);
+      pt.mesh.geometry.dispose();
+      pt.mesh.material.dispose();
+      particles.splice(i, 1);
+    } else {
+      pt.vel.y -= 9.8 * dt; // gravity
+      pt.mesh.position.addScaledVector(pt.vel, dt);
+      const s = Math.max(0.01, pt.life / pt.maxLife);
+      pt.mesh.scale.set(s, s, s);
+    }
+  }
 }
 
 // ============================================================================
@@ -1120,8 +1418,9 @@ function updateCameraPosition(immediate = false) {
   camera.lookAt(p.x, p.y + 1.2, p.z);
 }
 
-function rotateCamera() {
-  state.camera.targetAzimuth += Math.PI / 4;
+function rotateCamera(direction = 1) {
+  const mult = (state.settings && state.settings.invertCam ? -1 : 1) * direction;
+  state.camera.targetAzimuth += mult * (Math.PI / 4);
 }
 
 // ============================================================================
@@ -1177,11 +1476,22 @@ function updateSpeechBubbles(dt) {
 // ============================================================================
 function triggerEmote(name) {
   state.player.activeEmote = name;
-  state.player.emoteTimer = 1.2;
+  state.player.emoteTimer = 1.4;
 
   if (name === 'jump' && state.player.isGrounded) {
     state.player.verticalVelocity = 8.5;
     state.player.isGrounded = false;
+    playSfx('click');
+  } else if (name === 'crumb') {
+    spawnCrumbBurst(state.player.worldPos, 18);
+    spawnSpeechBubble('Miettes semées !');
+    playSfx('click');
+  } else if (name === 'wave') {
+    spawnSpeechBubble('Coucou tout le monde !');
+    playSfx('click');
+  } else if (name === 'cheer') {
+    spawnSpeechBubble('Bravo ! Vive Bwedville !');
+    playSfx('click');
   }
 }
 
@@ -1218,9 +1528,10 @@ function setupEventListeners() {
 
     keysDown.add(e.code);
 
-    if (e.code === 'KeyQ') state.camera.targetAzimuth -= Math.PI / 4;
-    if (e.code === 'KeyE') state.camera.targetAzimuth += Math.PI / 4;
+    if (e.code === 'KeyQ') rotateCamera(-1);
+    if (e.code === 'KeyE') rotateCamera(1);
     if (e.code === 'Space') triggerEmote('jump');
+    if (e.code === 'Escape') closeAllModals();
     if (e.code === 'Enter') {
       chatInput.focus();
       e.preventDefault();
@@ -1237,12 +1548,19 @@ function setupEventListeners() {
     setTimeOfDay(nextTOD);
   });
 
-  camRotateBtn.addEventListener('click', rotateCamera);
+  camRotateBtn.addEventListener('click', () => rotateCamera(1));
 
   audioBtn.addEventListener('click', () => {
     state.audioPlaying = !state.audioPlaying;
     audioIcon.textContent = state.audioPlaying ? 'Musique : ON' : 'Musique : OFF';
     audioBtn.classList.toggle('active', state.audioPlaying);
+    if (bgAudio) {
+      if (state.audioPlaying) {
+        bgAudio.play().catch(() => {});
+      } else {
+        bgAudio.pause();
+      }
+    }
   });
 
   closeCardBtn.addEventListener('click', () => {
@@ -1310,10 +1628,11 @@ function onPointerDown(e) {
 // MAIN ANIMATION LOOP (CAPPED AT 60 FPS FOR COOL GPU THERMALS)
 // ============================================================================
 let lastRenderTimestamp = 0;
-const targetFrameInterval = 1000 / 60; // ~16.66ms (limits GPU workload on 120Hz ProMotion Macs)
 
 function animate(timestamp) {
-  // Cap rendering to 60 FPS on high-refresh rate displays
+  const targetFrameInterval = 1000 / (state.settings.fpsCap || 60);
+
+  // Cap rendering on high-refresh rate displays or low-power mode
   if (timestamp) {
     const elapsed = timestamp - lastRenderTimestamp;
     if (elapsed < targetFrameInterval - 1.5) {
@@ -1339,18 +1658,21 @@ function animate(timestamp) {
   // 5. Update Speech Bubbles (2D projection over 3D head)
   updateSpeechBubbles(dt);
 
-  // 6. Pulse Cursors
+  // 6. Update Flour Crumb Particles
+  updateParticles(dt);
+
+  // 7. Pulse Cursors
   if (tileCursorMesh.visible) {
     const s = 1 + Math.sin(clock.elapsedTime * 6) * 0.04;
     tileCursorMesh.scale.set(s, s, 1);
   }
 
-  // 7. Liquid Chocolate Canal Shimmer Animation
+  // 8. Liquid Chocolate Canal Shimmer Animation
   if (chocoMaterial) {
     chocoMaterial.roughness = 0.22 + Math.sin(clock.elapsedTime * 1.8) * 0.08;
   }
 
-  // 8. Render
+  // 9. Render
   renderer.render(scene, camera);
 }
 
@@ -1456,11 +1778,30 @@ function updateMovement(dt) {
   playerMesh.rotation.y = p.rotation;
 }
 
-// Procedural Waddle Walk & Breathing Animations
+// Procedural Waddle Walk & Breathing Animations (Supports Procedural Bwed & 3D Hero Pawns)
 function updateAvatarAnimation(dt) {
   const p = state.player;
   const t = clock.elapsedTime;
+
+  // 1. If currently in 3D Hero Pawn mode
+  if (state.avatar.mode === 'pawn' && activePawnMesh) {
+    if (p.isMoving) {
+      const waddleFreq = 11;
+      const waddleSwing = Math.sin(t * waddleFreq);
+      activePawnMesh.rotation.z = waddleSwing * 0.08;
+      activePawnMesh.position.y = Math.abs(Math.cos(t * waddleFreq)) * 0.08;
+    } else {
+      const idleFreq = 2.4;
+      const breathe = Math.sin(t * idleFreq);
+      activePawnMesh.position.y = breathe * 0.02;
+      activePawnMesh.rotation.z = 0;
+    }
+    return;
+  }
+
+  // 2. Procedural Rigged Bwed Animation
   const b = playerBones;
+  if (!b || !b.body) return;
 
   if (p.isMoving) {
     // Iconic Bwed Waddle: tilt body left/right, alternate leg swings
@@ -1499,7 +1840,7 @@ function updateAvatarAnimation(dt) {
   }
 }
 
-// Proximity & District Detection
+// Proximity, District & Quest Detection
 function checkProximity() {
   const p = state.player.worldPos;
   const gx = Math.round(p.x / MAP_CONFIG.tileSize);
@@ -1546,6 +1887,592 @@ function checkProximity() {
     state.nearbyBuilding = null;
     interactionCard.hidden = true;
   }
+
+  // 3. Check Quest Completion
+  checkQuests();
+}
+
+// ============================================================================
+// VILLAGE QUEST SYSTEM
+// ============================================================================
+const QUEST_DEFINITIONS = [
+  {
+    id: 'plaza',
+    title: 'Premier Pas Fariné',
+    check: pos => {
+      const dist = Math.hypot(pos.x - 25 * MAP_CONFIG.tileSize, pos.z - 25 * MAP_CONFIG.tileSize);
+      return dist <= 12;
+    }
+  },
+  {
+    id: 'patisserie',
+    title: 'Le Parfum du Croissant Chaud',
+    check: pos => {
+      const dist = Math.hypot(pos.x - 38 * MAP_CONFIG.tileSize, pos.z - 24 * MAP_CONFIG.tileSize);
+      return dist <= 10;
+    }
+  },
+  {
+    id: 'canal',
+    title: 'L\'Appel du Grand Canal',
+    check: pos => {
+      return (
+        pos.z <= 12 * MAP_CONFIG.tileSize &&
+        pos.z >= 3 * MAP_CONFIG.tileSize &&
+        pos.x >= 15 * MAP_CONFIG.tileSize &&
+        pos.x <= 35 * MAP_CONFIG.tileSize
+      );
+    }
+  },
+  {
+    id: 'observatory',
+    title: 'Les Mystères Célestes',
+    check: pos => {
+      const dist = Math.hypot(pos.x - 10 * MAP_CONFIG.tileSize, pos.z - 40 * MAP_CONFIG.tileSize);
+      return dist <= 12;
+    }
+  },
+  {
+    id: 'woods',
+    title: 'La Halte Sylvestre',
+    check: pos => {
+      const dist = Math.hypot(pos.x - 8 * MAP_CONFIG.tileSize, pos.z - 16 * MAP_CONFIG.tileSize);
+      return dist <= 10;
+    }
+  }
+];
+
+function checkQuests() {
+  const pos = state.player.worldPos;
+  QUEST_DEFINITIONS.forEach(q => {
+    if (!state.quests[q.id] && q.check(pos)) {
+      state.quests[q.id] = true;
+      saveQuestsState();
+      updateQuestsUI();
+      playSfx('quest');
+      showToast('Quête accomplie !', q.title, '✦');
+    }
+  });
+}
+
+function updateQuestsUI() {
+  const questKeys = ['plaza', 'patisserie', 'canal', 'observatory', 'woods'];
+  let completedCount = 0;
+
+  questKeys.forEach(id => {
+    const isDone = !!state.quests[id];
+    if (isDone) completedCount++;
+
+    const card = document.getElementById(`questCard-${id}`);
+    if (card) {
+      card.classList.toggle('completed', isDone);
+      const statusBadge = card.querySelector('.quest-status-badge');
+      if (statusBadge) {
+        statusBadge.textContent = isDone ? 'Accomplie' : 'En attente';
+      }
+    }
+  });
+
+  const total = questKeys.length;
+  if (questCountBadge) {
+    questCountBadge.textContent = `${completedCount}/${total}`;
+  }
+  const summaryEl = document.getElementById('questSummaryCount');
+  if (summaryEl) {
+    summaryEl.textContent = `${completedCount} / ${total} Quêtes Accomplies`;
+  }
+  const fillEl = document.getElementById('questProgressFill');
+  if (fillEl) {
+    fillEl.style.width = `${Math.round((completedCount / total) * 100)}%`;
+  }
+}
+
+// ============================================================================
+// TOAST NOTIFICATIONS & AUDIO SYSTEM
+// ============================================================================
+let toastTimer = null;
+function showToast(title, message, icon = '✦') {
+  if (!villageToast) return;
+  toastTitle.textContent = title;
+  toastMessage.textContent = message;
+  toastIcon.textContent = icon;
+
+  villageToast.hidden = false;
+  villageToast.classList.remove('toast-leave');
+
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    villageToast.classList.add('toast-leave');
+    setTimeout(() => {
+      villageToast.hidden = true;
+      villageToast.classList.remove('toast-leave');
+    }, 300);
+  }, 3200);
+}
+
+function initAudioSystem() {
+  bgAudio = new Audio('./assets/audio/cozy-bakery-village.mp3');
+  bgAudio.loop = true;
+  bgAudio.volume = state.settings.musicVolume;
+
+  const tryPlay = () => {
+    if (state.audioPlaying) {
+      bgAudio.play().catch(() => {});
+    }
+  };
+
+  window.addEventListener('click', () => {
+    if (!audioContext) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioCtx();
+      } catch (e) {}
+    }
+    if (state.audioPlaying && bgAudio.paused) {
+      tryPlay();
+    }
+  }, { once: false });
+}
+
+function playSfx(type) {
+  if (!audioContext || state.settings.sfxVolume <= 0) return;
+  if (audioContext.state === 'suspended') {
+    audioContext.resume();
+  }
+
+  const now = audioContext.currentTime;
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+
+  const vol = state.settings.sfxVolume * 0.35;
+
+  if (type === 'teleport') {
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.35);
+    gain.gain.setValueAtTime(vol, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    osc.start(now);
+    osc.stop(now + 0.4);
+  } else if (type === 'quest') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, now);
+    osc.frequency.setValueAtTime(659.25, now + 0.12);
+    osc.frequency.setValueAtTime(783.99, now + 0.24);
+    gain.gain.setValueAtTime(vol * 1.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+    osc.start(now);
+    osc.stop(now + 0.65);
+  } else if (type === 'click') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(720, now);
+    osc.frequency.exponentialRampToValueAtTime(240, now + 0.05);
+    gain.gain.setValueAtTime(vol * 0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+}
+
+// ============================================================================
+// FAST TRAVEL (INTERACTIVE MAP)
+// ============================================================================
+function fastTravelTo(districtId) {
+  const coords = {
+    plaza: { x: 25, z: 25, name: 'La Grand-Place du Beurre Doré' },
+    gourmet: { x: 38, z: 24, name: 'Le Faubourg Gourmand & Marché' },
+    residential: { x: 10, z: 28, name: 'Le Village Fleuri des Pains' },
+    woods: { x: 8, z: 16, name: 'Le Bois de Cannelle' },
+    port: { x: 25, z: 3, name: 'Le Port & Canal de Chocolat Chaud' },
+    arcade: { x: 40, z: 40, name: 'La Fête Foraine & BwedWare Arcade' },
+    sanctuary: { x: 10, z: 40, name: 'La Colline de l\'Observatoire Céleste' }
+  };
+
+  const target = coords[districtId];
+  if (!target) return;
+
+  const wx = target.x * MAP_CONFIG.tileSize;
+  const wz = target.z * MAP_CONFIG.tileSize;
+  const tile = state.grid[target.z] && state.grid[target.z][target.x];
+  const wy = tile ? tile.elevation * MAP_CONFIG.elevationStep : 0;
+
+  state.player.worldPos.set(wx, wy, wz);
+  state.player.targetPos.copy(state.player.worldPos);
+  state.player.path = [];
+  state.player.isMoving = false;
+  if (playerMesh) playerMesh.position.copy(state.player.worldPos);
+
+  spawnCrumbBurst(state.player.worldPos, 24);
+  playSfx('teleport');
+  closeAllModals();
+  showToast('Voyage Rapide', `Arrivée à : ${target.name}`, '⚐');
+}
+
+// ============================================================================
+// MODAL MANAGEMENT & EVENT LISTENERS
+// ============================================================================
+let activeModal = null;
+
+function openModal(modal) {
+  if (activeModal && activeModal !== modal) {
+    activeModal.hidden = true;
+  }
+  modal.hidden = false;
+  modalBackdrop.hidden = false;
+  activeModal = modal;
+  playSfx('click');
+}
+
+function closeAllModals() {
+  if (activeModal) {
+    activeModal.hidden = true;
+    activeModal = null;
+  }
+  modalBackdrop.hidden = true;
+}
+
+function setupModals() {
+  // 1. Navigation Buttons in Top Bar
+  if (wardrobeBtn) wardrobeBtn.addEventListener('click', () => openModal(wardrobeModal));
+  if (mapBtn) mapBtn.addEventListener('click', () => openModal(mapModal));
+  if (questBtn) questBtn.addEventListener('click', () => openModal(questModal));
+  if (settingsBtn) settingsBtn.addEventListener('click', () => openModal(settingsModal));
+
+  // 2. Backdrop & Close Buttons
+  if (modalBackdrop) modalBackdrop.addEventListener('click', closeAllModals);
+  document.querySelectorAll('.modal-close-btn').forEach(btn => {
+    btn.addEventListener('click', closeAllModals);
+  });
+
+  // 3. Wardrobe Tabs
+  const wardrobeTabBtns = document.querySelectorAll('[data-wardrobe-tab]');
+  const panelCustom = document.getElementById('wardrobePanelCustom');
+  const panelPawns = document.getElementById('wardrobePanelPawns');
+
+  wardrobeTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      wardrobeTabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const isCustom = btn.dataset.wardrobeTab === 'custom';
+      panelCustom.hidden = !isCustom;
+      panelPawns.hidden = isCustom;
+      playSfx('click');
+    });
+  });
+
+  // Wardrobe Swatches (Sneakers)
+  const sneakerSwatches = document.querySelectorAll('#sneakerSwatches .swatch-btn');
+  sneakerSwatches.forEach(btn => {
+    btn.addEventListener('click', () => {
+      sneakerSwatches.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.avatar.mode = 'custom';
+      state.avatar.sneakerColor = btn.dataset.color;
+      saveAvatarState();
+      applyAvatarMode();
+      playSfx('click');
+      showToast('Garde-Robe', 'Couleur des baskets mise à jour !', '☖');
+    });
+  });
+
+  // Wardrobe Crust Pills
+  const crustPills = document.querySelectorAll('#crustPills .pill-btn');
+  crustPills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      crustPills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.avatar.mode = 'custom';
+      state.avatar.crustType = btn.dataset.crust;
+      saveAvatarState();
+      applyAvatarMode();
+      playSfx('click');
+      showToast('Garde-Robe', 'Fournée de pâte modifiée !', '☖');
+    });
+  });
+
+  // Wardrobe Hat Pills
+  const hatPills = document.querySelectorAll('#hatPills .pill-btn');
+  hatPills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      hatPills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.avatar.mode = 'custom';
+      state.avatar.hat = btn.dataset.hat;
+      saveAvatarState();
+      applyAvatarMode();
+      playSfx('click');
+      showToast('Garde-Robe', 'Parure sucrée équipée !', '☖');
+    });
+  });
+
+  // Wardrobe Hero Pawns
+  const pawnCards = document.querySelectorAll('#pawnGrid .pawn-card');
+  pawnCards.forEach(card => {
+    card.addEventListener('click', () => {
+      pawnCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      state.avatar.mode = 'pawn';
+      state.avatar.pawnId = card.dataset.pawn;
+      saveAvatarState();
+      applyAvatarMode();
+      playSfx('click');
+      showToast('Héros Incarné', card.querySelector('h4').textContent, '✦');
+    });
+  });
+
+  // 4. District Cards (Fast Travel)
+  document.querySelectorAll('.district-card').forEach(card => {
+    const travelBtn = card.querySelector('.travel-btn');
+    const trigger = travelBtn || card;
+    trigger.addEventListener('click', () => {
+      fastTravelTo(card.dataset.target);
+    });
+  });
+
+  // 5. Settings Tabs
+  const settingsTabBtns = document.querySelectorAll('[data-settings-tab]');
+  const panelGraphics = document.getElementById('settingsPanelGraphics');
+  const panelAudio = document.getElementById('settingsPanelAudio');
+  const panelControls = document.getElementById('settingsPanelControls');
+
+  settingsTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      settingsTabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.settingsTab;
+      panelGraphics.hidden = tab !== 'graphics';
+      panelAudio.hidden = tab !== 'audio';
+      panelControls.hidden = tab !== 'controls';
+      playSfx('click');
+    });
+  });
+
+  // Settings: DPR Pills
+  const dprPills = document.querySelectorAll('#dprSetting .pill-btn');
+  dprPills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      dprPills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.settings.dpr = parseFloat(btn.dataset.val);
+      saveSettingsState();
+      applySettings();
+      playSfx('click');
+    });
+  });
+
+  // Settings: Shadows Toggle
+  const shadowsToggle = document.getElementById('shadowsToggle');
+  if (shadowsToggle) {
+    shadowsToggle.addEventListener('change', () => {
+      state.settings.shadows = shadowsToggle.checked;
+      saveSettingsState();
+      applySettings();
+      playSfx('click');
+    });
+  }
+
+  // Settings: FPS Cap Pills
+  const fpsPills = document.querySelectorAll('#fpsCapSetting .pill-btn');
+  fpsPills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      fpsPills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.settings.fpsCap = parseInt(btn.dataset.val, 10);
+      saveSettingsState();
+      playSfx('click');
+    });
+  });
+
+  // Settings: Fog Toggle
+  const fogToggle = document.getElementById('fogToggle');
+  if (fogToggle) {
+    fogToggle.addEventListener('change', () => {
+      state.settings.fog = fogToggle.checked;
+      saveSettingsState();
+      applySettings();
+      playSfx('click');
+    });
+  }
+
+  // Settings: Audio Sliders
+  const musicSlider = document.getElementById('musicVolumeSlider');
+  const musicLabel = document.getElementById('musicVolumeLabel');
+  if (musicSlider && musicLabel) {
+    musicSlider.addEventListener('input', () => {
+      const val = parseInt(musicSlider.value, 10);
+      musicLabel.textContent = `${val}%`;
+      state.settings.musicVolume = val / 100;
+      saveSettingsState();
+      applySettings();
+    });
+  }
+
+  const sfxSlider = document.getElementById('sfxVolumeSlider');
+  const sfxLabel = document.getElementById('sfxVolumeLabel');
+  if (sfxSlider && sfxLabel) {
+    sfxSlider.addEventListener('input', () => {
+      const val = parseInt(sfxSlider.value, 10);
+      sfxLabel.textContent = `${val}%`;
+      state.settings.sfxVolume = val / 100;
+      saveSettingsState();
+    });
+  }
+
+  // Settings: Speed Pills
+  const speedPills = document.querySelectorAll('#speedSetting .pill-btn');
+  speedPills.forEach(btn => {
+    btn.addEventListener('click', () => {
+      speedPills.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.settings.speed = parseFloat(btn.dataset.val);
+      saveSettingsState();
+      applySettings();
+      playSfx('click');
+    });
+  });
+
+  // Settings: Invert Cam Toggle
+  const invertCamToggle = document.getElementById('invertCamToggle');
+  if (invertCamToggle) {
+    invertCamToggle.addEventListener('change', () => {
+      state.settings.invertCam = invertCamToggle.checked;
+      saveSettingsState();
+      playSfx('click');
+    });
+  }
+
+  // Synchronize controls with loaded state
+  syncSettingsUI();
+}
+
+function syncSettingsUI() {
+  // Sneaker swatches
+  document.querySelectorAll('#sneakerSwatches .swatch-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.color === state.avatar.sneakerColor);
+  });
+  // Crust pills
+  document.querySelectorAll('#crustPills .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.crust === state.avatar.crustType);
+  });
+  // Hat pills
+  document.querySelectorAll('#hatPills .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.hat === state.avatar.hat);
+  });
+  // Pawn cards
+  document.querySelectorAll('#pawnGrid .pawn-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.pawn === state.avatar.pawnId);
+  });
+  // DPR pills
+  document.querySelectorAll('#dprSetting .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.val) === state.settings.dpr);
+  });
+  // FPS pills
+  document.querySelectorAll('#fpsCapSetting .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.val, 10) === state.settings.fpsCap);
+  });
+  // Speed pills
+  document.querySelectorAll('#speedSetting .pill-btn').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.val) === state.settings.speed);
+  });
+  // Switches
+  const shadowsToggle = document.getElementById('shadowsToggle');
+  if (shadowsToggle) shadowsToggle.checked = state.settings.shadows;
+  const fogToggle = document.getElementById('fogToggle');
+  if (fogToggle) fogToggle.checked = state.settings.fog;
+  const invertCamToggle = document.getElementById('invertCamToggle');
+  if (invertCamToggle) invertCamToggle.checked = state.settings.invertCam;
+
+  // Sliders
+  const musicSlider = document.getElementById('musicVolumeSlider');
+  const musicLabel = document.getElementById('musicVolumeLabel');
+  if (musicSlider && musicLabel) {
+    const val = Math.round(state.settings.musicVolume * 100);
+    musicSlider.value = val;
+    musicLabel.textContent = `${val}%`;
+  }
+  const sfxSlider = document.getElementById('sfxVolumeSlider');
+  const sfxLabel = document.getElementById('sfxVolumeLabel');
+  if (sfxSlider && sfxLabel) {
+    const val = Math.round(state.settings.sfxVolume * 100);
+    sfxSlider.value = val;
+    sfxLabel.textContent = `${val}%`;
+  }
+}
+
+function applySettings() {
+  if (renderer) {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, state.settings.dpr));
+    renderer.shadowMap.enabled = state.settings.shadows;
+    buildingObjects.forEach(b => {
+      b.mesh.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = state.settings.shadows;
+          child.receiveShadow = state.settings.shadows;
+        }
+      });
+    });
+  }
+
+  if (scene) {
+    if (state.settings.fog) {
+      if (!scene.fog) scene.fog = new THREE.FogExp2(0x180b06, 0.0055);
+    } else {
+      scene.fog = null;
+    }
+  }
+
+  if (bgAudio) {
+    bgAudio.volume = state.settings.musicVolume;
+  }
+
+  if (state.player) {
+    state.player.speed = state.settings.speed;
+  }
+}
+
+// ============================================================================
+// PERSISTENCE (LOCAL STORAGE)
+// ============================================================================
+function loadSavedState() {
+  try {
+    const savedAvatar = localStorage.getItem('bwed_village_avatar');
+    if (savedAvatar) {
+      const parsed = JSON.parse(savedAvatar);
+      Object.assign(state.avatar, parsed);
+    }
+    const savedSettings = localStorage.getItem('bwed_village_settings');
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings);
+      Object.assign(state.settings, parsed);
+    }
+    const savedQuests = localStorage.getItem('bwed_village_quests');
+    if (savedQuests) {
+      const parsed = JSON.parse(savedQuests);
+      Object.assign(state.quests, parsed);
+    }
+  } catch (e) {
+    console.warn('Erreur lecture localStorage village:', e);
+  }
+}
+
+function saveAvatarState() {
+  try {
+    localStorage.setItem('bwed_village_avatar', JSON.stringify(state.avatar));
+  } catch (e) {}
+}
+
+function saveSettingsState() {
+  try {
+    localStorage.setItem('bwed_village_settings', JSON.stringify(state.settings));
+  } catch (e) {}
+}
+
+function saveQuestsState() {
+  try {
+    localStorage.setItem('bwed_village_quests', JSON.stringify(state.quests));
+  } catch (e) {}
 }
 
 // Run engine
