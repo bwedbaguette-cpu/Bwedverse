@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>BwedTris 3D — Le Tetris Pâtissier du Bwedverse</title>
+    <title>Bwed Boy 3D — BwedTris Arcade</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=Press+Start+2P&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./tetris.css" />
     <script type="importmap">
       {
@@ -18,164 +18,306 @@
     </script>
   </head>
   <body>
-    <!-- 3D Canvas Viewport -->
-    <div id="canvasContainer"></div>
+    <!-- Top Hub Navigation Bar -->
+    <nav class="hub-nav">
+      <a class="nav-link" href="../index.html" title="Retourner au Bwedverse Hub">&larr; Bwedverse Hub</a>
+      <span class="nav-sep">&middot;</span>
+      <a class="nav-link" href="../08_BWED_VILLAGE/index.html" title="Visiter le Village 3D">Village 3D</a>
+      <span class="nav-sep">&middot;</span>
+      <span class="nav-badge">Console Bwed Boy 3D</span>
+    </nav>
 
-    <!-- HUD Overlay Frame -->
-    <div class="tetris-ui">
-      <!-- Top Navigation Header -->
-      <header class="tetris-header">
-        <div class="brand-pill">
-          <a class="nav-back-link" href="../index.html" title="Retourner au Hub Bwedverse">&larr; Bwedverse Hub</a>
-          <span class="pill-sep">&middot;</span>
-          <a class="nav-village-link" href="../08_BWED_VILLAGE/index.html" title="Visiter le Village 3D">Village 3D</a>
+    <!-- Main Handheld Console Area -->
+    <div class="console-viewport">
+      <!-- The Bwed Boy Handheld Chassis -->
+      <div class="bwedboy-chassis" id="bwedboyChassis">
+        <!-- Top Curve & Model Ridge -->
+        <div class="chassis-top-ridge">
+          <span class="ridge-line"></span>
+          <span class="ridge-line"></span>
+          <span class="ridge-line"></span>
         </div>
 
-        <div class="title-banner">
-          <span class="game-kicker">MINI-JEU D'ARCADE BWEDWARE</span>
-          <h1 class="game-title">BWEDTRIS 3D</h1>
+        <!-- Bezel Surrounding the Screen -->
+        <div class="screen-bezel" id="screenBezel">
+          <!-- Top Bezel Label & Battery LED -->
+          <div class="bezel-header">
+            <div class="battery-indicator">
+              <span class="battery-led" id="batteryLed"></span>
+              <span class="battery-label">BATTERIE</span>
+            </div>
+            <div class="bezel-title">
+              <span class="logo-bwed">BWED BOY</span>
+              <span class="logo-color">
+                <span class="c-c">3</span>
+                <span class="c-o">D</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- The Screen Viewport (Where 3D game & menus render) -->
+          <div class="game-screen" id="gameScreen">
+            <!-- 3D Three.js WebGL Canvas Container -->
+            <div id="canvasContainer" class="canvas-layer"></div>
+
+            <!-- Screen Glass Glare & Scanlines FX -->
+            <div class="screen-glare" aria-hidden="true"></div>
+            <div class="screen-scanlines" aria-hidden="true"></div>
+
+            <!-- In-Screen In-Game HUD Layer -->
+            <div class="screen-hud" id="screenHud" hidden>
+              <!-- Left Mini Slot: Hold -->
+              <div class="hud-slot hold-slot">
+                <span class="slot-title">RÉSERVE [B]</span>
+                <div class="slot-frame" id="holdSlotFrame">
+                  <span class="slot-empty" id="holdEmptyText">--</span>
+                </div>
+              </div>
+
+              <!-- Center Stats Readout -->
+              <div class="hud-center-stats">
+                <div class="stat-badge">
+                  <span class="stat-name">SCORE</span>
+                  <span class="stat-digit" id="hudScore">0</span>
+                </div>
+                <div class="stat-badge">
+                  <span class="stat-name">LIGNES</span>
+                  <span class="stat-digit" id="hudLines">0</span>
+                </div>
+                <div class="stat-badge">
+                  <span class="stat-name">NIVEAU</span>
+                  <span class="stat-digit" id="hudLevel">1</span>
+                </div>
+              </div>
+
+              <!-- Right Mini Slot: Next -->
+              <div class="hud-slot next-slot">
+                <span class="slot-title">SUIVANT</span>
+                <div class="slot-frame" id="nextSlotFrame"></div>
+              </div>
+            </div>
+
+            <!-- Toast Event Banner (Tetris, Combos, Level Up) -->
+            <div class="screen-toast" id="screenToast" hidden>
+              <div class="toast-title" id="toastTitle">TETRIS !</div>
+              <div class="toast-sub" id="toastSub">+800 Points</div>
+            </div>
+
+            <!-- ==============================================
+                 RETRO IN-SCREEN MENUS (Title, Level, Pause, Over)
+                 ============================================== -->
+
+            <!-- 1. Title Menu Screen -->
+            <div class="menu-overlay title-menu" id="titleMenu">
+              <div class="title-header">
+                <span class="title-kicker">FOURNIL PORTABLE ARCADE</span>
+                <h1 class="title-logo">BWEDTRIS 3D</h1>
+                <p class="title-sub">Véritables Pâtisseries en 3D</p>
+              </div>
+
+              <div class="retro-menu-options" id="titleOptions">
+                <button class="retro-opt-btn active" data-action="play" type="button">
+                  <span class="opt-cursor">&gt;</span> NOUVELLE FOURNÉE
+                </button>
+                <button class="retro-opt-btn" data-action="level-select" type="button">
+                  <span class="opt-cursor">&gt;</span> CHOISIR NIVEAU
+                </button>
+                <button class="retro-opt-btn" data-action="scores" type="button">
+                  <span class="opt-cursor">&gt;</span> MEILLEURS SCORES
+                </button>
+                <button class="retro-opt-btn" data-action="help" type="button">
+                  <span class="opt-cursor">&gt;</span> COMMANDES DU JEU
+                </button>
+              </div>
+
+              <div class="blink-prompt" id="pressStartPrompt">
+                APPUYEZ SUR [START] OU CLIQUEZ
+              </div>
+
+              <div class="title-footer">
+                <span>BWED CORP &copy; 2026 &middot; PUR BEURRE</span>
+              </div>
+            </div>
+
+            <!-- 2. Level Select Screen -->
+            <div class="menu-overlay" id="levelMenu" hidden>
+              <div class="menu-card">
+                <h2 class="menu-heading">CHOIX DU NIVEAU</h2>
+                <p class="menu-desc">Sélectionnez la vitesse de départ de cuisson :</p>
+                <div class="level-selector-row">
+                  <button class="level-btn-nav" id="btnPrevLevel" type="button">&larr;</button>
+                  <div class="level-display-box">
+                    <span class="level-number" id="selectedLevelNum">1</span>
+                    <span class="level-speed-label" id="selectedLevelSpeed">Vitesse : Standard</span>
+                  </div>
+                  <button class="level-btn-nav" id="btnNextLevel" type="button">&rarr;</button>
+                </div>
+                <div class="menu-actions">
+                  <button class="retro-btn primary" id="btnStartWithLevel" type="button">Commencer la Fournée</button>
+                  <button class="retro-btn" id="btnBackFromLevel" type="button">Retour Menu</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. High Scores Screen -->
+            <div class="menu-overlay" id="scoresMenu" hidden>
+              <div class="menu-card">
+                <h2 class="menu-heading">PALMARÈS DU FOURNIL</h2>
+                <div class="score-summary-rows">
+                  <div class="score-entry">
+                    <span>RECORD ABSOLU</span>
+                    <strong class="gold-text" id="recordScoreVal">0</strong>
+                  </div>
+                  <div class="score-entry">
+                    <span>LIGNES RECORD</span>
+                    <strong id="recordLinesVal">0</strong>
+                  </div>
+                  <div class="score-entry">
+                    <span>RANG ACTUEL</span>
+                    <strong id="recordRankVal">Apprenti Mitron</strong>
+                  </div>
+                </div>
+                <div class="menu-actions">
+                  <button class="retro-btn" id="btnBackFromScores" type="button">Retour Menu</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Help & Controls Screen -->
+            <div class="menu-overlay" id="helpMenu" hidden>
+              <div class="menu-card help-card">
+                <h2 class="menu-heading">COMMANDES DU FOUR</h2>
+                <div class="help-rows">
+                  <div class="help-item"><kbd>&larr;</kbd><kbd>&rarr;</kbd><span>Déplacer à gauche / droite</span></div>
+                  <div class="help-item"><kbd>&uarr;</kbd> / <kbd>Touche A</kbd><span>Pivoter la pièce 3D</span></div>
+                  <div class="help-item"><kbd>&darr;</kbd><span>Chute douce</span></div>
+                  <div class="help-item"><kbd>Espace</kbd> / <kbd>Touche X</kbd><span>Chute instantanée</span></div>
+                  <div class="help-item"><kbd>C</kbd> / <kbd>Touche B</kbd><span>Mettre en réserve</span></div>
+                  <div class="help-item"><kbd>P</kbd> / <kbd>START</kbd><span>Pause au fournil</span></div>
+                </div>
+                <div class="menu-actions">
+                  <button class="retro-btn" id="btnBackFromHelp" type="button">Compris !</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Pause Menu Overlay -->
+            <div class="menu-overlay pause-overlay" id="pauseMenu" hidden>
+              <div class="menu-card">
+                <span class="pause-badge">FOUR FIGÉ</span>
+                <h2 class="menu-heading">PAUSE AU FOURNIL</h2>
+                <div class="retro-menu-options in-pause-opts">
+                  <button class="retro-opt-btn active" id="btnResume" type="button">
+                    <span class="opt-cursor">&gt;</span> REPRENDRE
+                  </button>
+                  <button class="retro-opt-btn" id="btnRestartGame" type="button">
+                    <span class="opt-cursor">&gt;</span> NOUVELLE FOURNÉE
+                  </button>
+                  <button class="retro-opt-btn" id="btnToggleSound" type="button">
+                    <span class="opt-cursor">&gt;</span> <span id="soundOptLabel">SON : COUPE</span>
+                  </button>
+                  <button class="retro-opt-btn" id="btnQuitToTitle" type="button">
+                    <span class="opt-cursor">&gt;</span> MENU PRINCIPAL
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Game Over Overlay -->
+            <div class="menu-overlay gameover-overlay" id="gameOverMenu" hidden>
+              <div class="menu-card">
+                <span class="danger-badge">DÉBORDEMENT DU FOUR !</span>
+                <h2 class="menu-heading">FOURNÉE TERMINÉE</h2>
+                <div class="final-stats-box">
+                  <div class="final-row">
+                    <small>SCORE FINAL</small>
+                    <strong id="finalScoreVal">0</strong>
+                  </div>
+                  <div class="final-row">
+                    <small>LIGNES FARINÉES</small>
+                    <strong id="finalLinesVal">0</strong>
+                  </div>
+                  <div class="final-row">
+                    <small>TITRE DE PÂTISSIER</small>
+                    <span class="rank-label" id="finalRankLabel">Maître Pâtissier</span>
+                  </div>
+                </div>
+                <div class="menu-actions">
+                  <button class="retro-btn primary" id="btnRetryGame" type="button">Nouvelle Fournée</button>
+                  <button class="retro-btn" id="btnOverToTitle" type="button">Menu Principal</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Bezel Inscription -->
+          <div class="bezel-footer">
+            <span class="sub-inscription">DOT MATRIX 3D STEREO SOUND &middot; SUPER ROTATION SYSTEM</span>
+          </div>
         </div>
 
-        <div class="header-actions">
-          <button class="icon-btn" id="soundBtn" type="button" title="Activer / Couper la musique">
-            <span id="soundLabel">Musique : OFF</span>
-          </button>
-          <button class="icon-btn" id="pauseBtn" type="button" title="Mettre en pause (P)">
-            <span>Pause</span>
-          </button>
-        </div>
-      </header>
-
-      <!-- Main Game Columns Layout -->
-      <main class="tetris-columns">
-        <!-- Left Column: Hold Slot & Mascot Stage -->
-        <aside class="side-panel left-panel">
-          <div class="hud-box hold-box">
-            <span class="box-kicker">RÉSERVE [C]</span>
-            <div class="preview-stage" id="holdStage">
-              <!-- Rendered via Three.js secondary view / canvas -->
-              <span class="empty-hint" id="holdEmptyHint">Vide</span>
+        <!-- Lower Console Chassis Controls -->
+        <div class="chassis-controls" id="chassisControls">
+          <!-- Left: Directional Cross D-Pad -->
+          <div class="dpad-zone">
+            <div class="dpad-cross" id="dpadCross">
+              <button class="dpad-btn dpad-up" id="btnDpadUp" type="button" aria-label="Haut / Pivoter">
+                <span class="arrow-glyph">&#9650;</span>
+              </button>
+              <button class="dpad-btn dpad-left" id="btnDpadLeft" type="button" aria-label="Gauche">
+                <span class="arrow-glyph">&#9664;</span>
+              </button>
+              <div class="dpad-center-pivot" aria-hidden="true"></div>
+              <button class="dpad-btn dpad-right" id="btnDpadRight" type="button" aria-label="Droite">
+                <span class="arrow-glyph">&#9654;</span>
+              </button>
+              <button class="dpad-btn dpad-down" id="btnDpadDown" type="button" aria-label="Bas / Chute douce">
+                <span class="arrow-glyph">&#9660;</span>
+              </button>
             </div>
           </div>
 
-          <!-- Score & Stats Widget -->
-          <div class="hud-box stats-box">
-            <span class="box-kicker">FOURNÉE</span>
-            <div class="stat-row">
-              <span class="stat-label">SCORE</span>
-              <strong class="stat-value" id="scoreVal">0</strong>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">RECORD</span>
-              <span class="stat-value highlight" id="highScoreVal">0</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">NIVEAU</span>
-              <span class="stat-value" id="levelVal">1</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">LIGNES</span>
-              <span class="stat-value" id="linesVal">0</span>
+          <!-- Middle: Start / Select Pills -->
+          <div class="middle-buttons-zone">
+            <div class="pill-btn-group">
+              <button class="pill-btn" id="btnSelect" type="button">
+                <span class="pill-label">SELECT</span>
+              </button>
+              <button class="pill-btn" id="btnStart" type="button">
+                <span class="pill-label">START</span>
+              </button>
             </div>
           </div>
 
-          <!-- Baker Mascot Reaction Bubble -->
-          <div class="mascot-widget" id="mascotWidget">
-            <div class="mascot-bubble" id="mascotSpeech">
-              Prépare la pâte ! La première pièce arrive !
+          <!-- Right: Action Buttons (A, B, X) -->
+          <div class="action-buttons-zone">
+            <div class="action-cluster">
+              <button class="action-round-btn btn-x" id="btnActionX" type="button" title="Chute instantanée (Espace)">
+                <span class="btn-letter">X</span>
+              </button>
+              <button class="action-round-btn btn-b" id="btnActionB" type="button" title="Réserve (C)">
+                <span class="btn-letter">B</span>
+              </button>
+              <button class="action-round-btn btn-a" id="btnActionA" type="button" title="Pivoter (Flèche Haut)">
+                <span class="btn-letter">A</span>
+              </button>
             </div>
-            <div class="mascot-name">Chef Émile le Pâtissier</div>
-          </div>
-        </aside>
-
-        <!-- Center Column: 3D Oven Chamber Viewport Center Marker -->
-        <div class="center-stage">
-          <!-- Floating In-Game Toast (Combos, Tetris, Level Up) -->
-          <div class="event-banner" id="eventBanner" hidden>
-            <h2 id="eventTitle">TETRIS !</h2>
-            <p id="eventSubtitle">+800 Points Farinés</p>
           </div>
         </div>
 
-        <!-- Right Column: Next Piece Preview & Controls Card -->
-        <aside class="side-panel right-panel">
-          <div class="hud-box next-box">
-            <span class="box-kicker">SUIVANT</span>
-            <div class="preview-stage" id="nextStage">
-              <!-- Rendered via Three.js -->
-            </div>
-          </div>
-
-          <!-- Controls Reminder Card -->
-          <div class="hud-box controls-card">
-            <span class="box-kicker">COMMANDES CLAVIER</span>
-            <div class="control-key-row">
-              <kbd>&larr;</kbd><kbd>&rarr;</kbd><span>Déplacer</span>
-            </div>
-            <div class="control-key-row">
-              <kbd>&uarr;</kbd> / <kbd>W</kbd><span>Pivoter</span>
-            </div>
-            <div class="control-key-row">
-              <kbd>&darr;</kbd> / <kbd>S</kbd><span>Chute Douce</span>
-            </div>
-            <div class="control-key-row">
-              <kbd>Espace</kbd><span>Chute Immédiate</span>
-            </div>
-            <div class="control-key-row">
-              <kbd>C</kbd><span>Mettre en Réserve</span>
-            </div>
-          </div>
-        </aside>
-      </main>
-
-      <!-- Bottom Touch Controls Bar (Mobile / Tablet Friendly) -->
-      <footer class="touch-bar" id="touchBar">
-        <button class="touch-btn" id="btnTouchLeft" type="button" aria-label="Gauche">&larr;</button>
-        <button class="touch-btn" id="btnTouchRight" type="button" aria-label="Droite">&rarr;</button>
-        <button class="touch-btn rotate-btn" id="btnTouchRotate" type="button" aria-label="Pivoter">&#8635;</button>
-        <button class="touch-btn drop-btn" id="btnTouchSoftDrop" type="button" aria-label="Descendre">&darr;</button>
-        <button class="touch-btn hard-btn" id="btnTouchHardDrop" type="button" aria-label="Chute Immédiate">&#8650;</button>
-        <button class="touch-btn hold-btn" id="btnTouchHold" type="button" aria-label="Réserver">Réserve</button>
-      </footer>
-    </div>
-
-    <!-- Pause Modal Overlay -->
-    <div class="game-modal" id="pauseModal" hidden>
-      <div class="modal-card">
-        <span class="modal-kicker">PAUSE AU FOURNIL</span>
-        <h2>Partie Suspendue</h2>
-        <p>Les blocs de pâte sont figés dans l'air tiède de la cuisine.</p>
-        <div class="modal-buttons">
-          <button class="modal-btn primary-btn" id="resumeBtn" type="button">Reprendre la Partie</button>
-          <button class="modal-btn" id="restartBtn" type="button">Nouvelle Fournée</button>
-          <a class="modal-btn hub-btn" href="../index.html">Quitter vers le Hub</a>
+        <!-- Speaker Grille on Bottom Right of Chassis -->
+        <div class="chassis-speaker-grille" aria-hidden="true">
+          <span class="speaker-slit"></span>
+          <span class="speaker-slit"></span>
+          <span class="speaker-slit"></span>
+          <span class="speaker-slit"></span>
+          <span class="speaker-slit"></span>
+          <span class="speaker-slit"></span>
         </div>
       </div>
     </div>
 
-    <!-- Game Over Modal Overlay -->
-    <div class="game-modal" id="gameOverModal" hidden>
-      <div class="modal-card gameover-card">
-        <span class="modal-kicker">DÉBORDEMENT DU FOUR !</span>
-        <h2>Fournée Terminée</h2>
-        <div class="final-scores">
-          <div class="score-pill">
-            <small>SCORE FINAL</small>
-            <strong id="finalScoreVal">0</strong>
-          </div>
-          <div class="score-pill">
-            <small>LIGNES CUISINÉES</small>
-            <strong id="finalLinesVal">0</strong>
-          </div>
-        </div>
-        <p id="gameOverSummary">Le moule était trop plein ! Belle performance de pâtisserie.</p>
-        <div class="modal-buttons">
-          <button class="modal-btn primary-btn" id="retryBtn" type="button">Recommencer une Fournée</button>
-          <a class="modal-btn hub-btn" href="../index.html">Retour au Bwedverse</a>
-        </div>
-      </div>
-    </div>
-
+    <!-- Main Game Engine -->
     <script type="module" src="./tetris.js"></script>
   </body>
 </html>

@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /* ==========================================================================
-   BWEDTRIS 3D — Le Tetris Pâtissier du Bwedverse
-   Moteur de jeu complet : 7-tetrominoes, SRS, Audio Web, Fourneau 3D
+   BWED BOY 3D — BWEDTRIS ARCADE
+   Moteur de jeu complet pour console rétro portable Game Boy 3D
+   Pièces réelles GLB Meshy, Système SRS, Menus Rétro, Audio Synthétique
    ========================================================================== */
 
-// --- CONFIGURATION DU JEU ---
+// --- DIMENSIONS DE LA GRILLE ---
 const COLS = 10;
 const ROWS = 20;
 const CELL_SIZE = 1.0;
@@ -16,73 +17,87 @@ const MAX_LOCK_RESETS = 15;
 
 // Vitesses de chute par niveau (en millisecondes par case)
 const LEVEL_SPEEDS = [
-  1000, 850, 720, 600, 500, 410, 330, 260, 200, 150, 110, 80, 60, 45, 30
+  950, 800, 680, 560, 460, 370, 290, 220, 160, 110, 80, 60, 45, 30
 ];
 
-// --- PALETTES & TEXTURES PÂTISSIÈRES ---
-const PIECE_THEMES = {
+// Configuration des thèmes et des modèles GLB par pièce
+const PIECE_CONFIG = {
   I: {
     name: 'Baguette Dorée',
+    file: './assets/blocks/block-i-bread-cubes.glb',
     color: '#38bdf8',
     glow: '#0284c7',
-    specular: 0x67e8f9,
-    roughness: 0.28,
-    metalness: 0.1,
-    desc: 'Baguette croustillante dorée au miel'
+    pivot: [1.5, 1.5],
+    scale: 2.1,
+    baseRot: [0, 0, Math.PI / 2],
+    baseOffset: [0, 0.5, 0],
+    reflectX: false
   },
   O: {
     name: 'Crème Pistache',
+    file: './assets/blocks/block-o-pistachio-glow.glb',
     color: '#eab308',
     glow: '#ca8a04',
-    specular: 0xfef08a,
-    roughness: 0.32,
-    metalness: 0.05,
-    desc: 'Pavé fondant de beurre et pistache'
+    pivot: [0.5, 0.5],
+    scale: 1.05,
+    baseRot: [Math.PI / 2, 0, 0],
+    baseOffset: [0, 0, 0],
+    reflectX: false
   },
   T: {
     name: 'Gaufre Cacao',
+    file: './assets/blocks/block-t-waffle-tower.glb',
     color: '#a855f7',
     glow: '#7e22ce',
-    specular: 0xd8b4fe,
-    roughness: 0.45,
-    metalness: 0.08,
-    desc: 'Gaufre artisanale au coulis de myrtille'
+    pivot: [1.0, 1.0],
+    scale: 1.58,
+    baseRot: [0, 0, Math.PI],
+    baseOffset: [0, 0, 0],
+    reflectX: false
   },
   L: {
     name: 'Brioche Indigo',
+    file: './assets/blocks/block-l-cosmic-indigo.glb',
     color: '#f97316',
     glow: '#c2410c',
-    specular: 0xfdba74,
-    roughness: 0.35,
-    metalness: 0.12,
-    desc: 'Brioche tressée aux éclats d caramel'
+    pivot: [1.0, 1.0],
+    scale: 1.58,
+    baseRot: [0, 0, 0],
+    baseOffset: [0, 0, 0],
+    reflectX: false
   },
   J: {
     name: 'Sablé Myrtille',
+    file: './assets/blocks/block-l-cosmic-indigo.glb',
     color: '#3b82f6',
     glow: '#1d4ed8',
-    specular: 0x93c5fd,
-    roughness: 0.4,
-    metalness: 0.05,
-    desc: 'Sablé breton trempé au sirop d azur'
+    pivot: [1.0, 1.0],
+    scale: 1.58,
+    baseRot: [0, 0, 0],
+    baseOffset: [0, 0, 0],
+    reflectX: true
   },
   S: {
     name: 'Roulé Matcha',
+    file: './assets/blocks/block-z-crimson-snowflake.glb',
     color: '#22c55e',
     glow: '#15803d',
-    specular: 0x86efac,
-    roughness: 0.38,
-    metalness: 0.08,
-    desc: 'Roulé moelleux au thé vert matcha'
+    pivot: [1.0, 1.0],
+    scale: 1.58,
+    baseRot: [Math.PI / 2, 0, 0],
+    baseOffset: [0, 0, 0],
+    reflectX: true
   },
   Z: {
     name: 'Framboise Royale',
+    file: './assets/blocks/block-z-crimson-snowflake.glb',
     color: '#ef4444',
     glow: '#b91c1c',
-    specular: 0xfca5a5,
-    roughness: 0.25,
-    metalness: 0.15,
-    desc: 'Macaron rouge velours à la framboise'
+    pivot: [1.0, 1.0],
+    scale: 1.58,
+    baseRot: [Math.PI / 2, 0, 0],
+    baseOffset: [0, 0, 0],
+    reflectX: false
   }
 };
 
@@ -177,8 +192,7 @@ const WALL_KICKS_I = {
 };
 
 /* ==========================================================================
-   GESTIONNAIRE AUDIO SYNTHÉTIQUE WEB & MUSIQUE
-   Garantit zéro latence et un fonctionnement fluide sans dépendances externes
+   SYSTÈME AUDIO RÉTRO WEB
    ========================================================================== */
 
 class BwedAudioManager {
@@ -186,16 +200,13 @@ class BwedAudioManager {
     this.audioCtx = null;
     this.musicAudio = null;
     this.isMuted = true;
-    this.isMusicPlaying = false;
     this.initMusic();
   }
 
   ensureContext() {
     if (!this.audioCtx) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (AudioContextClass) {
-        this.audioCtx = new AudioContextClass();
-      }
+      const AudioClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioClass) this.audioCtx = new AudioClass();
     }
     if (this.audioCtx && this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
@@ -205,143 +216,109 @@ class BwedAudioManager {
   initMusic() {
     this.musicAudio = new Audio('./assets/audio/bakery-theme.mp3');
     this.musicAudio.loop = true;
-    this.musicAudio.volume = 0.35;
+    this.musicAudio.volume = 0.3;
   }
 
   toggleMusic() {
     this.ensureContext();
     this.isMuted = !this.isMuted;
     if (this.isMuted) {
-      if (this.musicAudio) this.musicAudio.pause();
-      this.isMusicPlaying = false;
+      this.musicAudio?.pause();
       return false;
     } else {
-      if (this.musicAudio) {
-        this.musicAudio.play().catch(() => {});
-        this.isMusicPlaying = true;
-      }
+      this.musicAudio?.play().catch(() => {});
       return true;
     }
   }
 
-  playTone(freq, type, duration, gainValue = 0.15, attack = 0.01, decay = 0.08) {
+  playTone(freq, type, duration, gainVal = 0.12, attack = 0.005, decay = 0.06) {
     if (this.isMuted) return;
     this.ensureContext();
     if (!this.audioCtx) return;
-
     try {
       const now = this.audioCtx.currentTime;
       const osc = this.audioCtx.createOscillator();
       const gain = this.audioCtx.createGain();
-
       osc.type = type;
       osc.frequency.setValueAtTime(freq, now);
-
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(gainValue, now + attack);
+      gain.gain.linearRampToValueAtTime(gainVal, now + attack);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-
       osc.connect(gain);
       gain.connect(this.audioCtx.destination);
-
       osc.start(now);
       osc.stop(now + duration + 0.05);
-    } catch {
-      // Audio synth non-bloquant
-    }
-  }
-
-  playMove() {
-    this.playTone(280, 'triangle', 0.06, 0.08, 0.005, 0.05);
-  }
-
-  playRotate() {
-    if (this.isMuted) return;
-    this.ensureContext();
-    if (!this.audioCtx) return;
-    try {
-      const now = this.audioCtx.currentTime;
-      const osc = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(320, now);
-      osc.frequency.exponentialRampToValueAtTime(560, now + 0.08);
-
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.09, now + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-
-      osc.connect(gain);
-      gain.connect(this.audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 0.1);
     } catch {}
   }
 
+  playCursor() {
+    this.playTone(480, 'square', 0.04, 0.08, 0.002, 0.035);
+  }
+
+  playSelect() {
+    this.playTone(520, 'triangle', 0.06, 0.1, 0.005, 0.05);
+    setTimeout(() => this.playTone(780, 'triangle', 0.09, 0.12, 0.005, 0.08), 50);
+  }
+
+  playMove() {
+    this.playTone(260, 'triangle', 0.05, 0.07, 0.004, 0.04);
+  }
+
+  playRotate() {
+    this.playTone(420, 'sine', 0.07, 0.09, 0.005, 0.06);
+  }
+
   playSoftDrop() {
-    this.playTone(180, 'sine', 0.04, 0.05, 0.005, 0.03);
+    this.playTone(190, 'sine', 0.04, 0.05, 0.005, 0.03);
   }
 
   playHardDrop() {
-    this.playTone(95, 'triangle', 0.14, 0.22, 0.01, 0.12);
+    this.playTone(110, 'triangle', 0.12, 0.18, 0.008, 0.1);
   }
 
   playHold() {
-    this.playTone(440, 'triangle', 0.1, 0.1, 0.01, 0.09);
+    this.playTone(440, 'triangle', 0.08, 0.1, 0.005, 0.07);
   }
 
   playLineClear(linesCount) {
-    if (this.isMuted) return;
-    this.ensureContext();
-    if (!this.audioCtx) return;
-
     const chords = {
-      1: [523.25, 659.25],            // Do5, Mi5
-      2: [523.25, 659.25, 783.99],     // Do, Mi, Sol
-      3: [523.25, 659.25, 783.99, 1046.50], // Arpège 4 notes
-      4: [523.25, 659.25, 783.99, 1046.50, 1318.51] // Fanfare Tetris
+      1: [523.25, 659.25],
+      2: [523.25, 659.25, 783.99],
+      3: [523.25, 659.25, 783.99, 1046.50],
+      4: [523.25, 659.25, 783.99, 1046.50, 1318.51]
     };
-
     const notes = chords[Math.min(linesCount, 4)] || chords[1];
-    notes.forEach((freq, index) => {
-      setTimeout(() => {
-        this.playTone(freq, 'sine', 0.22, 0.14, 0.01, 0.18);
-      }, index * 45);
+    notes.forEach((freq, idx) => {
+      setTimeout(() => this.playTone(freq, 'sine', 0.18, 0.12, 0.01, 0.15), idx * 45);
     });
   }
 
   playTetrisFanfare() {
-    if (this.isMuted) return;
-    const fanfare = [
-      { f: 523.25, d: 80 },
-      { f: 659.25, d: 80 },
-      { f: 783.99, d: 80 },
-      { f: 1046.50, d: 180 },
-      { f: 880.00, d: 90 },
-      { f: 1046.50, d: 300 }
+    const notes = [
+      { f: 523.25, d: 70 },
+      { f: 659.25, d: 70 },
+      { f: 783.99, d: 70 },
+      { f: 1046.50, d: 150 },
+      { f: 880.00, d: 80 },
+      { f: 1046.50, d: 250 }
     ];
     let time = 0;
-    fanfare.forEach(step => {
-      setTimeout(() => {
-        this.playTone(step.f, 'triangle', step.d / 1000, 0.18, 0.01, step.d / 1000);
-      }, time);
+    notes.forEach(step => {
+      setTimeout(() => this.playTone(step.f, 'triangle', step.d / 1000, 0.15, 0.01, step.d / 1000), time);
       time += step.d;
     });
   }
 
   playGameOver() {
     const notes = [440, 415.3, 392, 349.2, 329.6];
-    notes.forEach((freq, idx) => {
-      setTimeout(() => {
-        this.playTone(freq, 'sawtooth', 0.25, 0.12, 0.02, 0.2);
-      }, idx * 110);
+    notes.forEach((f, idx) => {
+      setTimeout(() => this.playTone(f, 'sawtooth', 0.22, 0.1, 0.02, 0.18), idx * 100);
     });
   }
 }
 
 /* ==========================================================================
-   GÉNÉRATEUR DE PIÈCES (7-BAG RANDOMIZER)
+   SAC DE PIÈCES (7-BAG RANDOMIZER)
    ========================================================================== */
 
 class TetrisBag {
@@ -363,227 +340,167 @@ class TetrisBag {
 }
 
 /* ==========================================================================
-   SCÈNE THREE.JS & FOURNEAU 3D
+   SCÈNE THREE.JS & MOTEUR 3D DANS L'ÉCRAN BWED BOY
    ========================================================================== */
 
-class BwedOvenScene {
+class BwedBoyScreen3D {
   constructor(containerEl) {
     this.container = containerEl;
     this.scene = null;
     this.camera = null;
     this.renderer = null;
 
+    // Modèles 3D préchargés
+    this.gltfLoader = new GLTFLoader();
+    this.models = {};
+    this.materials = {};
+    this.isModelsReady = false;
+
     // Groupes 3D
     this.boardGroup = new THREE.Group();
     this.activePieceGroup = new THREE.Group();
     this.ghostPieceGroup = new THREE.Group();
-    this.lockedBlocksGroup = new THREE.Group();
+    this.lockedPiecesGroup = new THREE.Group();
     this.particlesGroup = new THREE.Group();
-    this.decorGroup = new THREE.Group();
+    this.titleDecorGroup = new THREE.Group();
 
-    // Dictionnaires de géométries et matériaux réutilisables
-    this.boxGeometry = null;
-    this.bevelGeometry = null;
-    this.materials = {};
-
-    // Modèles GLB chargés
-    this.loadedModels = {};
-    this.gltfLoader = new GLTFLoader();
-
-    // Particules actives
+    // Système de particules de miettes et poussière de farine
     this.particles = [];
     this.dustParticles = [];
 
-    // Mascot mesh reference
-    this.mascotMesh = null;
-    this.mascotHopTime = 0;
+    // Pièce de démonstration de l'écran titre
+    this.titleDemoMesh = null;
 
     this.init();
   }
 
   init() {
-    const width = this.container.clientWidth || window.innerWidth;
-    const height = this.container.clientHeight || window.innerHeight;
+    const width = this.container.clientWidth || 380;
+    const height = this.container.clientHeight || 494;
 
-    // Scène
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x120804);
-    this.scene.fog = new THREE.FogExp2(0x1a0b06, 0.022);
+    this.scene.background = new THREE.Color(0x0e0704);
+    this.scene.fog = new THREE.FogExp2(0x180b06, 0.02);
 
-    // Caméra
-    this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    // Position optimale pour cadrer l'enceinte de 10x20
-    this.camera.position.set(0, 10.2, 28.5);
-    this.camera.lookAt(0, 9.8, 0);
+    this.camera = new THREE.PerspectiveCamera(46, width / height, 0.1, 100);
+    this.camera.position.set(0, 9.5, 27.5);
+    this.camera.lookAt(0, 9.5, 0);
 
-    // Moteur de rendu
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.15;
+    this.renderer.toneMappingExposure = 1.2;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.container.appendChild(this.renderer.domElement);
 
-    // Hiérarchie des groupes
+    // Arborescence
     this.scene.add(this.boardGroup);
-    this.boardGroup.add(this.lockedBlocksGroup);
+    this.boardGroup.add(this.lockedPiecesGroup);
     this.boardGroup.add(this.ghostPieceGroup);
     this.boardGroup.add(this.activePieceGroup);
     this.scene.add(this.particlesGroup);
-    this.scene.add(this.decorGroup);
+    this.scene.add(this.titleDecorGroup);
 
-    // Géométries standards
-    this.boxGeometry = new THREE.BoxGeometry(0.94, 0.94, 0.94);
-
-    // Initialisation de l'éclairage et du décor
     this.setupLighting();
-    this.buildOvenChamber();
+    this.buildOvenBackdrop();
     this.setupFlourDust();
-    this.loadDecorAssets();
+    this.preloadGLBModels();
 
-    // Redimensionnement réactif
     window.addEventListener('resize', () => this.onResize());
   }
 
   setupLighting() {
-    // Lumière ambiante chaude de cuisine
-    const ambientLight = new THREE.AmbientLight(0xffecd1, 1.2);
+    const ambientLight = new THREE.AmbientLight(0xffecd1, 1.35);
     this.scene.add(ambientLight);
 
-    // Lumière directionnelle principale (fournil supérieur)
-    const sunLight = new THREE.DirectionalLight(0xffeed6, 2.2);
-    sunLight.position.set(12, 24, 18);
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 1024;
-    sunLight.shadow.mapSize.height = 1024;
-    sunLight.shadow.bias = -0.0005;
-    this.scene.add(sunLight);
+    const mainLight = new THREE.DirectionalLight(0xffeed6, 2.4);
+    mainLight.position.set(10, 22, 16);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.width = 1024;
+    mainLight.shadow.mapSize.height = 1024;
+    this.scene.add(mainLight);
 
-    // Lueur rougeoyante du foyer inférieur (braises du four)
-    const hearthGlow = new THREE.PointLight(0xff6b1a, 2.8, 22);
-    hearthGlow.position.set(0, -1.5, 4);
+    // Lueur rougeoyante du bas du four
+    const hearthGlow = new THREE.PointLight(0xff7722, 2.5, 20);
+    hearthGlow.position.set(0, -1, 3);
     this.scene.add(hearthGlow);
 
-    // Lumière dorée douce en contre-plongée
-    const rimLight = new THREE.DirectionalLight(0xffb84d, 0.9);
-    rimLight.position.set(-14, 12, -8);
+    // Éclairage de contre-jour doux
+    const rimLight = new THREE.DirectionalLight(0xffb84d, 0.8);
+    rimLight.position.set(-12, 10, -8);
     this.scene.add(rimLight);
   }
 
-  buildOvenChamber() {
-    // 1. Fond du fourneau en briques sombres lustrées
-    const backWallGeo = new THREE.PlaneGeometry(10.6, 20.6);
-    const backWallMat = new THREE.MeshStandardMaterial({
-      color: 0x1d100b,
-      roughness: 0.85,
-      metalness: 0.1
+  buildOvenBackdrop() {
+    // Fond sombre de la chambre de cuisson
+    const wallGeo = new THREE.PlaneGeometry(10.5, 20.5);
+    const wallMat = new THREE.MeshStandardMaterial({
+      color: 0x160c07,
+      roughness: 0.88,
+      metalness: 0.08
     });
-    const backWall = new THREE.Mesh(backWallGeo, backWallMat);
+    const backWall = new THREE.Mesh(wallGeo, wallMat);
     backWall.position.set(0, 9.5, -0.52);
     this.boardGroup.add(backWall);
 
-    // 2. Grillage quadrillé de cuisson subtil (lignes de guidage)
-    const gridHelperMat = new THREE.LineBasicMaterial({
-      color: 0x5a341e,
-      transparent: true,
-      opacity: 0.45
-    });
-
-    // Lignes verticales
+    // Grille de guidage fine
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x472715, transparent: true, opacity: 0.5 });
     for (let c = 0; c <= COLS; c++) {
       const x = (c - COLS / 2) * CELL_SIZE;
-      const points = [
-        new THREE.Vector3(x, -0.5, -0.5),
-        new THREE.Vector3(x, ROWS - 0.5, -0.5)
-      ];
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(lineGeo, gridHelperMat);
-      this.boardGroup.add(line);
+      const pts = [new THREE.Vector3(x, -0.5, -0.5), new THREE.Vector3(x, ROWS - 0.5, -0.5)];
+      this.boardGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
     }
-
-    // Lignes horizontales
     for (let r = 0; r <= ROWS; r++) {
       const y = r * CELL_SIZE - 0.5;
-      const points = [
-        new THREE.Vector3(-HALF_WIDTH, y, -0.5),
-        new THREE.Vector3(HALF_WIDTH, y, -0.5)
-      ];
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(lineGeo, gridHelperMat);
-      this.boardGroup.add(line);
+      const pts = [new THREE.Vector3(-HALF_WIDTH, y, -0.5), new THREE.Vector3(HALF_WIDTH, y, -0.5)];
+      this.boardGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
     }
 
-    // 3. Cadre monumental en laiton cuit du fourneau
-    const frameMat = new THREE.MeshStandardMaterial({
-      color: 0xc88937,
-      roughness: 0.35,
-      metalness: 0.75
-    });
+    // Montants en laiton
+    const brassMat = new THREE.MeshStandardMaterial({ color: 0xb57c32, roughness: 0.4, metalness: 0.7 });
+    const colGeo = new THREE.BoxGeometry(0.35, 21.2, 0.8);
 
-    const borderThickness = 0.55;
-    const borderDepth = 1.3;
-
-    // Colonne gauche
-    const leftCol = new THREE.Mesh(new THREE.BoxGeometry(borderThickness, 21.6, borderDepth), frameMat);
-    leftCol.position.set(-HALF_WIDTH - borderThickness / 2, 9.5, 0);
+    const leftCol = new THREE.Mesh(colGeo, brassMat);
+    leftCol.position.set(-HALF_WIDTH - 0.2, 9.5, 0);
     this.boardGroup.add(leftCol);
 
-    // Colonne droite
-    const rightCol = new THREE.Mesh(new THREE.BoxGeometry(borderThickness, 21.6, borderDepth), frameMat);
-    rightCol.position.set(HALF_WIDTH + borderThickness / 2, 9.5, 0);
+    const rightCol = new THREE.Mesh(colGeo, brassMat);
+    rightCol.position.set(HALF_WIDTH + 0.2, 9.5, 0);
     this.boardGroup.add(rightCol);
 
-    // Traverse supérieure avec fronton
-    const topBar = new THREE.Mesh(new THREE.BoxGeometry(11.8 + borderThickness * 2, borderThickness, borderDepth), frameMat);
-    topBar.position.set(0, ROWS - 0.5 + borderThickness / 2, 0);
-    this.boardGroup.add(topBar);
-
-    // Sole de cuisson inférieure (pierre de lave chaude)
-    const bottomHearthMat = new THREE.MeshStandardMaterial({
-      color: 0x2a160d,
-      roughness: 0.9,
-      metalness: 0.05
-    });
-    const bottomHearth = new THREE.Mesh(new THREE.BoxGeometry(16, 1.2, 5.5), bottomHearthMat);
-    bottomHearth.position.set(0, -1.1, 1.5);
-    bottomHearth.receiveShadow = true;
-    this.boardGroup.add(bottomHearth);
-
-    // Bande lumineuse de préchauffage en bas
-    const glowBarGeo = new THREE.BoxGeometry(10.2, 0.12, 0.3);
-    const glowBarMat = new THREE.MeshBasicMaterial({ color: 0xff7b22 });
-    const glowBar = new THREE.Mesh(glowBarGeo, glowBarMat);
-    glowBar.position.set(0, -0.5, 0.4);
-    this.boardGroup.add(glowBar);
+    // Sole de cuisson
+    const hearthMat = new THREE.MeshStandardMaterial({ color: 0x22120a, roughness: 0.9 });
+    const hearth = new THREE.Mesh(new THREE.BoxGeometry(12, 0.8, 3), hearthMat);
+    hearth.position.set(0, -0.9, 0.8);
+    this.boardGroup.add(hearth);
   }
 
   setupFlourDust() {
-    // Particules de farine et de poussière flottant doucement dans la lumière chaude
-    const count = 45;
+    const count = 35;
     const geom = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const velocities = [];
 
     for (let i = 0; i < count; i++) {
-      positions[i * 3 + 0] = (Math.random() - 0.5) * 22;
+      positions[i * 3 + 0] = (Math.random() - 0.5) * 18;
       positions[i * 3 + 1] = Math.random() * 22;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 16;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 12;
 
       velocities.push({
-        vx: (Math.random() - 0.5) * 0.008,
-        vy: -0.004 - Math.random() * 0.008,
-        vz: (Math.random() - 0.5) * 0.008
+        vx: (Math.random() - 0.5) * 0.006,
+        vy: -0.003 - Math.random() * 0.007,
+        vz: (Math.random() - 0.5) * 0.006
       });
     }
 
     geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const mat = new THREE.PointsMaterial({
       color: 0xffecd4,
-      size: 0.22,
+      size: 0.25,
       transparent: true,
-      opacity: 0.55
+      opacity: 0.5
     });
 
     const dust = new THREE.Points(geom, mat);
@@ -591,96 +508,122 @@ class BwedOvenScene {
     this.dustParticles = { mesh: dust, velocities, count };
   }
 
-  loadDecorAssets() {
-    // 1. Lanterne de miel dorée (sur le montant droit)
-    this.gltfLoader.load(
-      './assets/decor/honey-lantern.glb',
-      (gltf) => {
-        const lantern = gltf.scene;
-        lantern.scale.set(1.4, 1.4, 1.4);
-        lantern.position.set(HALF_WIDTH + 1.8, 14.5, 1.2);
-        this.decorGroup.add(lantern);
+  preloadGLBModels() {
+    const uniqueFiles = {
+      I: './assets/blocks/block-i-bread-cubes.glb',
+      O: './assets/blocks/block-o-pistachio-glow.glb',
+      T: './assets/blocks/block-t-waffle-tower.glb',
+      L: './assets/blocks/block-l-cosmic-indigo.glb',
+      Z: './assets/blocks/block-z-crimson-snowflake.glb'
+    };
 
-        // Lueur de la lanterne
-        const lanternLight = new THREE.PointLight(0xffb84d, 2.5, 12);
-        lanternLight.position.set(HALF_WIDTH + 1.8, 14.5, 1.8);
-        this.decorGroup.add(lanternLight);
-      },
-      undefined,
-      () => {}
-    );
+    let loadedCount = 0;
+    const totalCount = Object.keys(uniqueFiles).length;
 
-    // 2. Feu de camp de chamallows (en bas à gauche sur la pierre de foyer)
-    this.gltfLoader.load(
-      './assets/decor/marshmallow-campfire.glb',
-      (gltf) => {
-        const campfire = gltf.scene;
-        campfire.scale.set(1.1, 1.1, 1.1);
-        campfire.position.set(-HALF_WIDTH - 2.8, -0.6, 2.2);
-        this.decorGroup.add(campfire);
-      },
-      undefined,
-      () => {}
-    );
-
-    // 3. Mascotte Chef Émile le Pâtissier (au premier plan à gauche)
-    this.gltfLoader.load(
-      './assets/mascot/tiny-baker.glb',
-      (gltf) => {
-        const baker = gltf.scene;
-        baker.scale.set(1.25, 1.25, 1.25);
-        baker.position.set(-HALF_WIDTH - 2.6, 1.8, 3.2);
-        baker.rotation.y = 0.45;
-        this.mascotMesh = baker;
-        this.decorGroup.add(baker);
-      },
-      undefined,
-      () => {}
-    );
+    Object.entries(uniqueFiles).forEach(([key, path]) => {
+      this.gltfLoader.load(
+        path,
+        (gltf) => {
+          this.models[key] = gltf.scene;
+          loadedCount++;
+          if (loadedCount === totalCount) {
+            this.isModelsReady = true;
+            this.setupTitleDemoPiece('T');
+          }
+        },
+        undefined,
+        () => {
+          loadedCount++;
+          if (loadedCount === totalCount) this.isModelsReady = true;
+        }
+      );
+    });
   }
 
-  onResize() {
-    if (!this.container || !this.renderer || !this.camera) return;
-    const width = this.container.clientWidth || window.innerWidth;
-    const height = this.container.clientHeight || window.innerHeight;
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(width, height);
-  }
+  // Instancie un modèle 3D de pièce avec son échelle, rotation et correction de pivot
+  createPiece3D(type, isGhost = false) {
+    const cfg = PIECE_CONFIG[type] || PIECE_CONFIG.I;
+    const rootGroup = new THREE.Group();
 
-  // Création d'un matériau pâtissier chaleureux
-  getPieceMaterial(type, isGhost = false) {
-    const key = `${type}_${isGhost ? 'ghost' : 'solid'}`;
-    if (this.materials[key]) return this.materials[key];
+    // Source du modèle (J réutilise L, S réutilise Z)
+    const sourceKey = type === 'J' ? 'L' : (type === 'S' ? 'Z' : type);
+    const template = this.models[sourceKey];
 
-    const theme = PIECE_THEMES[type] || PIECE_THEMES.I;
-    let mat;
+    if (template) {
+      const cloned = template.clone(true);
 
-    if (isGhost) {
-      mat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(theme.color),
-        transparent: true,
-        opacity: 0.22,
-        roughness: 0.6,
-        wireframe: false
-      });
+      // Application des transformations de base du modèle
+      cloned.rotation.set(cfg.baseRot[0], cfg.baseRot[1], cfg.baseRot[2]);
+      cloned.position.set(cfg.baseOffset[0], cfg.baseOffset[1], cfg.baseOffset[2]);
+
+      const sx = cfg.reflectX ? -cfg.scale : cfg.scale;
+      cloned.scale.set(sx, cfg.scale, cfg.scale);
+
+      // Traitement du fantôme
+      if (isGhost) {
+        const ghostMat = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(cfg.color),
+          transparent: true,
+          opacity: 0.28,
+          wireframe: false
+        });
+        cloned.traverse((node) => {
+          if (node.isMesh) {
+            node.material = ghostMat;
+          }
+        });
+      } else {
+        cloned.traverse((node) => {
+          if (node.isMesh) {
+            node.castShadow = true;
+            node.receiveShadow = true;
+          }
+        });
+      }
+
+      rootGroup.add(cloned);
     } else {
-      mat = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(theme.color),
-        roughness: theme.roughness,
-        metalness: theme.metalness,
-        emissive: new THREE.Color(theme.glow),
-        emissiveIntensity: 0.18
+      // Secours procédural si le modèle GLB charge encore
+      const boxGeo = new THREE.BoxGeometry(0.92, 0.92, 0.92);
+      const mat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(cfg.color),
+        roughness: 0.35,
+        transparent: isGhost,
+        opacity: isGhost ? 0.3 : 1.0
       });
+      const def = TETROMINOES[type].shapes[0];
+      for (let r = 0; r < def.length; r++) {
+        for (let c = 0; c < def[r].length; c++) {
+          if (def[r][c]) {
+            const cube = new THREE.Mesh(boxGeo, mat);
+            cube.position.set(c - cfg.pivot[0], -(r - cfg.pivot[1]), 0);
+            rootGroup.add(cube);
+          }
+        }
+      }
     }
 
-    this.materials[key] = mat;
-    return mat;
+    return rootGroup;
   }
 
-  // Rendu de la pièce active
+  setupTitleDemoPiece(type = 'T') {
+    while (this.titleDecorGroup.children.length > 0) {
+      this.titleDecorGroup.children.pop();
+    }
+    const piece = this.createPiece3D(type, false);
+    piece.position.set(0, 9.5, 2.5);
+    piece.scale.set(1.4, 1.4, 1.4);
+    this.titleDecorGroup.add(piece);
+    this.titleDemoMesh = piece;
+  }
+
+  showTitleMode(show) {
+    this.titleDecorGroup.visible = show;
+    this.boardGroup.visible = !show;
+  }
+
+  // Rendu de la pièce active en mouvement
   renderActivePiece(piece) {
-    // Vider le groupe actif
     while (this.activePieceGroup.children.length > 0) {
       const child = this.activePieceGroup.children.pop();
       child.geometry?.dispose();
@@ -688,37 +631,20 @@ class BwedOvenScene {
 
     if (!piece) return;
 
-    const shape = piece.getShape();
-    const mat = this.getPieceMaterial(piece.type, false);
+    const cfg = PIECE_CONFIG[piece.type];
+    const mesh = this.createPiece3D(piece.type, false);
 
-    for (let r = 0; r < shape.length; r++) {
-      for (let c = 0; c < shape[r].length; c++) {
-        if (shape[r][c]) {
-          const col = piece.col + c;
-          const row = piece.row - r;
-          const x = (col - COLS / 2 + 0.5) * CELL_SIZE;
-          const y = row * CELL_SIZE;
+    // Calcul du pivot dans l'espace Three.js
+    const pivotCol = piece.col + cfg.pivot[0];
+    const pivotRow = piece.row - cfg.pivot[1];
 
-          const cube = new THREE.Mesh(this.boxGeometry, mat);
-          cube.position.set(x, y, 0);
-          cube.castShadow = true;
-          cube.receiveShadow = true;
+    const worldX = (pivotCol - COLS / 2 + 0.5) * CELL_SIZE;
+    const worldY = pivotRow * CELL_SIZE;
 
-          // Glaçage supérieur (petit topping croustillant)
-          const icingGeo = new THREE.BoxGeometry(0.82, 0.08, 0.82);
-          const icingMat = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            roughness: 0.2,
-            metalness: 0.05
-          });
-          const icing = new THREE.Mesh(icingGeo, icingMat);
-          icing.position.set(0, 0.44, 0);
-          cube.add(icing);
+    mesh.position.set(worldX, worldY, 0.4);
+    mesh.rotation.z = -piece.rotation * (Math.PI / 2);
 
-          this.activePieceGroup.add(cube);
-        }
-      }
-    }
+    this.activePieceGroup.add(mesh);
   }
 
   // Rendu de la silhouette fantôme (ghost piece)
@@ -730,95 +656,101 @@ class BwedOvenScene {
 
     if (!piece || ghostRow === piece.row) return;
 
-    const shape = piece.getShape();
-    const mat = this.getPieceMaterial(piece.type, true);
+    const cfg = PIECE_CONFIG[piece.type];
+    const mesh = this.createPiece3D(piece.type, true);
 
-    for (let r = 0; r < shape.length; r++) {
-      for (let c = 0; c < shape[r].length; c++) {
-        if (shape[r][c]) {
-          const col = piece.col + c;
-          const row = ghostRow - r;
-          const x = (col - COLS / 2 + 0.5) * CELL_SIZE;
-          const y = row * CELL_SIZE;
+    const pivotCol = piece.col + cfg.pivot[0];
+    const pivotRow = ghostRow - cfg.pivot[1];
 
-          const cube = new THREE.Mesh(this.boxGeometry, mat);
-          cube.position.set(x, y, 0);
-          this.ghostPieceGroup.add(cube);
-        }
-      }
-    }
+    const worldX = (pivotCol - COLS / 2 + 0.5) * CELL_SIZE;
+    const worldY = pivotRow * CELL_SIZE;
+
+    mesh.position.set(worldX, worldY, 0.2);
+    mesh.rotation.z = -piece.rotation * (Math.PI / 2);
+
+    this.ghostPieceGroup.add(mesh);
   }
 
-  // Reconstruction intégrale des blocs verrouillés de la grille
-  rebuildLockedGrid(grid) {
-    while (this.lockedBlocksGroup.children.length > 0) {
-      const child = this.lockedBlocksGroup.children.pop();
+  // Reconstruction de la grille verrouillée
+  rebuildLockedPieces(placedPieces, grid) {
+    while (this.lockedPiecesGroup.children.length > 0) {
+      const child = this.lockedPiecesGroup.children.pop();
       child.geometry?.dispose();
     }
 
+    const boxGeo = new THREE.BoxGeometry(0.92, 0.92, 0.92);
+
+    // Rendu des pièces encore intactes avec leurs modèles 3D complets
+    for (const p of placedPieces) {
+      if (!p.broken) {
+        const cfg = PIECE_CONFIG[p.type];
+        const mesh = this.createPiece3D(p.type, false);
+        const pivotCol = p.col + cfg.pivot[0];
+        const pivotRow = p.row - cfg.pivot[1];
+        const worldX = (pivotCol - COLS / 2 + 0.5) * CELL_SIZE;
+        const worldY = pivotRow * CELL_SIZE;
+        mesh.position.set(worldX, worldY, 0.4);
+        mesh.rotation.z = -p.rot * (Math.PI / 2);
+        this.lockedPiecesGroup.add(mesh);
+      }
+    }
+
+    // Rendu des cases individuelles fragmentées
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         const cell = grid[r][c];
-        if (cell) {
-          const mat = this.getPieceMaterial(cell.type, false);
-          const x = (c - COLS / 2 + 0.5) * CELL_SIZE;
-          const y = r * CELL_SIZE;
-
-          const cube = new THREE.Mesh(this.boxGeometry, mat);
-          cube.position.set(x, y, 0);
-          cube.castShadow = true;
-          cube.receiveShadow = true;
+        if (cell && cell.broken) {
+          const cfg = PIECE_CONFIG[cell.type] || PIECE_CONFIG.I;
+          const mat = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(cfg.color),
+            roughness: 0.35,
+            metalness: 0.08
+          });
+          const cube = new THREE.Mesh(boxGeo, mat);
+          const worldX = (c - COLS / 2 + 0.5) * CELL_SIZE;
+          const worldY = r * CELL_SIZE;
+          cube.position.set(worldX, worldY, 0.4);
           cube.userData = { row: r, col: c };
-
-          this.lockedBlocksGroup.add(cube);
+          this.lockedPiecesGroup.add(cube);
         }
       }
     }
   }
 
-  // Animation de flash lumineux doré sur les lignes cuites
-  flashLines(rowIndices, callback) {
-    const targets = this.lockedBlocksGroup.children.filter(mesh =>
-      rowIndices.includes(mesh.userData.row)
-    );
-
+  flashClearedRows(rowIndices, callback) {
     const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const originalMaterials = targets.map(m => m.material);
-
+    const targets = this.lockedPiecesGroup.children.filter(m =>
+      m.userData && rowIndices.includes(m.userData.row)
+    );
     targets.forEach(m => {
       m.material = flashMat;
       m.scale.set(1.15, 1.15, 1.15);
     });
 
     setTimeout(() => {
-      targets.forEach((m, idx) => {
-        m.material = originalMaterials[idx];
-        m.scale.set(1, 1, 1);
-      });
       if (callback) callback();
-    }, 180);
+    }, 150);
   }
 
-  // Émission d'éclats de miettes croustillantes et sucre étincelant
   spawnCrumbBurst(rows) {
     rows.forEach(r => {
       const y = r * CELL_SIZE;
-      for (let i = 0; i < 35; i++) {
+      for (let i = 0; i < 28; i++) {
         const x = (Math.random() - 0.5) * (COLS * CELL_SIZE);
-        const pGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
-        const pMat = new THREE.MeshStandardMaterial({
-          color: Math.random() > 0.4 ? 0xffd15a : 0xff7b22,
+        const geo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+        const mat = new THREE.MeshStandardMaterial({
+          color: Math.random() > 0.4 ? 0xffd15a : 0xf97316,
           roughness: 0.4
         });
-        const mesh = new THREE.Mesh(pGeo, pMat);
-        mesh.position.set(x, y + (Math.random() - 0.5) * 0.6, (Math.random() - 0.5) * 0.8);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(x, y + (Math.random() - 0.5) * 0.5, 0.5);
 
         this.particlesGroup.add(mesh);
         this.particles.push({
           mesh,
-          vx: (Math.random() - 0.5) * 4.5,
-          vy: 2.5 + Math.random() * 4.0,
-          vz: (Math.random() - 0.5) * 3.5,
+          vx: (Math.random() - 0.5) * 4.0,
+          vy: 2.0 + Math.random() * 3.5,
+          vz: (Math.random() - 0.5) * 2.5,
           rx: (Math.random() - 0.5) * 8.0,
           ry: (Math.random() - 0.5) * 8.0,
           life: 1.0,
@@ -828,21 +760,30 @@ class BwedOvenScene {
     });
   }
 
-  triggerMascotHop() {
-    this.mascotHopTime = Date.now();
+  onResize() {
+    if (!this.container || !this.renderer || !this.camera) return;
+    const width = this.container.clientWidth || 380;
+    const height = this.container.clientHeight || 494;
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(width, height);
   }
 
-  // Boucle d'animation continue du moteur 3D
   update(deltaTime) {
-    // 1. Mise à jour des miettes en chute
+    // 1. Animation de la pièce de démonstration de l'écran titre
+    if (this.titleDemoMesh && this.titleDecorGroup.visible) {
+      this.titleDemoMesh.rotation.y += deltaTime * 1.2;
+      this.titleDemoMesh.rotation.x = Math.sin(Date.now() * 0.002) * 0.25;
+    }
+
+    // 2. Particules de miettes
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.mesh.position.x += p.vx * deltaTime;
       p.mesh.position.y += p.vy * deltaTime;
       p.mesh.position.z += p.vz * deltaTime;
 
-      p.vy -= 9.8 * deltaTime; // Gravité
-
+      p.vy -= 9.8 * deltaTime;
       p.mesh.rotation.x += p.rx * deltaTime;
       p.mesh.rotation.y += p.ry * deltaTime;
 
@@ -857,7 +798,7 @@ class BwedOvenScene {
       }
     }
 
-    // 2. Mise à jour de la poussière de farine flottante
+    // 3. Poussière de farine
     if (this.dustParticles && this.dustParticles.mesh) {
       const pos = this.dustParticles.mesh.geometry.attributes.position.array;
       for (let i = 0; i < this.dustParticles.count; i++) {
@@ -868,30 +809,12 @@ class BwedOvenScene {
 
         if (pos[i * 3 + 1] < -1.5) {
           pos[i * 3 + 1] = 21.0;
-          pos[i * 3 + 0] = (Math.random() - 0.5) * 22;
+          pos[i * 3 + 0] = (Math.random() - 0.5) * 18;
         }
       }
       this.dustParticles.mesh.geometry.attributes.position.needsUpdate = true;
     }
 
-    // 3. Animation du chef pâtissier
-    if (this.mascotMesh) {
-      const now = Date.now();
-      const timeSinceHop = now - this.mascotHopTime;
-      if (timeSinceHop < 600) {
-        // Saut festif
-        const progress = timeSinceHop / 600;
-        const hopY = Math.sin(progress * Math.PI) * 0.65;
-        this.mascotMesh.position.y = 1.8 + hopY;
-        this.mascotMesh.rotation.y = 0.45 + Math.sin(progress * Math.PI * 2) * 0.25;
-      } else {
-        // Respiration douce
-        this.mascotMesh.position.y = 1.8 + Math.sin(now * 0.003) * 0.04;
-        this.mascotMesh.rotation.y = 0.45 + Math.sin(now * 0.0015) * 0.03;
-      }
-    }
-
-    // Rendu
     if (this.renderer && this.scene && this.camera) {
       this.renderer.render(this.scene, this.camera);
     }
@@ -899,7 +822,7 @@ class BwedOvenScene {
 }
 
 /* ==========================================================================
-   INSTANCE D'UNE PIÈCE (ACTIVE TETROMINO)
+   PIÈCE ACTIVE TETROMINO
    ========================================================================== */
 
 class TetrominoPiece {
@@ -907,10 +830,7 @@ class TetrominoPiece {
     this.type = type;
     this.rotation = 0;
     this.def = TETROMINOES[type];
-    this.shape = this.def.shapes[0];
     this.size = this.def.size;
-
-    // Position de départ centrée au sommet
     this.col = Math.floor((COLS - this.size) / 2);
     this.row = ROWS - 1;
   }
@@ -918,23 +838,22 @@ class TetrominoPiece {
   getShape(rot = this.rotation) {
     return this.def.shapes[rot % 4];
   }
-
-  clone() {
-    const copy = new TetrominoPiece(this.type);
-    copy.rotation = this.rotation;
-    copy.col = this.col;
-    copy.row = this.row;
-    return copy;
-  }
 }
 
 /* ==========================================================================
-   MOTEUR LOGIQUE CENTRAL DU JEU BWEDTRIS
+   CONTRÔLEUR CENTRAL DU JEU & MACHINE D'ÉTATS DES MENUS
    ========================================================================== */
 
-class BwedTrisGame {
+class BwedBoyApp {
   constructor() {
+    // États : 'TITLE', 'LEVEL_SELECT', 'SCORES', 'HELP', 'PLAYING', 'PAUSED', 'GAMEOVER'
+    this.state = 'TITLE';
+
+    // Grille & Pièces
     this.grid = [];
+    this.placedPieces = [];
+    this.pieceIdCounter = 1;
+
     this.currentPiece = null;
     this.heldPieceType = null;
     this.canHold = true;
@@ -942,17 +861,15 @@ class BwedTrisGame {
     this.bag = new TetrisBag();
     this.nextQueue = [];
 
-    // Statistiques
+    // Paramètres & Progression
     this.score = 0;
     this.lines = 0;
     this.level = 1;
+    this.selectedStartLevel = 1;
     this.highScore = 0;
+    this.highLines = 0;
     this.combo = -1;
     this.backToBack = false;
-
-    // États
-    this.isPaused = false;
-    this.isGameOver = false;
 
     // Timers
     this.lastDropTime = 0;
@@ -960,129 +877,267 @@ class BwedTrisGame {
     this.lockResets = 0;
     this.isOnGround = false;
 
-    // Gestionnaires
+    // Navigation dans le menu Titre
+    this.titleMenuIndex = 0;
+    this.titleOptionsList = ['play', 'level-select', 'scores', 'help'];
+
+    // Moteur Audio & Scène 3D
     this.audio = new BwedAudioManager();
-    this.ovenScene = null;
+    this.screen3D = null;
 
-    // UI Éléments
-    this.dom = {
-      scoreVal: document.getElementById('scoreVal'),
-      highScoreVal: document.getElementById('highScoreVal'),
-      levelVal: document.getElementById('levelVal'),
-      linesVal: document.getElementById('linesVal'),
-      finalScoreVal: document.getElementById('finalScoreVal'),
-      finalLinesVal: document.getElementById('finalLinesVal'),
-      soundBtn: document.getElementById('soundBtn'),
-      soundLabel: document.getElementById('soundLabel'),
-      pauseBtn: document.getElementById('pauseBtn'),
-      pauseModal: document.getElementById('pauseModal'),
-      resumeBtn: document.getElementById('resumeBtn'),
-      restartBtn: document.getElementById('restartBtn'),
-      gameOverModal: document.getElementById('gameOverModal'),
-      retryBtn: document.getElementById('retryBtn'),
-      eventBanner: document.getElementById('eventBanner'),
-      eventTitle: document.getElementById('eventTitle'),
-      eventSubtitle: document.getElementById('eventSubtitle'),
-      mascotSpeech: document.getElementById('mascotSpeech'),
-      holdStage: document.getElementById('holdStage'),
-      nextStage: document.getElementById('nextStage'),
-      holdEmptyHint: document.getElementById('holdEmptyHint')
-    };
+    // Mini preview canvas pour Hold et Next dans le HUD
+    this.holdCanvas = null;
+    this.nextCanvas = null;
 
-    // Création des mini-canvas 2D pour la Réserve et la Pièce Suivante
-    this.holdCanvas = this.createPreviewCanvas(this.dom.holdStage);
-    this.nextCanvas = this.createPreviewCanvas(this.dom.nextStage);
-
+    this.dom = {};
+    this.initDOM();
     this.init();
   }
 
-  createPreviewCanvas(container) {
-    if (!container) return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = 160;
-    canvas.height = 100;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    container.appendChild(canvas);
-    return canvas;
+  initDOM() {
+    this.dom = {
+      // Overlays
+      titleMenu: document.getElementById('titleMenu'),
+      levelMenu: document.getElementById('levelMenu'),
+      scoresMenu: document.getElementById('scoresMenu'),
+      helpMenu: document.getElementById('helpMenu'),
+      pauseMenu: document.getElementById('pauseMenu'),
+      gameOverMenu: document.getElementById('gameOverMenu'),
+      screenHud: document.getElementById('screenHud'),
+      screenToast: document.getElementById('screenToast'),
+      toastTitle: document.getElementById('toastTitle'),
+      toastSub: document.getElementById('toastSub'),
+
+      // HUD Readouts
+      hudScore: document.getElementById('hudScore'),
+      hudLines: document.getElementById('hudLines'),
+      hudLevel: document.getElementById('hudLevel'),
+      holdSlotFrame: document.getElementById('holdSlotFrame'),
+      nextSlotFrame: document.getElementById('nextSlotFrame'),
+      holdEmptyText: document.getElementById('holdEmptyText'),
+
+      // Menu Choix Niveau
+      selectedLevelNum: document.getElementById('selectedLevelNum'),
+      selectedLevelSpeed: document.getElementById('selectedLevelSpeed'),
+      btnPrevLevel: document.getElementById('btnPrevLevel'),
+      btnNextLevel: document.getElementById('btnNextLevel'),
+      btnStartWithLevel: document.getElementById('btnStartWithLevel'),
+      btnBackFromLevel: document.getElementById('btnBackFromLevel'),
+
+      // Menu Palmarès
+      recordScoreVal: document.getElementById('recordScoreVal'),
+      recordLinesVal: document.getElementById('recordLinesVal'),
+      recordRankVal: document.getElementById('recordRankVal'),
+      btnBackFromScores: document.getElementById('btnBackFromScores'),
+
+      // Menu Aide
+      btnBackFromHelp: document.getElementById('btnBackFromHelp'),
+
+      // Menu Pause
+      btnResume: document.getElementById('btnResume'),
+      btnRestartGame: document.getElementById('btnRestartGame'),
+      btnToggleSound: document.getElementById('btnToggleSound'),
+      soundOptLabel: document.getElementById('soundOptLabel'),
+      btnQuitToTitle: document.getElementById('btnQuitToTitle'),
+
+      // Menu Game Over
+      finalScoreVal: document.getElementById('finalScoreVal'),
+      finalLinesVal: document.getElementById('finalLinesVal'),
+      finalRankLabel: document.getElementById('finalRankLabel'),
+      btnRetryGame: document.getElementById('btnRetryGame'),
+      btnOverToTitle: document.getElementById('btnOverToTitle'),
+
+      // Console Buttons
+      btnDpadUp: document.getElementById('btnDpadUp'),
+      btnDpadDown: document.getElementById('btnDpadDown'),
+      btnDpadLeft: document.getElementById('btnDpadLeft'),
+      btnDpadRight: document.getElementById('btnDpadRight'),
+      btnActionA: document.getElementById('btnActionA'),
+      btnActionB: document.getElementById('btnActionB'),
+      btnActionX: document.getElementById('btnActionX'),
+      btnStart: document.getElementById('btnStart'),
+      btnSelect: document.getElementById('btnSelect')
+    };
+
+    // Création des canvas 2D pour les slots Hold et Next
+    if (this.dom.holdSlotFrame) {
+      this.holdCanvas = document.createElement('canvas');
+      this.holdCanvas.width = 64;
+      this.holdCanvas.height = 42;
+      this.holdCanvas.style.width = '100%';
+      this.holdCanvas.style.height = '100%';
+      this.dom.holdSlotFrame.appendChild(this.holdCanvas);
+    }
+
+    if (this.dom.nextSlotFrame) {
+      this.nextCanvas = document.createElement('canvas');
+      this.nextCanvas.width = 64;
+      this.nextCanvas.height = 42;
+      this.nextCanvas.style.width = '100%';
+      this.nextCanvas.style.height = '100%';
+      this.dom.nextSlotFrame.appendChild(this.nextCanvas);
+    }
   }
 
   init() {
-    this.loadHighScore();
-
-    // Initialisation de la grille 10x20
+    this.loadScores();
     this.resetGrid();
 
-    // Initialisation de la file des pièces
-    this.nextQueue = [this.bag.next(), this.bag.next(), this.bag.next()];
+    const canvasContainer = document.getElementById('canvasContainer');
+    this.screen3D = new BwedBoyScreen3D(canvasContainer);
 
-    // Initialisation 3D
-    const container = document.getElementById('canvasContainer');
-    this.ovenScene = new BwedOvenScene(container);
+    this.bindEvents();
+    this.setMenuState('TITLE');
 
-    // Écouteurs de contrôles
-    this.bindKeyboardControls();
-    this.bindTouchControls();
-    this.bindModalButtons();
-
-    // Démarrage de la première pièce
-    this.spawnPiece();
-
-    // Lancement de la boucle de rendu et du game loop
     this.lastLoopTime = performance.now();
     requestAnimationFrame((t) => this.loop(t));
   }
 
-  loadHighScore() {
+  loadScores() {
     try {
-      const stored = localStorage.getItem('bwedtris_high_score');
-      this.highScore = stored ? parseInt(stored, 10) : 0;
-      if (this.dom.highScoreVal) this.dom.highScoreVal.textContent = this.highScore.toLocaleString('fr-FR');
+      this.highScore = parseInt(localStorage.getItem('bwedboy_hiscore') || '0', 10);
+      this.highLines = parseInt(localStorage.getItem('bwedboy_hilines') || '0', 10);
     } catch {
       this.highScore = 0;
+      this.highLines = 0;
     }
+    this.updateScoreRecordsUI();
   }
 
-  saveHighScore() {
-    if (this.score > this.highScore) {
-      this.highScore = this.score;
-      if (this.dom.highScoreVal) this.dom.highScoreVal.textContent = this.highScore.toLocaleString('fr-FR');
-      try {
-        localStorage.setItem('bwedtris_high_score', this.highScore.toString());
-      } catch {}
-    }
+  saveScores() {
+    try {
+      if (this.score > this.highScore) {
+        this.highScore = this.score;
+        localStorage.setItem('bwedboy_hiscore', this.highScore.toString());
+      }
+      if (this.lines > this.highLines) {
+        this.highLines = this.lines;
+        localStorage.setItem('bwedboy_hilines', this.highLines.toString());
+      }
+    } catch {}
+    this.updateScoreRecordsUI();
+  }
+
+  getRankName(score) {
+    if (score >= 20000) return 'Légende Vivante du Bwedverse';
+    if (score >= 12000) return 'Grand Chef Pâtissier';
+    if (score >= 6000) return 'Maître du Fournil';
+    if (score >= 2000) return 'Boulanger Compagnon';
+    return 'Apprenti Mitron';
+  }
+
+  updateScoreRecordsUI() {
+    if (this.dom.recordScoreVal) this.dom.recordScoreVal.textContent = this.highScore.toLocaleString('fr-FR');
+    if (this.dom.recordLinesVal) this.dom.recordLinesVal.textContent = this.highLines.toString();
+    if (this.dom.recordRankVal) this.dom.recordRankVal.textContent = this.getRankName(this.highScore);
   }
 
   resetGrid() {
-    this.grid = [];
-    for (let r = 0; r < ROWS; r++) {
-      this.grid[r] = new Array(COLS).fill(null);
+    this.grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    this.placedPieces = [];
+  }
+
+  setMenuState(newState) {
+    this.state = newState;
+
+    // Masquage de tous les menus
+    const overlays = [
+      this.dom.titleMenu,
+      this.dom.levelMenu,
+      this.dom.scoresMenu,
+      this.dom.helpMenu,
+      this.dom.pauseMenu,
+      this.dom.gameOverMenu
+    ];
+    overlays.forEach(o => { if (o) o.hidden = true; });
+
+    if (this.dom.screenHud) {
+      this.dom.screenHud.hidden = (newState !== 'PLAYING');
+    }
+
+    if (this.screen3D) {
+      this.screen3D.showTitleMode(newState === 'TITLE');
+    }
+
+    switch (newState) {
+      case 'TITLE':
+        if (this.dom.titleMenu) this.dom.titleMenu.hidden = false;
+        this.updateTitleMenuSelection();
+        break;
+      case 'LEVEL_SELECT':
+        if (this.dom.levelMenu) this.dom.levelMenu.hidden = false;
+        this.updateLevelSelectUI();
+        break;
+      case 'SCORES':
+        if (this.dom.scoresMenu) this.dom.scoresMenu.hidden = false;
+        this.updateScoreRecordsUI();
+        break;
+      case 'HELP':
+        if (this.dom.helpMenu) this.dom.helpMenu.hidden = false;
+        break;
+      case 'PAUSED':
+        if (this.dom.pauseMenu) this.dom.pauseMenu.hidden = false;
+        break;
+      case 'GAMEOVER':
+        if (this.dom.gameOverMenu) this.dom.gameOverMenu.hidden = false;
+        if (this.dom.finalScoreVal) this.dom.finalScoreVal.textContent = this.score.toLocaleString('fr-FR');
+        if (this.dom.finalLinesVal) this.dom.finalLinesVal.textContent = this.lines.toString();
+        if (this.dom.finalRankLabel) this.dom.finalRankLabel.textContent = this.getRankName(this.score);
+        break;
+      case 'PLAYING':
+        // En jeu direct
+        break;
     }
   }
 
-  restart() {
+  updateTitleMenuSelection() {
+    const btns = document.querySelectorAll('#titleOptions .retro-opt-btn');
+    btns.forEach((btn, idx) => {
+      btn.classList.toggle('active', idx === this.titleMenuIndex);
+    });
+  }
+
+  updateLevelSelectUI() {
+    if (this.dom.selectedLevelNum) {
+      this.dom.selectedLevelNum.textContent = this.selectedStartLevel.toString();
+    }
+    if (this.dom.selectedLevelSpeed) {
+      const labels = [
+        'Vitesse : Douce',
+        'Vitesse : Standard',
+        'Vitesse : Cadencée',
+        'Vitesse : Rapide',
+        'Vitesse : Four Chaud',
+        'Vitesse : Très Rapide',
+        'Vitesse : Expert',
+        'Vitesse : Cuisson Éclair',
+        'Vitesse : Frénésie',
+        'Vitesse : Légendaire'
+      ];
+      this.dom.selectedLevelSpeed.textContent = labels[this.selectedStartLevel - 1] || 'Vitesse : Éclair';
+    }
+  }
+
+  startNewGame() {
     this.resetGrid();
     this.score = 0;
     this.lines = 0;
-    this.level = 1;
+    this.level = this.selectedStartLevel;
     this.combo = -1;
     this.backToBack = false;
-    this.isPaused = false;
-    this.isGameOver = false;
     this.heldPieceType = null;
     this.canHold = true;
+
     this.bag = new TetrisBag();
     this.nextQueue = [this.bag.next(), this.bag.next(), this.bag.next()];
 
     this.updateHUD();
     this.renderPreviews();
 
-    if (this.dom.pauseModal) this.dom.pauseModal.hidden = true;
-    if (this.dom.gameOverModal) this.dom.gameOverModal.hidden = true;
-
-    this.ovenScene.rebuildLockedGrid(this.grid);
+    this.screen3D.rebuildLockedPieces(this.placedPieces, this.grid);
+    this.setMenuState('PLAYING');
     this.spawnPiece();
-    this.sayMascot('Nouveau tablier, nouvelle pâte ! Fais chauffer le four !');
+    this.audio.playSelect();
   }
 
   spawnPiece() {
@@ -1095,7 +1150,6 @@ class BwedTrisGame {
     this.lockResets = 0;
     this.isOnGround = false;
 
-    // Vérification de collision immédiate (Game Over)
     if (this.checkCollision(this.currentPiece, this.currentPiece.col, this.currentPiece.row, this.currentPiece.rotation)) {
       this.triggerGameOver();
       return;
@@ -1105,10 +1159,10 @@ class BwedTrisGame {
   }
 
   syncActive3D() {
-    if (!this.ovenScene || !this.currentPiece) return;
+    if (!this.screen3D || !this.currentPiece) return;
     const ghostRow = this.calculateGhostRow();
-    this.ovenScene.renderActivePiece(this.currentPiece);
-    this.ovenScene.renderGhostPiece(this.currentPiece, ghostRow);
+    this.screen3D.renderActivePiece(this.currentPiece);
+    this.screen3D.renderGhostPiece(this.currentPiece, ghostRow);
   }
 
   calculateGhostRow() {
@@ -1127,12 +1181,8 @@ class BwedTrisGame {
         if (shape[r][c]) {
           const col = targetCol + c;
           const row = targetRow - r;
-
-          // Limites latérales
           if (col < 0 || col >= COLS) return true;
-          // Limite basse
           if (row < 0) return true;
-          // Case déjà occupée dans la grille
           if (row < ROWS && this.grid[row][col] !== null) return true;
         }
       }
@@ -1141,31 +1191,27 @@ class BwedTrisGame {
   }
 
   moveLeft() {
-    if (this.isPaused || this.isGameOver || !this.currentPiece) return false;
+    if (this.state !== 'PLAYING' || !this.currentPiece) return;
     if (!this.checkCollision(this.currentPiece, this.currentPiece.col - 1, this.currentPiece.row, this.currentPiece.rotation)) {
       this.currentPiece.col--;
       this.onPieceManipulated();
       this.audio.playMove();
       this.syncActive3D();
-      return true;
     }
-    return false;
   }
 
   moveRight() {
-    if (this.isPaused || this.isGameOver || !this.currentPiece) return false;
+    if (this.state !== 'PLAYING' || !this.currentPiece) return;
     if (!this.checkCollision(this.currentPiece, this.currentPiece.col + 1, this.currentPiece.row, this.currentPiece.rotation)) {
       this.currentPiece.col++;
       this.onPieceManipulated();
       this.audio.playMove();
       this.syncActive3D();
-      return true;
     }
-    return false;
   }
 
   rotate(clockwise = true) {
-    if (this.isPaused || this.isGameOver || !this.currentPiece) return false;
+    if (this.state !== 'PLAYING' || !this.currentPiece) return;
     const fromRot = this.currentPiece.rotation;
     const toRot = clockwise ? (fromRot + 1) % 4 : (fromRot + 3) % 4;
 
@@ -1181,14 +1227,13 @@ class BwedTrisGame {
         this.onPieceManipulated();
         this.audio.playRotate();
         this.syncActive3D();
-        return true;
+        return;
       }
     }
-    return false;
   }
 
   softDrop() {
-    if (this.isPaused || this.isGameOver || !this.currentPiece) return;
+    if (this.state !== 'PLAYING' || !this.currentPiece) return;
     if (!this.checkCollision(this.currentPiece, this.currentPiece.col, this.currentPiece.row - 1, this.currentPiece.rotation)) {
       this.currentPiece.row--;
       this.score += 1;
@@ -1199,31 +1244,30 @@ class BwedTrisGame {
   }
 
   hardDrop() {
-    if (this.isPaused || this.isGameOver || !this.currentPiece) return;
-    let droppedCells = 0;
+    if (this.state !== 'PLAYING' || !this.currentPiece) return;
+    let dropped = 0;
     while (!this.checkCollision(this.currentPiece, this.currentPiece.col, this.currentPiece.row - 1, this.currentPiece.rotation)) {
       this.currentPiece.row--;
-      droppedCells++;
+      dropped++;
     }
-    this.score += droppedCells * 2;
+    this.score += dropped * 2;
     this.updateHUD();
     this.audio.playHardDrop();
     this.lockPiece();
   }
 
   hold() {
-    if (this.isPaused || this.isGameOver || !this.currentPiece || !this.canHold) return;
-
+    if (this.state !== 'PLAYING' || !this.currentPiece || !this.canHold) return;
     this.audio.playHold();
-    const currentType = this.currentPiece.type;
+    const type = this.currentPiece.type;
 
     if (!this.heldPieceType) {
-      this.heldPieceType = currentType;
+      this.heldPieceType = type;
       this.spawnPiece();
     } else {
-      const swapType = this.heldPieceType;
-      this.heldPieceType = currentType;
-      this.currentPiece = new TetrominoPiece(swapType);
+      const swap = this.heldPieceType;
+      this.heldPieceType = type;
+      this.currentPiece = new TetrominoPiece(swap);
       this.syncActive3D();
     }
 
@@ -1232,7 +1276,6 @@ class BwedTrisGame {
   }
 
   onPieceManipulated() {
-    // Si la pièce était posée, on réinitialise le délai de verrouillage (jusqu'à la limite)
     if (this.isOnGround && this.lockResets < MAX_LOCK_RESETS) {
       this.lockTimer = performance.now();
       this.lockResets++;
@@ -1240,8 +1283,9 @@ class BwedTrisGame {
   }
 
   lockPiece() {
+    const pieceId = this.pieceIdCounter++;
     const shape = this.currentPiece.getShape();
-    const theme = PIECE_THEMES[this.currentPiece.type];
+    const cells = [];
 
     for (let r = 0; r < shape.length; r++) {
       for (let c = 0; c < shape[r].length; c++) {
@@ -1251,28 +1295,37 @@ class BwedTrisGame {
           if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
             this.grid[row][col] = {
               type: this.currentPiece.type,
-              color: theme.color,
-              glow: theme.glow
+              pieceId,
+              broken: false
             };
+            cells.push({ col, row });
           }
         }
       }
     }
 
-    // Réinitialisation de la pièce active
-    this.currentPiece = null;
-    this.ovenScene.rebuildLockedGrid(this.grid);
-    this.ovenScene.renderActivePiece(null);
-    this.ovenScene.renderGhostPiece(null, 0);
+    this.placedPieces.push({
+      id: pieceId,
+      type: this.currentPiece.type,
+      col: this.currentPiece.col,
+      row: this.currentPiece.row,
+      rot: this.currentPiece.rotation,
+      cells,
+      broken: false
+    });
 
-    // Vérification des lignes complétées
+    this.currentPiece = null;
+    this.screen3D.renderActivePiece(null);
+    this.screen3D.renderGhostPiece(null, 0);
+    this.screen3D.rebuildLockedPieces(this.placedPieces, this.grid);
+
     this.checkLines();
   }
 
   checkLines() {
     const clearedRows = [];
     for (let r = 0; r < ROWS; r++) {
-      if (this.grid[r].every(cell => cell !== null)) {
+      if (this.grid[r].every(c => c !== null)) {
         clearedRows.push(r);
       }
     }
@@ -1281,20 +1334,11 @@ class BwedTrisGame {
       this.combo++;
       const isTetris = clearedRows.length === 4;
 
-      // Calcul des points
-      const basePoints = {
-        1: 100,
-        2: 300,
-        3: 500,
-        4: 800
-      }[clearedRows.length] || 100;
-
+      const basePoints = { 1: 100, 2: 300, 3: 500, 4: 800 }[clearedRows.length] || 100;
       let lineScore = basePoints * this.level;
 
       if (isTetris) {
-        if (this.backToBack) {
-          lineScore = Math.floor(lineScore * 1.5);
-        }
+        if (this.backToBack) lineScore = Math.floor(lineScore * 1.5);
         this.backToBack = true;
       } else {
         this.backToBack = false;
@@ -1307,47 +1351,62 @@ class BwedTrisGame {
       this.score += lineScore;
       this.lines += clearedRows.length;
 
-      // Montée de niveau tous les 10 lignes
       const newLevel = Math.floor(this.lines / 10) + 1;
       if (newLevel > this.level) {
         this.level = newLevel;
-        this.showToast('NIVEAU SUPÉRIEUR !', `Vitesse de cuisson accrue (Niveau ${this.level})`);
+        this.showToast('NIVEAU SUPÉRIEUR !', `Four plus rapide (Niveau ${this.level})`);
       }
 
-      this.saveHighScore();
+      this.saveScores();
       this.updateHUD();
 
-      // Audio & Effets visuels
       if (isTetris) {
         this.audio.playTetrisFanfare();
-        this.showToast('TETRIS PUR BEURRE !', `+${lineScore} Points Croustillants`);
-        this.sayMascot('INCROYABLE ! Un Tetris doré au caramel ! Un vrai travail de maître !');
+        this.showToast('TETRIS PUR BEURRE !', `+${lineScore} Points`);
       } else {
         this.audio.playLineClear(clearedRows.length);
         const titles = { 1: 'SIMPLE DORURE', 2: 'DOUBLE CROÛTE !', 3: 'TRIPLE FEUILLETAGE !' };
         this.showToast(titles[clearedRows.length] || 'LIGNE CUITE !', `+${lineScore} Points`);
-
-        const quotes = [
-          'Joli coup de rouleau à pâtisserie !',
-          'La pâte est dorée à point !',
-          'Quelle régularité dans la découpe !',
-          'Les clients du village vont adorer !'
-        ];
-        this.sayMascot(quotes[Math.floor(Math.random() * quotes.length)]);
       }
 
-      this.ovenScene.triggerMascotHop();
-      this.ovenScene.spawnCrumbBurst(clearedRows);
+      this.screen3D.spawnCrumbBurst(clearedRows);
+
+      // Traitement des pièces découpées
+      for (const p of this.placedPieces) {
+        const initCount = p.cells.length;
+        p.cells = p.cells.filter(cell => !clearedRows.includes(cell.row));
+        if (p.cells.length < initCount) {
+          p.broken = true;
+        }
+        for (const cell of p.cells) {
+          let drops = 0;
+          for (const cr of clearedRows) {
+            if (cell.row > cr) drops++;
+          }
+          cell.row -= drops;
+        }
+      }
 
       // Flash et effacement
-      this.ovenScene.flashLines(clearedRows, () => {
-        // Suppression des lignes de la matrice
+      this.screen3D.flashClearedRows(clearedRows, () => {
         const remaining = this.grid.filter((_, idx) => !clearedRows.includes(idx));
         while (remaining.length < ROWS) {
           remaining.push(new Array(COLS).fill(null));
         }
         this.grid = remaining;
-        this.ovenScene.rebuildLockedGrid(this.grid);
+
+        // Mise à jour de l'indicateur broken sur les cellules
+        for (const p of this.placedPieces) {
+          if (p.broken) {
+            for (const cell of p.cells) {
+              if (this.grid[cell.row] && this.grid[cell.row][cell.col]) {
+                this.grid[cell.row][cell.col].broken = true;
+              }
+            }
+          }
+        }
+
+        this.screen3D.rebuildLockedPieces(this.placedPieces, this.grid);
         this.spawnPiece();
       });
     } else {
@@ -1356,49 +1415,37 @@ class BwedTrisGame {
     }
   }
 
-  showToast(title, subtitle) {
-    if (!this.dom.eventBanner) return;
-    this.dom.eventTitle.textContent = title;
-    this.dom.eventSubtitle.textContent = subtitle;
-    this.dom.eventBanner.hidden = false;
-    this.dom.eventBanner.classList.remove('banner-pop');
-    void this.dom.eventBanner.offsetWidth; // Reflow
-    this.dom.eventBanner.classList.add('banner-pop');
-
-    clearTimeout(this.toastTimeout);
-    this.toastTimeout = setTimeout(() => {
-      this.dom.eventBanner.hidden = true;
-    }, 1800);
-  }
-
-  sayMascot(text) {
-    if (this.dom.mascotSpeech) {
-      this.dom.mascotSpeech.textContent = text;
-    }
+  showToast(title, sub) {
+    if (!this.dom.screenToast) return;
+    this.dom.toastTitle.textContent = title;
+    this.dom.toastSub.textContent = sub;
+    this.dom.screenToast.hidden = false;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.dom.screenToast.hidden = true;
+    }, 1600);
   }
 
   triggerGameOver() {
-    this.isGameOver = true;
+    this.setMenuState('GAMEOVER');
     this.audio.playGameOver();
-    this.saveHighScore();
-
-    if (this.dom.finalScoreVal) this.dom.finalScoreVal.textContent = this.score.toLocaleString('fr-FR');
-    if (this.dom.finalLinesVal) this.dom.finalLinesVal.textContent = this.lines.toString();
-    if (this.dom.gameOverModal) this.dom.gameOverModal.hidden = false;
-
-    this.sayMascot('Le fourneau a débordé ! Mais quelle magnifique fournée croustillante !');
+    this.saveScores();
   }
 
   togglePause() {
-    if (this.isGameOver) return;
-    this.isPaused = !this.isPaused;
-    if (this.dom.pauseModal) this.dom.pauseModal.hidden = !this.isPaused;
+    if (this.state === 'PLAYING') {
+      this.setMenuState('PAUSED');
+      this.audio.playSelect();
+    } else if (this.state === 'PAUSED') {
+      this.setMenuState('PLAYING');
+      this.audio.playSelect();
+    }
   }
 
   updateHUD() {
-    if (this.dom.scoreVal) this.dom.scoreVal.textContent = this.score.toLocaleString('fr-FR');
-    if (this.dom.levelVal) this.dom.levelVal.textContent = this.level.toString();
-    if (this.dom.linesVal) this.dom.linesVal.textContent = this.lines.toString();
+    if (this.dom.hudScore) this.dom.hudScore.textContent = this.score.toLocaleString('fr-FR');
+    if (this.dom.hudLines) this.dom.hudLines.textContent = this.lines.toString();
+    if (this.dom.hudLevel) this.dom.hudLevel.textContent = this.level.toString();
   }
 
   renderPreviews() {
@@ -1407,35 +1454,34 @@ class BwedTrisGame {
       const ctx = this.holdCanvas.getContext('2d');
       ctx.clearRect(0, 0, this.holdCanvas.width, this.holdCanvas.height);
       if (this.heldPieceType) {
-        if (this.dom.holdEmptyHint) this.dom.holdEmptyHint.hidden = true;
-        this.drawPiecePreview(ctx, this.heldPieceType, this.holdCanvas.width, this.holdCanvas.height);
+        if (this.dom.holdEmptyText) this.dom.holdEmptyText.hidden = true;
+        this.drawPieceCanvas(ctx, this.heldPieceType, this.holdCanvas.width, this.holdCanvas.height);
       } else {
-        if (this.dom.holdEmptyHint) this.dom.holdEmptyHint.hidden = false;
+        if (this.dom.holdEmptyText) this.dom.holdEmptyText.hidden = false;
       }
     }
 
-    // 2. Pièce Suivante
+    // 2. Pièce suivante
     if (this.nextCanvas && this.nextQueue.length > 0) {
       const ctx = this.nextCanvas.getContext('2d');
       ctx.clearRect(0, 0, this.nextCanvas.width, this.nextCanvas.height);
-      this.drawPiecePreview(ctx, this.nextQueue[0], this.nextCanvas.width, this.nextCanvas.height);
+      this.drawPieceCanvas(ctx, this.nextQueue[0], this.nextCanvas.width, this.nextCanvas.height);
     }
   }
 
-  drawPiecePreview(ctx, type, width, height) {
+  drawPieceCanvas(ctx, type, w, h) {
     const def = TETROMINOES[type];
     if (!def) return;
     const shape = def.shapes[0];
-    const theme = PIECE_THEMES[type] || PIECE_THEMES.I;
+    const cfg = PIECE_CONFIG[type] || PIECE_CONFIG.I;
 
-    const cellSize = 18;
-    const shapeRows = shape.length;
-    const shapeCols = shape[0].length;
+    const cellSize = 10;
+    const sRows = shape.length;
+    const sCols = shape[0].length;
 
-    // Calcul du centrage
-    let minR = shapeRows, maxR = -1, minC = shapeCols, maxC = -1;
-    for (let r = 0; r < shapeRows; r++) {
-      for (let c = 0; c < shapeCols; c++) {
+    let minR = sRows, maxR = -1, minC = sCols, maxC = -1;
+    for (let r = 0; r < sRows; r++) {
+      for (let c = 0; c < sCols; c++) {
         if (shape[r][c]) {
           minR = Math.min(minR, r);
           maxR = Math.max(maxR, r);
@@ -1447,54 +1493,45 @@ class BwedTrisGame {
 
     const usedW = (maxC - minC + 1) * cellSize;
     const usedH = (maxR - minR + 1) * cellSize;
-    const startX = (width - usedW) / 2 - minC * cellSize;
-    const startY = (height - usedH) / 2 - minR * cellSize;
+    const startX = (w - usedW) / 2 - minC * cellSize;
+    const startY = (h - usedH) / 2 - minR * cellSize;
 
-    for (let r = 0; r < shapeRows; r++) {
-      for (let c = 0; c < shapeCols; c++) {
+    for (let r = 0; r < sRows; r++) {
+      for (let c = 0; c < sCols; c++) {
         if (shape[r][c]) {
           const x = startX + c * cellSize;
           const y = startY + r * cellSize;
 
-          // Pavé pâtissier dégradé
-          const grad = ctx.createLinearGradient(x, y, x + cellSize, y + cellSize);
-          grad.addColorStop(0, theme.color);
-          grad.addColorStop(1, theme.glow);
-
-          ctx.fillStyle = grad;
+          ctx.fillStyle = cfg.color;
           ctx.beginPath();
-          ctx.roundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 4);
+          ctx.roundRect(x + 1, y + 1, cellSize - 2, cellSize - 2, 2);
           ctx.fill();
 
-          // Reflet de glaçage
           ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
           ctx.beginPath();
-          ctx.roundRect(x + 3, y + 3, cellSize - 6, 3, 2);
+          ctx.roundRect(x + 2, y + 2, cellSize - 4, 2, 1);
           ctx.fill();
         }
       }
     }
   }
 
-  // Boucle de mise à jour physique & temporelle
   loop(timestamp) {
     const dt = (timestamp - this.lastLoopTime) / 1000;
     this.lastLoopTime = timestamp;
 
-    if (!this.isPaused && !this.isGameOver && this.currentPiece) {
-      // Vitesse actuelle de gravité
-      const speedIndex = Math.min(this.level - 1, LEVEL_SPEEDS.length - 1);
-      const dropInterval = LEVEL_SPEEDS[speedIndex];
+    if (this.state === 'PLAYING' && this.currentPiece) {
+      const speedIdx = Math.min(this.level - 1, LEVEL_SPEEDS.length - 1);
+      const interval = LEVEL_SPEEDS[speedIdx];
 
-      // Vérification du contact avec le sol
-      const touchingGround = this.checkCollision(
+      const touching = this.checkCollision(
         this.currentPiece,
         this.currentPiece.col,
         this.currentPiece.row - 1,
         this.currentPiece.rotation
       );
 
-      if (touchingGround) {
+      if (touching) {
         if (!this.isOnGround) {
           this.isOnGround = true;
           this.lockTimer = timestamp;
@@ -1503,7 +1540,7 @@ class BwedTrisGame {
         }
       } else {
         this.isOnGround = false;
-        if (timestamp - this.lastDropTime >= dropInterval) {
+        if (timestamp - this.lastDropTime >= interval) {
           this.currentPiece.row--;
           this.lastDropTime = timestamp;
           this.syncActive3D();
@@ -1511,101 +1548,254 @@ class BwedTrisGame {
       }
     }
 
-    // Mise à jour de la scène 3D
-    if (this.ovenScene) {
-      this.ovenScene.update(dt);
+    if (this.screen3D) {
+      this.screen3D.update(dt);
     }
 
     requestAnimationFrame((t) => this.loop(t));
   }
 
-  // Contrôles clavier
-  bindKeyboardControls() {
+  // Événements et liaisons contrôles
+  bindEvents() {
+    // 1. Boutons du Menu Titre
+    document.querySelectorAll('#titleOptions .retro-opt-btn').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        this.titleMenuIndex = idx;
+        this.updateTitleMenuSelection();
+        this.executeTitleAction(btn.dataset.action);
+      });
+    });
+
+    // 2. Sélecteur de niveau
+    this.dom.btnPrevLevel?.addEventListener('click', () => {
+      this.selectedStartLevel = Math.max(1, this.selectedStartLevel - 1);
+      this.audio.playCursor();
+      this.updateLevelSelectUI();
+    });
+
+    this.dom.btnNextLevel?.addEventListener('click', () => {
+      this.selectedStartLevel = Math.min(10, this.selectedStartLevel + 1);
+      this.audio.playCursor();
+      this.updateLevelSelectUI();
+    });
+
+    this.dom.btnStartWithLevel?.addEventListener('click', () => this.startNewGame());
+    this.dom.btnBackFromLevel?.addEventListener('click', () => {
+      this.audio.playCursor();
+      this.setMenuState('TITLE');
+    });
+
+    // 3. Palmarès & Aide
+    this.dom.btnBackFromScores?.addEventListener('click', () => {
+      this.audio.playCursor();
+      this.setMenuState('TITLE');
+    });
+
+    this.dom.btnBackFromHelp?.addEventListener('click', () => {
+      this.audio.playCursor();
+      this.setMenuState('TITLE');
+    });
+
+    // 4. Menu Pause
+    this.dom.btnResume?.addEventListener('click', () => this.togglePause());
+    this.dom.btnRestartGame?.addEventListener('click', () => this.startNewGame());
+    this.dom.btnToggleSound?.addEventListener('click', () => {
+      const on = this.audio.toggleMusic();
+      if (this.dom.soundOptLabel) {
+        this.dom.soundOptLabel.textContent = on ? 'SON : ACTIF' : 'SON : COUPE';
+      }
+    });
+    this.dom.btnQuitToTitle?.addEventListener('click', () => {
+      this.audio.playCursor();
+      this.setMenuState('TITLE');
+    });
+
+    // 5. Game Over
+    this.dom.btnRetryGame?.addEventListener('click', () => this.startNewGame());
+    this.dom.btnOverToTitle?.addEventListener('click', () => {
+      this.audio.playCursor();
+      this.setMenuState('TITLE');
+    });
+
+    // 6. Commandes physiques du châssis Bwed Boy
+    const addHoldOrClick = (el, action) => {
+      if (!el) return;
+      const trigger = (e) => {
+        e.preventDefault();
+        el.classList.add('pressed');
+        setTimeout(() => el.classList.remove('pressed'), 120);
+        action();
+      };
+      el.addEventListener('pointerdown', trigger);
+    };
+
+    addHoldOrClick(this.dom.btnDpadUp, () => this.handleDirection('up'));
+    addHoldOrClick(this.dom.btnDpadDown, () => this.handleDirection('down'));
+    addHoldOrClick(this.dom.btnDpadLeft, () => this.handleDirection('left'));
+    addHoldOrClick(this.dom.btnDpadRight, () => this.handleDirection('right'));
+
+    addHoldOrClick(this.dom.btnActionA, () => this.handleActionA());
+    addHoldOrClick(this.dom.btnActionB, () => this.handleActionB());
+    addHoldOrClick(this.dom.btnActionX, () => this.handleActionX());
+
+    addHoldOrClick(this.dom.btnStart, () => this.handleStart());
+    addHoldOrClick(this.dom.btnSelect, () => this.handleSelect());
+
+    // 7. Commandes Clavier
     window.addEventListener('keydown', (e) => {
-      // Éviter le défilement navigateur
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         e.preventDefault();
       }
 
-      if (e.key === 'p' || e.key === 'P') {
-        this.togglePause();
-        return;
-      }
-
-      if (this.isPaused || this.isGameOver) return;
-
       switch (e.key) {
-        case 'ArrowLeft':
-        case 'a':
-        case 'A':
-          this.moveLeft();
-          break;
-        case 'ArrowRight':
-        case 'd':
-        case 'D':
-          this.moveRight();
-          break;
         case 'ArrowUp':
         case 'w':
         case 'W':
-          this.rotate(true);
+          this.handleDirection('up');
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
-          this.softDrop();
+          this.handleDirection('down');
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          this.handleDirection('left');
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          this.handleDirection('right');
+          break;
+        case 'Enter':
+          this.handleActionA();
           break;
         case ' ':
-          this.hardDrop();
+          this.handleActionX();
           break;
         case 'c':
         case 'C':
-          this.hold();
+          this.handleActionB();
+          break;
+        case 'p':
+        case 'P':
+        case 'Escape':
+          this.handleStart();
           break;
       }
     });
   }
 
-  // Contrôles tactiles mobiles
-  bindTouchControls() {
-    const bindBtn = (id, action) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        action();
-      });
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        action();
-      });
-    };
+  handleDirection(dir) {
+    if (this.state === 'TITLE') {
+      if (dir === 'up') {
+        this.titleMenuIndex = (this.titleMenuIndex + this.titleOptionsList.length - 1) % this.titleOptionsList.length;
+        this.audio.playCursor();
+        this.updateTitleMenuSelection();
+      } else if (dir === 'down') {
+        this.titleMenuIndex = (this.titleMenuIndex + 1) % this.titleOptionsList.length;
+        this.audio.playCursor();
+        this.updateTitleMenuSelection();
+      }
+      return;
+    }
 
-    bindBtn('btnTouchLeft', () => this.moveLeft());
-    bindBtn('btnTouchRight', () => this.moveRight());
-    bindBtn('btnTouchRotate', () => this.rotate(true));
-    bindBtn('btnTouchSoftDrop', () => this.softDrop());
-    bindBtn('btnTouchHardDrop', () => this.hardDrop());
-    bindBtn('btnTouchHold', () => this.hold());
+    if (this.state === 'LEVEL_SELECT') {
+      if (dir === 'left') {
+        this.selectedStartLevel = Math.max(1, this.selectedStartLevel - 1);
+        this.audio.playCursor();
+        this.updateLevelSelectUI();
+      } else if (dir === 'right') {
+        this.selectedStartLevel = Math.min(10, this.selectedStartLevel + 1);
+        this.audio.playCursor();
+        this.updateLevelSelectUI();
+      }
+      return;
+    }
+
+    if (this.state === 'PLAYING') {
+      if (dir === 'left') this.moveLeft();
+      if (dir === 'right') this.moveRight();
+      if (dir === 'up') this.rotate(true);
+      if (dir === 'down') this.softDrop();
+    }
   }
 
-  // Boutons des modales
-  bindModalButtons() {
-    this.dom.soundBtn?.addEventListener('click', () => {
-      const isNowOn = this.audio.toggleMusic();
-      if (this.dom.soundLabel) {
-        this.dom.soundLabel.textContent = isNowOn ? 'Musique : ON' : 'Musique : OFF';
-      }
-    });
+  handleActionA() {
+    if (this.state === 'TITLE') {
+      const action = this.titleOptionsList[this.titleMenuIndex];
+      this.executeTitleAction(action);
+      return;
+    }
+    if (this.state === 'LEVEL_SELECT') {
+      this.startNewGame();
+      return;
+    }
+    if (this.state === 'SCORES' || this.state === 'HELP') {
+      this.setMenuState('TITLE');
+      this.audio.playCursor();
+      return;
+    }
+    if (this.state === 'PLAYING') {
+      this.rotate(true);
+    }
+  }
 
-    this.dom.pauseBtn?.addEventListener('click', () => this.togglePause());
-    this.dom.resumeBtn?.addEventListener('click', () => this.togglePause());
-    this.dom.restartBtn?.addEventListener('click', () => this.restart());
-    this.dom.retryBtn?.addEventListener('click', () => this.restart());
+  handleActionB() {
+    if (this.state === 'LEVEL_SELECT' || this.state === 'SCORES' || this.state === 'HELP') {
+      this.setMenuState('TITLE');
+      this.audio.playCursor();
+      return;
+    }
+    if (this.state === 'PLAYING') {
+      this.hold();
+    }
+  }
+
+  handleActionX() {
+    if (this.state === 'PLAYING') {
+      this.hardDrop();
+    }
+  }
+
+  handleStart() {
+    if (this.state === 'TITLE') {
+      this.startNewGame();
+      return;
+    }
+    if (this.state === 'PLAYING' || this.state === 'PAUSED') {
+      this.togglePause();
+    }
+  }
+
+  handleSelect() {
+    const on = this.audio.toggleMusic();
+    if (this.dom.soundOptLabel) {
+      this.dom.soundOptLabel.textContent = on ? 'SON : ACTIF' : 'SON : COUPE';
+    }
+  }
+
+  executeTitleAction(action) {
+    this.audio.playSelect();
+    switch (action) {
+      case 'play':
+        this.startNewGame();
+        break;
+      case 'level-select':
+        this.setMenuState('LEVEL_SELECT');
+        break;
+      case 'scores':
+        this.setMenuState('SCORES');
+        break;
+      case 'help':
+        this.setMenuState('HELP');
+        break;
+    }
   }
 }
 
-// Initialisation globale au chargement du DOM
+// Lancement au chargement du DOM
 window.addEventListener('DOMContentLoaded', () => {
-  window.bwedTris = new BwedTrisGame();
+  window.bwedBoyApp = new BwedBoyApp();
 });
