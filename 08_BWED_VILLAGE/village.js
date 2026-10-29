@@ -14,7 +14,8 @@ import {
   VILLAGE_LANTERNS,
   CITIZEN_HOUSES,
   VILLAGE_BENCHES,
-  VILLAGE_BARRELS_CRATES
+  VILLAGE_BARRELS_CRATES,
+  VILLAGE_NPCS
 } from './village-map-data.js';
 import {
   createWaffleTexture,
@@ -32,8 +33,8 @@ const state = {
   player: {
     gridX: 25,
     gridZ: 22,
-    worldPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0, 22 * MAP_CONFIG.tileSize),
-    targetPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0, 22 * MAP_CONFIG.tileSize),
+    worldPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0.04, 22 * MAP_CONFIG.tileSize),
+    targetPos: new THREE.Vector3(25 * MAP_CONFIG.tileSize, 0.04, 22 * MAP_CONFIG.tileSize),
     rotation: 0,
     targetRotation: 0,
     isMoving: false,
@@ -48,10 +49,10 @@ const state = {
     azimuth: Math.PI / 4, // 45 deg classic Dofus isometric
     targetAzimuth: Math.PI / 4,
     pitch: Math.PI / 5.2, // ~34.6 deg isometric elevation
-    distance: 38,
-    targetDistance: 38,
-    minDistance: 14,
-    maxDistance: 75,
+    distance: 26, // Close, charming tactile diorama zoom
+    targetDistance: 26,
+    minDistance: 12,
+    maxDistance: 60,
     offset: new THREE.Vector3(0, 0, 0)
   },
   hoveredTile: null,
@@ -59,10 +60,6 @@ const state = {
   timeOfDay: 'day', // 'day', 'golden', 'night'
   audioPlaying: false,
   avatar: {
-    mode: 'custom', // 'custom' or 'pawn'
-    sneakerColor: '0xcc291e',
-    crustType: 'classic',
-    hat: 'none',
     pawnId: 'tiny-baker'
   },
   settings: {
@@ -126,10 +123,9 @@ const toastMessage = document.getElementById('toastMessage');
 let scene, camera, renderer, clock;
 let sunLight, hemiLight;
 let tileCursorMesh, targetMarkerMesh;
-let playerMesh, playerBones = {};
-const playerMaterials = {};
+let playerMesh = null;
+let pawnPivot = null;
 let activePawnMesh = null;
-let activeHatMesh = null;
 const pawnCache = new Map();
 let chocoMaterial = null;
 const buildingObjects = [];
@@ -139,6 +135,12 @@ const particles = [];
 let bgAudio = null;
 let audioContext = null;
 
+// Living Village Systems Globals
+const npcInstances = [];
+const chimneySmokeParticles = [];
+const canalFloatingBuoys = [];
+let pollenPoints = null;
+
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
@@ -147,12 +149,12 @@ function init() {
   loadSavedState();
   state.grid = generateVillageGrid();
 
-  // 1. Scene & Fog (Warm bakery haze that reveals distant landmarks)
+  // 1. Scene & Atmosphere (Warm, Luminous Ghibli/Animal Crossing Bakery Palette)
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x180b06);
-  scene.fog = new THREE.FogExp2(0x180b06, 0.0055);
+  scene.background = new THREE.Color(0xfcf5e8); // Luminous soft honey-cream daylight sky
+  scene.fog = new THREE.FogExp2(0xf6ebe0, 0.0035); // Gentle atmospheric perspective
 
-  // 2. Camera (Isometric Perspective with broad diorama view)
+  // 2. Camera (Isometric Perspective with close diorama intimacy)
   const aspect = window.innerWidth / window.innerHeight;
   camera = new THREE.PerspectiveCamera(40, aspect, 0.5, 320);
   updateCameraPosition(true);
@@ -167,7 +169,7 @@ function init() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 1.25;
   container.appendChild(renderer.domElement);
 
   // 4. Lights & Sky
@@ -179,9 +181,8 @@ function init() {
   // 6. Build Grid Helpers & Cursors
   setupCursors();
 
-  // 7. Spawn Procedural Rigged Bwed Avatar & Apply saved customizations
-  buildProceduralBwed();
-  applyAvatarMode();
+  // 7. Spawn Player Avatar (18 High-Fidelity GLB Heroes with Grounded Feet)
+  initPlayerAvatar();
 
   // 8. Build Procedural Brioche Trees & Flora
   buildVillageVegetation();
@@ -193,22 +194,31 @@ function init() {
   buildInstancedBenches();
   buildInstancedBarrelsAndCrates();
 
-  // 11. Setup Key Landmark Colored Glows
+  // 11. Build Living Village NPCs (12 Interactive GLB Villagers)
+  buildVillageNPCs();
+
+  // 12. Build Living Village Systems (Chimney Smoke, Canal Buoys, Bunting, Pollen)
+  buildChimneySmoke();
+  buildChocolateCanalProps();
+  buildStreetBunting();
+  buildFloatingPollenParticles();
+
+  // 13. Setup Key Landmark Colored Glows
   setupLandmarkLights();
 
-  // 12. Load Village GLB Buildings & Props (Tracks actual progress)
+  // 14. Load Village GLB Buildings & Props (Tracks actual progress)
   loadVillageBuildings();
 
-  // 13. Input & Event Listeners
+  // 15. Input & Event Listeners
   setupEventListeners();
 
-  // 14. UI Modals, Audio System & Quests Initialization
+  // 16. UI Modals, Audio System & Quests Initialization
   initAudioSystem();
   setupModals();
   applySettings();
   updateQuestsUI();
 
-  // 15. Safety fallback timeout for loader
+  // 17. Safety fallback timeout for loader
   setTimeout(() => {
     if (!loaderEl.classList.contains('fade-out')) {
       loaderBar.style.width = '100%';
@@ -217,18 +227,18 @@ function init() {
     }
   }, 7000);
 
-  // 16. Start Loop
+  // 18. Start Loop
   renderer.setAnimationLoop(animate);
 }
 
 // ============================================================================
-// LIGHTING & ATMOSPHERE
+// LIGHTING & ATMOSPHERE (WARM COZY SUNNY PALETTE)
 // ============================================================================
 function setupLighting() {
-  hemiLight = new THREE.HemisphereLight(0xffecd2, 0x3d2014, 0.95);
+  hemiLight = new THREE.HemisphereLight(0xfffaea, 0xd6aa70, 1.15);
   scene.add(hemiLight);
 
-  sunLight = new THREE.DirectionalLight(0xfff5e1, 1.55);
+  sunLight = new THREE.DirectionalLight(0xfffaed, 1.75);
   sunLight.position.set(45, 65, 30);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 1024;
@@ -247,7 +257,7 @@ function setupLighting() {
   buildInstancedStreetLamps();
 }
 
-// Landmark Key Colored Lights (Only 5 strategic dynamic lights for cool GPU operation)
+// Landmark Key Colored Lights (5 strategic dynamic lights for cool GPU operation)
 function setupLandmarkLights() {
   const lights = [
     // Grand-Place: Warm Central Amber
@@ -273,40 +283,40 @@ function setupLandmarkLights() {
 function setTimeOfDay(tod) {
   state.timeOfDay = tod;
   if (tod === 'day') {
-    scene.background.set(0x1a0d07);
-    scene.fog.color.set(0x1a0d07);
-    scene.fog.density = 0.0055;
-    hemiLight.color.set(0xffecd2);
-    hemiLight.groundColor.set(0x3d2014);
-    hemiLight.intensity = 0.95;
-    sunLight.color.set(0xfff5e1);
-    sunLight.intensity = 1.55;
+    scene.background.set(0xfcf5e8);
+    scene.fog.color.set(0xf6ebe0);
+    scene.fog.density = 0.0035;
+    hemiLight.color.set(0xfffaea);
+    hemiLight.groundColor.set(0xd6aa70);
+    hemiLight.intensity = 1.15;
+    sunLight.color.set(0xfffaed);
+    sunLight.intensity = 1.75;
     sunLight.position.set(45, 65, 30);
-    landmarkPointLights.forEach(l => l.intensity = 0.5);
+    landmarkPointLights.forEach(l => (l.intensity = 0.6));
     todIcon.textContent = 'Soleil Doré';
   } else if (tod === 'golden') {
-    scene.background.set(0x2d1109);
-    scene.fog.color.set(0x2d1109);
-    scene.fog.density = 0.006;
-    hemiLight.color.set(0xff9944);
-    hemiLight.groundColor.set(0x4a180d);
-    hemiLight.intensity = 0.9;
-    sunLight.color.set(0xff7722);
-    sunLight.intensity = 1.6;
+    scene.background.set(0xf8d4a8);
+    scene.fog.color.set(0xf5c391);
+    scene.fog.density = 0.0042;
+    hemiLight.color.set(0xffaa55);
+    hemiLight.groundColor.set(0x5a2310);
+    hemiLight.intensity = 1.1;
+    sunLight.color.set(0xff8833);
+    sunLight.intensity = 1.85;
     sunLight.position.set(55, 35, 15);
-    landmarkPointLights.forEach(l => l.intensity = 1.4);
+    landmarkPointLights.forEach(l => (l.intensity = 1.5));
     todIcon.textContent = 'Heure Dorée';
   } else if (tod === 'night') {
-    scene.background.set(0x0a0504);
-    scene.fog.color.set(0x0a0504);
-    scene.fog.density = 0.007;
-    hemiLight.color.set(0x334466);
-    hemiLight.groundColor.set(0x150b07);
-    hemiLight.intensity = 0.45;
-    sunLight.color.set(0x4466aa);
-    sunLight.intensity = 0.4;
+    scene.background.set(0x131a2b);
+    scene.fog.color.set(0x131a2b);
+    scene.fog.density = 0.0055;
+    hemiLight.color.set(0x3a4f77);
+    hemiLight.groundColor.set(0x1a1210);
+    hemiLight.intensity = 0.55;
+    sunLight.color.set(0x5577bb);
+    sunLight.intensity = 0.45;
     sunLight.position.set(-30, 45, -30);
-    landmarkPointLights.forEach(l => l.intensity = 2.6);
+    landmarkPointLights.forEach(l => (l.intensity = 2.8));
     todIcon.textContent = 'Nuit Cosy';
   }
 }
@@ -845,278 +855,51 @@ function setupCursors() {
 }
 
 // ============================================================================
-// PROCEDURAL RIGGED BWED AVATAR
+// AVATAR SYSTEM & 18 HIGH-FIDELITY GLB HEROES
 // ============================================================================
-function buildProceduralBwed() {
-  playerMesh = new THREE.Group();
-
-  // Materials
-  const crustMat = new THREE.MeshStandardMaterial({ color: 0x8a4522, roughness: 0.75, metalness: 0.05 });
-  const crumbMat = new THREE.MeshStandardMaterial({ color: 0xfef7ea, roughness: 0.9, metalness: 0.02 });
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x110804, roughness: 0.15, metalness: 0.2 });
-  const catchlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const shoeMat = new THREE.MeshStandardMaterial({ color: 0xcc291e, roughness: 0.5, metalness: 0.1 });
-  const whiteSoleMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
-
-  // 1. Root & Hips
-  const hips = new THREE.Group();
-  hips.position.y = 0.55;
-  playerMesh.add(hips);
-  playerBones.hips = hips;
-
-  // 2. Bread Slice Body (Crust + Crumb)
-  const body = new THREE.Group();
-  hips.add(body);
-  playerBones.body = body;
-
-  // Crust Back & Rim (Rounded Loaf Shape)
-  const crustGeo = new THREE.BoxGeometry(0.95, 1.15, 0.38);
-  const crustMesh = new THREE.Mesh(crustGeo, crustMat);
-  crustMesh.castShadow = true;
-  body.add(crustMesh);
-
-  // Crumb Front Face (Recessed)
-  const crumbGeo = new THREE.BoxGeometry(0.85, 1.05, 0.08);
-  const crumbMesh = new THREE.Mesh(crumbGeo, crumbMat);
-  crumbMesh.position.z = 0.18;
-  body.add(crumbMesh);
-
-  // Big Shiny Black Eyes
-  const eyeGeo = new THREE.SphereGeometry(0.095, 16, 16);
-  eyeGeo.scale(0.9, 1.3, 0.6);
-
-  const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-  leftEye.position.set(-0.22, 0.08, 0.23);
-  body.add(leftEye);
-
-  const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-  rightEye.position.set(0.22, 0.08, 0.23);
-  body.add(rightEye);
-
-  // Specular Catchlights
-  const sparkGeo = new THREE.SphereGeometry(0.025, 8, 8);
-  const leftSpark = new THREE.Mesh(sparkGeo, catchlightMat);
-  leftSpark.position.set(-0.2, 0.13, 0.28);
-  body.add(leftSpark);
-
-  const rightSpark = new THREE.Mesh(sparkGeo, catchlightMat);
-  rightSpark.position.set(0.24, 0.13, 0.28);
-  body.add(rightSpark);
-
-  // Cute Tiny Smile
-  const smileGeo = new THREE.TorusGeometry(0.05, 0.015, 8, 16, Math.PI);
-  const smileMat = new THREE.MeshBasicMaterial({ color: 0x4a180d });
-  const smile = new THREE.Mesh(smileGeo, smileMat);
-  smile.rotation.x = Math.PI;
-  smile.position.set(0, -0.12, 0.23);
-  body.add(smile);
-
-  // 3. Iconic Red Sneakers (Left & Right Legs)
-  function makeShoe(isLeft) {
-    const legGroup = new THREE.Group();
-    legGroup.position.set(isLeft ? -0.22 : 0.22, 0, 0);
-
-    // Thin doughy leg
-    const legGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.45, 10);
-    const leg = new THREE.Mesh(legGeo, crumbMat);
-    leg.position.y = -0.22;
-    legGroup.add(leg);
-
-    // Chubby Red Sneaker
-    const shoe = new THREE.Group();
-    shoe.position.set(0, -0.42, 0.06);
-
-    const shoeBodyGeo = new THREE.BoxGeometry(0.22, 0.18, 0.38);
-    const shoeBody = new THREE.Mesh(shoeBodyGeo, shoeMat);
-    shoeBody.castShadow = true;
-    shoe.add(shoeBody);
-
-    // White Rubber Sole
-    const soleGeo = new THREE.BoxGeometry(0.24, 0.06, 0.4);
-    const sole = new THREE.Mesh(soleGeo, whiteSoleMat);
-    sole.position.y = -0.09;
-    shoe.add(sole);
-
-    legGroup.add(shoe);
-    return { legGroup, shoe };
-  }
-
-  const leftLegData = makeShoe(true);
-  const rightLegData = makeShoe(false);
-  hips.add(leftLegData.legGroup);
-  hips.add(rightLegData.legGroup);
-  playerBones.leftLeg = leftLegData.legGroup;
-  playerBones.rightLeg = rightLegData.legGroup;
-
-  // 4. Arms
-  function makeArm(isLeft) {
-    const armGroup = new THREE.Group();
-    armGroup.position.set(isLeft ? -0.52 : 0.52, 0.05, 0);
-
-    const armGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.4, 10);
-    const arm = new THREE.Mesh(armGeo, crumbMat);
-    arm.position.y = -0.18;
-    arm.rotation.z = isLeft ? 0.25 : -0.25;
-    armGroup.add(arm);
-
-    return armGroup;
-  }
-
-  const leftArm = makeArm(true);
-  const rightArm = makeArm(false);
-  body.add(leftArm);
-  body.add(rightArm);
-  playerBones.leftArm = leftArm;
-  playerBones.rightArm = rightArm;
-
-  // Stash materials for live customizer
-  playerMaterials.crust = crustMat;
-  playerMaterials.crumb = crumbMat;
-  playerMaterials.shoe = shoeMat;
-
-  // Set initial position
-  playerMesh.position.copy(state.player.worldPos);
-  scene.add(playerMesh);
-}
-
-// ============================================================================
-// AVATAR CUSTOMIZER & GLB HERO PAWN ENGINE
-// ============================================================================
-const CRUST_PALETTES = {
-  classic: { crust: 0x8a4522, crumb: 0xfef7ea },
-  brioche: { crust: 0xba6e38, crumb: 0xfff4db },
-  chocolate: { crust: 0x47261a, crumb: 0x824b2b },
-  matcha: { crust: 0x4f6b3b, crumb: 0xdbe8c8 }
-};
-
 const PAWN_FILES = {
   'tiny-baker': './assets/pawns/tiny-baker.glb',
   'super-hero-bwed': './assets/pawns/super-hero-bwed.glb',
   'shadow-ninja': './assets/pawns/shadow-ninja.glb',
   'crimson-samurai': './assets/pawns/crimson-samurai.glb',
   'brave-firefighter': './assets/pawns/brave-firefighter.glb',
-  'crimson-mage': './assets/pawns/crimson-mage.glb'
+  'crimson-mage': './assets/pawns/crimson-mage.glb',
+  'choco-drip': './assets/pawns/choco-drip.glb',
+  'cloud-ninja': './assets/pawns/cloud-ninja.glb',
+  'crumb-burglar': './assets/pawns/crumb-burglar.glb',
+  'frankenbwed': './assets/pawns/frankenbwed.glb',
+  'glow-toast': './assets/pawns/glow-toast.glb',
+  'judge-gaveltoes': './assets/pawns/judge-gaveltoes.glb',
+  'nerdy-buddy': './assets/pawns/nerdy-buddy.glb',
+  'rusty-buttonbot': './assets/pawns/rusty-buttonbot.glb',
+  'saiyan-toast': './assets/pawns/saiyan-toast.glb',
+  'toast-bandit': './assets/pawns/toast-bandit.glb',
+  'toast-tycoon': './assets/pawns/toast-tycoon.glb',
+  'whale-buddy': './assets/pawns/whale-buddy.glb'
 };
 
-function createHatMesh(type) {
-  if (type === 'none' || !type) return null;
+function initPlayerAvatar() {
+  playerMesh = new THREE.Group();
+  playerMesh.position.copy(state.player.worldPos);
 
-  const hatGroup = new THREE.Group();
+  // pawnPivot holds the active GLB model.
+  // Animations only oscillate pawnPivot.position.y (bounce) and pawnPivot.rotation.z (waddle).
+  // The model inside pawnPivot has a fixed position.y so feet/soles never penetrate the ground!
+  pawnPivot = new THREE.Group();
+  pawnPivot.position.y = 0;
+  playerMesh.add(pawnPivot);
 
-  if (type === 'toque') {
-    // Grand Chef Toque: white cylinder base + puffed top
-    const toqueMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
-    const baseGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.14, 16);
-    const base = new THREE.Mesh(baseGeo, toqueMat);
-    base.position.y = 0.07;
-    hatGroup.add(base);
+  scene.add(playerMesh);
 
-    const topGeo = new THREE.SphereGeometry(0.24, 16, 16);
-    topGeo.scale(1, 0.85, 1);
-    const top = new THREE.Mesh(topGeo, toqueMat);
-    top.position.y = 0.24;
-    hatGroup.add(top);
-
-    hatGroup.position.set(0, 0.58, 0);
-  } else if (type === 'butter') {
-    // Melting butter pat: soft golden rounded cube + dripping droplet
-    const butterMat = new THREE.MeshStandardMaterial({
-      color: 0xffd15a,
-      roughness: 0.25,
-      metalness: 0.1
-    });
-    const patGeo = new THREE.BoxGeometry(0.24, 0.1, 0.24);
-    const pat = new THREE.Mesh(patGeo, butterMat);
-    pat.rotation.set(0.1, 0.2, -0.15);
-    pat.position.set(0, 0.62, 0.04);
-    hatGroup.add(pat);
-
-    const dropGeo = new THREE.SphereGeometry(0.05, 8, 8);
-    dropGeo.scale(0.8, 1.4, 0.8);
-    const drop = new THREE.Mesh(dropGeo, butterMat);
-    drop.position.set(0.12, 0.52, 0.12);
-    hatGroup.add(drop);
-  } else if (type === 'strawberry') {
-    // Royal candied strawberry: red cone + green leaf sepals
-    const strawMat = new THREE.MeshStandardMaterial({ color: 0xff3b30, roughness: 0.35 });
-    const berryGeo = new THREE.ConeGeometry(0.16, 0.32, 14);
-    const berry = new THREE.Mesh(berryGeo, strawMat);
-    berry.rotation.x = Math.PI;
-    berry.position.set(0, 0.72, 0);
-    hatGroup.add(berry);
-
-    const sepalMat = new THREE.MeshStandardMaterial({ color: 0x2ec4b6, roughness: 0.6 });
-    for (let i = 0; i < 4; i++) {
-      const sepalGeo = new THREE.BoxGeometry(0.08, 0.02, 0.14);
-      const sepal = new THREE.Mesh(sepalGeo, sepalMat);
-      sepal.rotation.y = (i * Math.PI) / 2;
-      sepal.position.set(0, 0.85, 0);
-      hatGroup.add(sepal);
-    }
-  } else if (type === 'crown') {
-    // Golden sugar crown with 4 spikes and sugar pearls
-    const crownMat = new THREE.MeshStandardMaterial({ color: 0xffb703, roughness: 0.3, metalness: 0.5 });
-    const ringGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.08, 16, 1, true);
-    const ring = new THREE.Mesh(ringGeo, crownMat);
-    ring.position.y = 0.62;
-    hatGroup.add(ring);
-
-    for (let i = 0; i < 4; i++) {
-      const spikeGeo = new THREE.ConeGeometry(0.04, 0.12, 8);
-      const spike = new THREE.Mesh(spikeGeo, crownMat);
-      const angle = (i * Math.PI) / 2;
-      spike.position.set(Math.cos(angle) * 0.16, 0.70, Math.sin(angle) * 0.16);
-      hatGroup.add(spike);
-
-      const pearlGeo = new THREE.SphereGeometry(0.03, 8, 8);
-      const pearlMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const pearl = new THREE.Mesh(pearlGeo, pearlMat);
-      pearl.position.set(Math.cos(angle) * 0.16, 0.77, Math.sin(angle) * 0.16);
-      hatGroup.add(pearl);
-    }
-  }
-
-  return hatGroup;
+  // Load selected avatar (defaults to tiny-baker or saved state)
+  const initialPawn = state.avatar.pawnId || 'tiny-baker';
+  loadAndSetAvatar(initialPawn);
 }
 
-function applyAvatarMode() {
-  if (!playerMesh) return;
+function loadAndSetAvatar(pawnId) {
+  state.avatar.pawnId = pawnId;
+  saveAvatarState();
 
-  if (state.avatar.mode === 'custom') {
-    // Show procedural body
-    if (playerBones.hips) playerBones.hips.visible = true;
-    if (activePawnMesh) activePawnMesh.visible = false;
-
-    // Apply sneaker color
-    if (playerMaterials.shoe) {
-      playerMaterials.shoe.color.setHex(parseInt(state.avatar.sneakerColor, 16) || 0xcc291e);
-    }
-
-    // Apply crust & crumb palette
-    const pal = CRUST_PALETTES[state.avatar.crustType] || CRUST_PALETTES.classic;
-    if (playerMaterials.crust) playerMaterials.crust.color.setHex(pal.crust);
-    if (playerMaterials.crumb) playerMaterials.crumb.color.setHex(pal.crumb);
-
-    // Apply hat
-    if (activeHatMesh && playerBones.body) {
-      playerBones.body.remove(activeHatMesh);
-      activeHatMesh = null;
-    }
-    const newHat = createHatMesh(state.avatar.hat);
-    if (newHat && playerBones.body) {
-      playerBones.body.add(newHat);
-      activeHatMesh = newHat;
-    }
-  } else if (state.avatar.mode === 'pawn') {
-    // Hide procedural body
-    if (playerBones.hips) playerBones.hips.visible = false;
-
-    const pawnId = state.avatar.pawnId || 'tiny-baker';
-    loadAndSetPawn(pawnId);
-  }
-}
-
-function loadAndSetPawn(pawnId) {
   if (activePawnMesh) {
     activePawnMesh.visible = false;
   }
@@ -1127,53 +910,390 @@ function loadAndSetPawn(pawnId) {
     return;
   }
 
-  const filePath = PAWN_FILES[pawnId];
+  const filePath = PAWN_FILES[pawnId] || PAWN_FILES['tiny-baker'];
   if (!filePath) return;
 
   const gltfLoader = new GLTFLoader();
   gltfLoader.load(
     filePath,
     gltf => {
-      const pawnScene = gltf.scene;
+      const model = gltf.scene;
 
-      // Compute bounding box to normalize scale to ~1.6m height
-      pawnScene.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(pawnScene);
+      // Compute bounding box to normalize height to ~1.65m
+      model.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(model);
       const size = new THREE.Vector3();
       box.getSize(size);
       const maxDim = Math.max(size.x, size.y, size.z);
-      const scaleFactor = 1.6 / (maxDim || 1);
-      pawnScene.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      const scaleFactor = 1.65 / (maxDim || 1);
+      model.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
-      // Re-align base at y = 0
-      pawnScene.updateMatrixWorld(true);
-      const newBox = new THREE.Box3().setFromObject(pawnScene);
-      pawnScene.position.y -= newBox.min.y;
+      // Re-measure after scale and align base at y = 0
+      model.updateMatrixWorld(true);
+      const scaledBox = new THREE.Box3().setFromObject(model);
+      model.position.y = -scaledBox.min.y;
 
-      // Enable shadows
-      pawnScene.traverse(child => {
+      model.traverse(child => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
+          if (child.material) {
+            child.material.roughness = Math.max(child.material.roughness || 0.6, 0.45);
+          }
         }
       });
 
-      playerMesh.add(pawnScene);
-      pawnCache.set(pawnId, pawnScene);
+      pawnPivot.add(model);
+      pawnCache.set(pawnId, model);
 
-      // Only set as active if user hasn't switched away while loading
-      if (state.avatar.mode === 'pawn' && state.avatar.pawnId === pawnId) {
-        activePawnMesh = pawnScene;
+      if (state.avatar.pawnId === pawnId) {
+        activePawnMesh = model;
         activePawnMesh.visible = true;
       } else {
-        pawnScene.visible = false;
+        model.visible = false;
       }
     },
     undefined,
     err => {
-      console.warn('Erreur chargement pion héroïque:', pawnId, err);
+      console.warn('Erreur chargement avatar héroïque:', pawnId, err);
     }
   );
+}
+
+// ============================================================================
+// LIVING VILLAGE NPCS (12 INTERACTIVE GLB CITIZENS)
+// ============================================================================
+function buildVillageNPCs() {
+  if (!VILLAGE_NPCS || VILLAGE_NPCS.length === 0) return;
+
+  const loader = new GLTFLoader();
+
+  VILLAGE_NPCS.forEach(npc => {
+    const tile = state.grid[npc.gridZ] && state.grid[npc.gridZ][npc.gridX];
+    const targetGroundY = tile ? tile.elevation * MAP_CONFIG.elevationStep + 0.04 : 0.04;
+    const worldX = npc.gridX * MAP_CONFIG.tileSize;
+    const worldZ = npc.gridZ * MAP_CONFIG.tileSize;
+
+    const npcGroup = new THREE.Group();
+    npcGroup.position.set(worldX, targetGroundY, worldZ);
+
+    const npcPivot = new THREE.Group();
+    npcPivot.rotation.y = npc.rotationY || 0;
+    npcGroup.add(npcPivot);
+
+    scene.add(npcGroup);
+
+    if (tile) {
+      tile.walkable = false;
+    }
+
+    const npcData = {
+      config: npc,
+      group: npcGroup,
+      pivot: npcPivot,
+      model: null,
+      baseRotationY: npc.rotationY || 0,
+      dialogueIdx: 0,
+      bubbleEl: null,
+      bubbleTimer: 0
+    };
+    npcInstances.push(npcData);
+
+    const filePath = PAWN_FILES[npc.pawnId] || PAWN_FILES['tiny-baker'];
+    loader.load(
+      filePath,
+      gltf => {
+        const model = gltf.scene;
+        model.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scaleFactor = 1.6 / (maxDim || 1);
+        model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+        model.updateMatrixWorld(true);
+        const scaledBox = new THREE.Box3().setFromObject(model);
+        model.position.y = -scaledBox.min.y;
+
+        model.traverse(child => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        npcPivot.add(model);
+        npcData.model = model;
+      },
+      undefined,
+      err => {
+        console.warn('Erreur chargement modèle PNJ:', npc.name, err);
+      }
+    );
+  });
+}
+
+function updateVillageNPCs(dt) {
+  const pPos = state.player.worldPos;
+  const t = clock.elapsedTime;
+
+  for (let i = 0; i < npcInstances.length; i++) {
+    const npc = npcInstances[i];
+    const nPos = npc.group.position;
+    const dist = pPos.distanceTo(nPos);
+
+    // Idle breathing
+    npc.pivot.position.y = Math.sin(t * 2.2 + i * 1.3) * 0.02;
+
+    // Head-tracking / facing player when nearby
+    if (dist < 6.0) {
+      const dx = pPos.x - nPos.x;
+      const dz = pPos.z - nPos.z;
+      const targetAngle = Math.atan2(dx, dz);
+      let diff = targetAngle - npc.pivot.rotation.y;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      npc.pivot.rotation.y += diff * 0.08;
+    } else {
+      let diff = npc.baseRotationY - npc.pivot.rotation.y;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      npc.pivot.rotation.y += diff * 0.05;
+    }
+
+    // Proximity speech bubble
+    if (dist < 3.4 && npc.bubbleTimer <= 0) {
+      const dialogues = npc.config.dialogues;
+      if (dialogues && dialogues.length > 0) {
+        const text = dialogues[npc.dialogueIdx % dialogues.length];
+        npc.dialogueIdx++;
+        spawnNpcSpeechBubble(npc, text);
+        npc.bubbleTimer = 6.5;
+      }
+    }
+
+    if (npc.bubbleTimer > 0) {
+      npc.bubbleTimer -= dt;
+      if (npc.bubbleEl) {
+        if (npc.bubbleTimer <= 0 || dist > 7.0) {
+          npc.bubbleEl.remove();
+          npc.bubbleEl = null;
+        } else {
+          // Project 3D position above NPC head to screen
+          const headPos = new THREE.Vector3(nPos.x, nPos.y + 2.2, nPos.z);
+          headPos.project(camera);
+          const screenX = (headPos.x * 0.5 + 0.5) * window.innerWidth;
+          const screenY = (headPos.y * -0.5 + 0.5) * window.innerHeight;
+          npc.bubbleEl.style.left = `${screenX}px`;
+          npc.bubbleEl.style.top = `${screenY}px`;
+          if (npc.bubbleTimer < 0.8) {
+            npc.bubbleEl.style.opacity = (npc.bubbleTimer / 0.8).toFixed(2);
+          }
+        }
+      }
+    }
+  }
+}
+
+function spawnNpcSpeechBubble(npc, text) {
+  if (npc.bubbleEl) {
+    npc.bubbleEl.remove();
+    npc.bubbleEl = null;
+  }
+
+  const el = document.createElement('div');
+  el.className = 'speech-bubble npc-bubble';
+  el.innerHTML = `<strong>${npc.config.name}</strong><span>${text}</span>`;
+  container.appendChild(el);
+  npc.bubbleEl = el;
+}
+
+// ============================================================================
+// LIVING VILLAGE SYSTEMS (SMOKE, CANAL BUOYS, BUNTING, POLLEN)
+// ============================================================================
+function buildChimneySmoke() {
+  const chimneyOrigins = [
+    new THREE.Vector3(21 * 2, 7.8, 25 * 2), // Grande Pâtisserie
+    new THREE.Vector3(37 * 2, 7.2, 23 * 2), // Taverne du Miel
+    new THREE.Vector3(6 * 2, 5.0, 16 * 2),  // Cottage Fraisier
+    new THREE.Vector3(14 * 2, 5.0, 16 * 2), // Villa Matcha
+    new THREE.Vector3(8 * 2, 5.0, 32 * 2),  // Manoir Pain d'Épices
+    new THREE.Vector3(42 * 2, 5.0, 34 * 2)  // Comptoir Sucré
+  ];
+
+  const puffGeo = new THREE.SphereGeometry(0.22, 7, 7);
+  const puffMat = new THREE.MeshStandardMaterial({
+    color: 0xfffcf5,
+    roughness: 0.95,
+    transparent: true,
+    opacity: 0.45
+  });
+
+  chimneyOrigins.forEach((origin, oIdx) => {
+    for (let p = 0; p < 5; p++) {
+      const mesh = new THREE.Mesh(puffGeo, puffMat);
+      mesh.castShadow = false;
+      mesh.receiveShadow = false;
+      scene.add(mesh);
+
+      const life = (p / 5) * 2.8;
+      chimneySmokeParticles.push({
+        mesh,
+        origin: origin.clone(),
+        life,
+        maxLife: 2.8,
+        swirlOffset: oIdx * 1.5 + p
+      });
+    }
+  });
+}
+
+function updateChimneySmoke(dt) {
+  const t = clock.elapsedTime;
+  for (let i = 0; i < chimneySmokeParticles.length; i++) {
+    const sp = chimneySmokeParticles[i];
+    sp.life += dt;
+    if (sp.life >= sp.maxLife) {
+      sp.life = 0;
+    }
+
+    const progress = sp.life / sp.maxLife;
+    const riseY = progress * 2.8;
+    const driftX = Math.sin(t * 1.2 + sp.swirlOffset) * 0.35 * progress;
+    const driftZ = Math.cos(t * 1.0 + sp.swirlOffset) * 0.35 * progress;
+
+    sp.mesh.position.set(
+      sp.origin.x + driftX,
+      sp.origin.y + riseY,
+      sp.origin.z + driftZ
+    );
+
+    const s = 0.6 + progress * 1.4;
+    sp.mesh.scale.set(s, s * 0.8, s);
+    sp.mesh.visible = true;
+  }
+}
+
+function buildChocolateCanalProps() {
+  const buoyGeo = new THREE.CylinderGeometry(0.55, 0.65, 0.35, 12);
+  const buoyMatA = new THREE.MeshStandardMaterial({ color: 0xffe8d6, roughness: 0.3 }); // Chamallow vanille
+  const buoyMatB = new THREE.MeshStandardMaterial({ color: 0xff99c8, roughness: 0.3 }); // Guimauve fraise
+
+  const buoyLocations = [
+    { x: 5, z: 10, phase: 0 },
+    { x: 17, z: 10, phase: 1.2 },
+    { x: 31, z: 10, phase: 2.5 },
+    { x: 44, z: 10, phase: 4.1 }
+  ];
+
+  buoyLocations.forEach((loc, idx) => {
+    const mesh = new THREE.Mesh(buoyGeo, idx % 2 === 0 ? buoyMatA : buoyMatB);
+    const wx = loc.x * MAP_CONFIG.tileSize;
+    const wz = loc.z * MAP_CONFIG.tileSize;
+    mesh.position.set(wx, -0.4, wz);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    canalFloatingBuoys.push({
+      mesh,
+      baseY: -0.4,
+      phase: loc.phase
+    });
+  });
+}
+
+function updateCanalBuoys(dt) {
+  const t = clock.elapsedTime;
+  for (let i = 0; i < canalFloatingBuoys.length; i++) {
+    const b = canalFloatingBuoys[i];
+    b.mesh.position.y = b.baseY + Math.sin(t * 2.2 + b.phase) * 0.05;
+    b.mesh.rotation.z = Math.sin(t * 1.8 + b.phase) * 0.08;
+    b.mesh.rotation.x = Math.cos(t * 1.5 + b.phase) * 0.06;
+  }
+}
+
+function buildStreetBunting() {
+  const lines = [
+    { start: new THREE.Vector3(21 * 2, 4.4, 21 * 2), end: new THREE.Vector3(29 * 2, 4.4, 21 * 2) },
+    { start: new THREE.Vector3(21 * 2, 4.4, 29 * 2), end: new THREE.Vector3(29 * 2, 4.4, 29 * 2) },
+    { start: new THREE.Vector3(21 * 2, 4.4, 21 * 2), end: new THREE.Vector3(21 * 2, 4.4, 29 * 2) },
+    { start: new THREE.Vector3(29 * 2, 4.4, 21 * 2), end: new THREE.Vector3(29 * 2, 4.4, 29 * 2) }
+  ];
+
+  const colors = [0xff6b35, 0xffd15a, 0x2ec4b6, 0xe65271, 0xba6e38];
+  const triGeo = new THREE.ConeGeometry(0.22, 0.42, 3);
+  triGeo.rotateX(Math.PI);
+
+  lines.forEach(line => {
+    const numFlags = 10;
+    for (let f = 1; f < numFlags; f++) {
+      const frac = f / numFlags;
+      const pos = new THREE.Vector3().lerpVectors(line.start, line.end, frac);
+      const sag = Math.sin(frac * Math.PI) * 0.45;
+      pos.y -= sag;
+
+      const flagMat = new THREE.MeshStandardMaterial({
+        color: colors[f % colors.length],
+        roughness: 0.6,
+        side: THREE.DoubleSide
+      });
+      const flagMesh = new THREE.Mesh(triGeo, flagMat);
+      flagMesh.position.copy(pos);
+      flagMesh.rotation.y = frac * Math.PI;
+      scene.add(flagMesh);
+    }
+  });
+}
+
+function buildFloatingPollenParticles() {
+  const count = 120;
+  const positions = new Float32Array(count * 3);
+  const mapWidth = MAP_CONFIG.width * MAP_CONFIG.tileSize;
+  const mapHeight = MAP_CONFIG.height * MAP_CONFIG.tileSize;
+
+  for (let i = 0; i < count; i++) {
+    positions[i * 3 + 0] = Math.random() * mapWidth;
+    positions[i * 3 + 1] = 1.0 + Math.random() * 8.0;
+    positions[i * 3 + 2] = Math.random() * mapHeight;
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  const mat = new THREE.PointsMaterial({
+    color: 0xfffae0,
+    size: 0.16,
+    transparent: true,
+    opacity: 0.75,
+    blending: THREE.AdditiveBlending
+  });
+
+  pollenPoints = new THREE.Points(geo, mat);
+  scene.add(pollenPoints);
+}
+
+function updatePollenParticles(dt) {
+  if (!pollenPoints) return;
+  const positions = pollenPoints.geometry.attributes.position.array;
+  const count = positions.length / 3;
+  const t = clock.elapsedTime;
+  const mapWidth = MAP_CONFIG.width * MAP_CONFIG.tileSize;
+  const mapHeight = MAP_CONFIG.height * MAP_CONFIG.tileSize;
+
+  for (let i = 0; i < count; i++) {
+    positions[i * 3 + 0] += Math.sin(t * 0.5 + i) * 0.4 * dt;
+    positions[i * 3 + 1] -= 0.25 * dt;
+    positions[i * 3 + 2] += Math.cos(t * 0.5 + i) * 0.3 * dt;
+
+    if (positions[i * 3 + 1] < 0.2) {
+      positions[i * 3 + 1] = 7.5 + Math.random() * 2.0;
+      positions[i * 3 + 0] = Math.random() * mapWidth;
+      positions[i * 3 + 2] = Math.random() * mapHeight;
+    }
+  }
+  pollenPoints.geometry.attributes.position.needsUpdate = true;
 }
 
 // Particle system for flour crumbs and teleportation effects
@@ -1672,7 +1792,13 @@ function animate(timestamp) {
     chocoMaterial.roughness = 0.22 + Math.sin(clock.elapsedTime * 1.8) * 0.08;
   }
 
-  // 9. Render
+  // 9. Update Living Village Systems (NPCs, Chimney Smoke, Canal Buoys, Pollen)
+  updateVillageNPCs(dt);
+  updateChimneySmoke(dt);
+  updateCanalBuoys(dt);
+  updatePollenParticles(dt);
+
+  // 10. Render
   renderer.render(scene, camera);
 }
 
@@ -1757,7 +1883,7 @@ function updateMovement(dt) {
   const currGX = Math.round(p.worldPos.x / MAP_CONFIG.tileSize);
   const currGZ = Math.round(p.worldPos.z / MAP_CONFIG.tileSize);
   const currTile = state.grid[currGZ] && state.grid[currGZ][currGX];
-  const targetGroundY = currTile ? currTile.elevation * MAP_CONFIG.elevationStep : 0;
+  const targetGroundY = currTile ? currTile.elevation * MAP_CONFIG.elevationStep + 0.04 : 0.04;
 
   // Jump Gravity & Ground alignment
   if (!p.isGrounded) {
@@ -1778,65 +1904,31 @@ function updateMovement(dt) {
   playerMesh.rotation.y = p.rotation;
 }
 
-// Procedural Waddle Walk & Breathing Animations (Supports Procedural Bwed & 3D Hero Pawns)
+// Bouncy Waddle Walk & Breathing Animations for 3D Hero Pawns
 function updateAvatarAnimation(dt) {
   const p = state.player;
   const t = clock.elapsedTime;
 
-  // 1. If currently in 3D Hero Pawn mode
-  if (state.avatar.mode === 'pawn' && activePawnMesh) {
-    if (p.isMoving) {
-      const waddleFreq = 11;
-      const waddleSwing = Math.sin(t * waddleFreq);
-      activePawnMesh.rotation.z = waddleSwing * 0.08;
-      activePawnMesh.position.y = Math.abs(Math.cos(t * waddleFreq)) * 0.08;
-    } else {
-      const idleFreq = 2.4;
-      const breathe = Math.sin(t * idleFreq);
-      activePawnMesh.position.y = breathe * 0.02;
-      activePawnMesh.rotation.z = 0;
-    }
-    return;
-  }
-
-  // 2. Procedural Rigged Bwed Animation
-  const b = playerBones;
-  if (!b || !b.body) return;
+  if (!pawnPivot) return;
 
   if (p.isMoving) {
-    // Iconic Bwed Waddle: tilt body left/right, alternate leg swings
     const waddleFreq = 11;
     const waddleSwing = Math.sin(t * waddleFreq);
-
-    b.body.rotation.z = waddleSwing * 0.12; // Body tilt
-    b.body.position.y = Math.abs(Math.cos(t * waddleFreq)) * 0.1; // Step bounce
-
-    b.leftLeg.rotation.x = waddleSwing * 0.65;
-    b.rightLeg.rotation.x = -waddleSwing * 0.65;
-
-    b.leftArm.rotation.x = -waddleSwing * 0.5;
-    b.rightArm.rotation.x = waddleSwing * 0.5;
+    pawnPivot.rotation.z = waddleSwing * 0.07;
+    pawnPivot.rotation.x = 0.05; // slight forward lean while running
+    pawnPivot.position.y = Math.abs(Math.sin(t * waddleFreq)) * 0.09;
   } else {
-    // Idle: gentle squash-and-stretch breathing
     const idleFreq = 2.4;
     const breathe = Math.sin(t * idleFreq);
+    pawnPivot.position.y = (breathe + 1) * 0.015; // gentle idle bobbing >= 0
+    pawnPivot.rotation.z = THREE.MathUtils.lerp(pawnPivot.rotation.z, 0, 0.15);
+    pawnPivot.rotation.x = THREE.MathUtils.lerp(pawnPivot.rotation.x, 0, 0.15);
+  }
 
-    b.body.scale.set(1 + breathe * 0.02, 1 - breathe * 0.02, 1);
-    b.body.position.y = breathe * 0.03;
-    b.body.rotation.z = 0;
-
-    b.leftLeg.rotation.x = 0;
-    b.rightLeg.rotation.x = 0;
-
-    // Emotes
-    if (p.activeEmote === 'wave' && p.emoteTimer > 0) {
-      p.emoteTimer -= dt;
-      b.rightArm.rotation.z = -1.8 + Math.sin(t * 16) * 0.4;
-    } else {
-      b.leftArm.rotation.x = 0;
-      b.rightArm.rotation.x = 0;
-      b.rightArm.rotation.z = -0.25;
-    }
+  // Handle jump & emotes
+  if (p.activeEmote === 'wave' && p.emoteTimer > 0) {
+    p.emoteTimer -= dt;
+    pawnPivot.rotation.z = Math.sin(t * 14) * 0.12;
   }
 }
 
@@ -2146,79 +2238,17 @@ function setupModals() {
     btn.addEventListener('click', closeAllModals);
   });
 
-  // 3. Wardrobe Tabs
-  const wardrobeTabBtns = document.querySelectorAll('[data-wardrobe-tab]');
-  const panelCustom = document.getElementById('wardrobePanelCustom');
-  const panelPawns = document.getElementById('wardrobePanelPawns');
-
-  wardrobeTabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      wardrobeTabBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const isCustom = btn.dataset.wardrobeTab === 'custom';
-      panelCustom.hidden = !isCustom;
-      panelPawns.hidden = isCustom;
-      playSfx('click');
-    });
-  });
-
-  // Wardrobe Swatches (Sneakers)
-  const sneakerSwatches = document.querySelectorAll('#sneakerSwatches .swatch-btn');
-  sneakerSwatches.forEach(btn => {
-    btn.addEventListener('click', () => {
-      sneakerSwatches.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.avatar.mode = 'custom';
-      state.avatar.sneakerColor = btn.dataset.color;
-      saveAvatarState();
-      applyAvatarMode();
-      playSfx('click');
-      showToast('Garde-Robe', 'Couleur des baskets mise à jour !', '☖');
-    });
-  });
-
-  // Wardrobe Crust Pills
-  const crustPills = document.querySelectorAll('#crustPills .pill-btn');
-  crustPills.forEach(btn => {
-    btn.addEventListener('click', () => {
-      crustPills.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.avatar.mode = 'custom';
-      state.avatar.crustType = btn.dataset.crust;
-      saveAvatarState();
-      applyAvatarMode();
-      playSfx('click');
-      showToast('Garde-Robe', 'Fournée de pâte modifiée !', '☖');
-    });
-  });
-
-  // Wardrobe Hat Pills
-  const hatPills = document.querySelectorAll('#hatPills .pill-btn');
-  hatPills.forEach(btn => {
-    btn.addEventListener('click', () => {
-      hatPills.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.avatar.mode = 'custom';
-      state.avatar.hat = btn.dataset.hat;
-      saveAvatarState();
-      applyAvatarMode();
-      playSfx('click');
-      showToast('Garde-Robe', 'Parure sucrée équipée !', '☖');
-    });
-  });
-
-  // Wardrobe Hero Pawns
+  // 3. Wardrobe Hero Pawns (18 High-Fidelity GLB Avatars)
   const pawnCards = document.querySelectorAll('#pawnGrid .pawn-card');
   pawnCards.forEach(card => {
     card.addEventListener('click', () => {
       pawnCards.forEach(c => c.classList.remove('active'));
       card.classList.add('active');
-      state.avatar.mode = 'pawn';
-      state.avatar.pawnId = card.dataset.pawn;
-      saveAvatarState();
-      applyAvatarMode();
+      const pawnId = card.dataset.pawn;
+      loadAndSetAvatar(pawnId);
       playSfx('click');
-      showToast('Héros Incarné', card.querySelector('h4').textContent, '✦');
+      const heroName = card.querySelector('h4') ? card.querySelector('h4').textContent : pawnId;
+      showToast('Avatar Équipé', heroName, '✦');
     });
   });
 
@@ -2348,19 +2378,7 @@ function setupModals() {
 }
 
 function syncSettingsUI() {
-  // Sneaker swatches
-  document.querySelectorAll('#sneakerSwatches .swatch-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.color === state.avatar.sneakerColor);
-  });
-  // Crust pills
-  document.querySelectorAll('#crustPills .pill-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.crust === state.avatar.crustType);
-  });
-  // Hat pills
-  document.querySelectorAll('#hatPills .pill-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.hat === state.avatar.hat);
-  });
-  // Pawn cards
+  // Pawn cards (18 Hero Avatars)
   document.querySelectorAll('#pawnGrid .pawn-card').forEach(card => {
     card.classList.toggle('active', card.dataset.pawn === state.avatar.pawnId);
   });

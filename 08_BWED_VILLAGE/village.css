@@ -885,38 +885,63 @@ html, body {
   box-shadow: 0 3px 10px rgba(255, 209, 90, 0.35);
 }
 
-/* GLB Pawn Selection Grid */
+/* GLB Pawn Selection Grid (18 High-Fidelity Heroes) */
 .pawn-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
 }
 
 .pawn-card {
-  background: rgba(24, 11, 6, 0.65);
+  background: rgba(28, 14, 8, 0.75);
   border: 1.5px solid var(--border-subtle);
   border-radius: 18px;
-  padding: 14px;
+  padding: 12px;
   text-align: left;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.pawn-thumb-wrap {
+  width: 100%;
+  height: 125px;
+  background: radial-gradient(circle, rgba(255, 209, 90, 0.18) 0%, rgba(20, 9, 5, 0.85) 75%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 247, 234, 0.08);
+}
+
+.pawn-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.25s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+}
+
+.pawn-card:hover .pawn-thumb {
+  transform: scale(1.1) translateY(-2px);
 }
 
 .pawn-card:hover {
-  background: rgba(48, 22, 13, 0.8);
+  background: rgba(48, 22, 13, 0.9);
   border-color: var(--gold-main);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 14px var(--gold-glow);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6), 0 0 18px var(--gold-glow);
 }
 
 .pawn-card.active {
   border-color: var(--gold-main);
-  background: rgba(255, 209, 90, 0.12);
-  box-shadow: 0 0 0 2px var(--gold-main), 0 8px 24px rgba(255, 209, 90, 0.25);
+  background: rgba(255, 209, 90, 0.16);
+  box-shadow: 0 0 0 2px var(--gold-main), 0 10px 28px rgba(255, 209, 90, 0.35);
 }
 
 .pawn-badge {
@@ -945,6 +970,49 @@ html, body {
   line-height: 1.35;
   color: #c8b79f;
   margin: 0;
+}
+
+/* NPC Speech Bubbles (When near or speaking with villagers) */
+.npc-bubble {
+  position: absolute;
+  pointer-events: none;
+  z-index: 60;
+  background: #fffdf9;
+  color: #261109;
+  border: 2px solid var(--gold-main);
+  border-radius: 18px;
+  padding: 8px 14px;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 14px var(--gold-glow);
+  transform: translate(-50%, -100%);
+  max-width: 260px;
+  text-align: center;
+  animation: bubblePop 0.25s cubic-bezier(0.17, 1.3, 0.3, 1);
+}
+
+.npc-bubble-name {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--orange-crust);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.npc-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px 8px 0;
+  border-style: solid;
+  border-color: var(--gold-main) transparent transparent;
 }
 
 /* ==========================================================================

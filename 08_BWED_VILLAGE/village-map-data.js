@@ -497,6 +497,40 @@ export const VILLAGE_BUILDINGS = [
       desc: '"Ahoy ! La marée de chocolat est haute aujourd\'hui ! Les gondoles sont prêtes pour naviguer vers la Grande Boulangerie !"',
       actionLabel: 'Parler au Capitaine'
     }
+  },
+  {
+    id: 'prop-pastry-buffet',
+    name: 'Buffet Festif de la Pâtisserie',
+    category: 'prop',
+    gridX: 36,
+    gridZ: 22,
+    sizeX: 2,
+    sizeZ: 2,
+    model: './assets/buildings/prop-pastry-dessert.glb',
+    scale: 2.8,
+    rotationY: -0.3,
+    interaction: {
+      title: 'Buffet de Pâtisseries Royales',
+      desc: 'Table d\'apparat croustillante garnie d\'entremets vanillés, de ganaches brillantes et de fruits confits.',
+      actionLabel: 'Goûter une mignardise'
+    }
+  },
+  {
+    id: 'prop-dock-chest',
+    name: 'Coffre au Sucre Doré du Port',
+    category: 'prop',
+    gridX: 28,
+    gridZ: 11,
+    sizeX: 2,
+    sizeZ: 2,
+    model: './assets/buildings/prop-treasure-chest.glb',
+    scale: 2.4,
+    rotationY: 0.5,
+    interaction: {
+      title: 'Coffre aux Fèves d\'Or',
+      desc: 'Coffre de chêne cerclé de fer doux rapporté des îles de cassonade par les marchands navigateurs.',
+      actionLabel: 'Ouvrir le coffre'
+    }
   }
 ];
 
@@ -673,4 +707,165 @@ export const VILLAGE_BARRELS_CRATES = [
   // Quais du Port
   { x: 21, z: 11, type: 'barrel' }, { x: 29, z: 11, type: 'crate' },
   { x: 38, z: 11, type: 'barrel' }, { x: 12, z: 11, type: 'sack' }
+];
+
+// Living Village NPCs (Placed around landmarks with interactive cozy dialogues)
+export const VILLAGE_NPCS = [
+  {
+    id: 'npc-baker',
+    pawnId: 'tiny-baker',
+    name: 'Maître Émile le Boulanger',
+    role: 'Chef Pâtissier',
+    gridX: 36,
+    gridZ: 25,
+    rotationY: -Math.PI / 2,
+    dialogues: [
+      "Bonjour voyageur ! Notre croissant d'or sort tout juste du four, l'odeur du beurre est divine aujourd'hui !",
+      "Le secret d'un bon feuilletage ? Du beurre AOP, de la patience et un tour de main léger !",
+      "Si tu passes au Faubourg, n'oublie pas de saluer la patronne de la Taverne du Miel !"
+    ]
+  },
+  {
+    id: 'npc-super-bwed',
+    pawnId: 'super-hero-bwed',
+    name: 'Super Bwed',
+    role: 'Protecteur de Bwedville',
+    gridX: 27,
+    gridZ: 23,
+    rotationY: -Math.PI / 4,
+    dialogues: [
+      "Rien ne saurait troubler la paix croustillante de notre village tant que ma cape de sucre flottera au vent !",
+      "Veille sur les miettes, citoyen ! Chaque miette dorée est un trésor pour notre communauté."
+    ]
+  },
+  {
+    id: 'npc-firefighter',
+    pawnId: 'brave-firefighter',
+    name: 'Caporal Brioche',
+    role: 'Sapeur Pompier Gourmand',
+    gridX: 22,
+    gridZ: 11,
+    rotationY: 0,
+    dialogues: [
+      "Prudence le long du canal ! La température du chocolat fondu est idéale, mais les berges sont glissantes.",
+      "Toujours vérifier son fourneau avant de partir en promenade !"
+    ]
+  },
+  {
+    id: 'npc-mage',
+    pawnId: 'crimson-mage',
+    name: 'Archimage Astragale',
+    role: 'Mage Céleste',
+    gridX: 12,
+    gridZ: 39,
+    rotationY: Math.PI / 3,
+    dialogues: [
+      "Les étoiles de sucre filé s'alignent au zénith... Une douce rosée de caramel est proche !",
+      "La colline de l'observatoire offre le plus beau panorama sur toute la vallée beurrée."
+    ]
+  },
+  {
+    id: 'npc-samurai',
+    pawnId: 'crimson-samurai',
+    name: 'Kenshin de la Griotte',
+    role: 'Garde d\'Élite',
+    gridX: 45,
+    gridZ: 25,
+    rotationY: -Math.PI / 2,
+    dialogues: [
+      "Honneur et tradition ! Nul ne dérobera la farine ancestrale tant que mon sabre veillera.",
+      "La discipline d'un guerrier commence dès le pétrissage de l'aube."
+    ]
+  },
+  {
+    id: 'npc-tycoon',
+    pawnId: 'toast-tycoon',
+    name: 'Baron de la Miche',
+    role: 'Négociant en Chef',
+    gridX: 43,
+    gridZ: 28,
+    rotationY: Math.PI / 4,
+    dialogues: [
+      "Le cours du beurre demi-sel est au plus haut ! C'est le moment idéal pour faire fleurir les affaires !",
+      "Tu cherches une échoppe ? Le Faubourg Gourmand est l'endroit le plus dynamique de tout le Bwedverse !"
+    ]
+  },
+  {
+    id: 'npc-cloud-ninja',
+    pawnId: 'cloud-ninja',
+    name: 'Zéphir la Brume',
+    role: 'Éclaireur des Toits',
+    gridX: 15,
+    gridZ: 37,
+    rotationY: -Math.PI / 2,
+    dialogues: [
+      "Léger comme la farine tamisée, rapide comme l'éclair... Admire la vue d'ici !",
+      "D'en haut, les toits du village ressemblent à un plateau de petits fours dorés."
+    ]
+  },
+  {
+    id: 'npc-choco-drip',
+    pawnId: 'choco-drip',
+    name: 'Gaston Chocolat',
+    role: 'Flâneur Épicurien',
+    gridX: 9,
+    gridZ: 18,
+    rotationY: 0,
+    dialogues: [
+      "Installe-toi sur un banc, respire la cannelle fraîche... C'est l'endroit le plus relaxant du monde.",
+      "Le secret du bonheur ? Une tasse de chocolat chaud et une tartine beurrée au soleil."
+    ]
+  },
+  {
+    id: 'npc-robot',
+    pawnId: 'rusty-buttonbot',
+    name: 'Bouton-Vapeur B-42',
+    role: 'Mécanicien Forain',
+    gridX: 38,
+    gridZ: 41,
+    rotationY: -Math.PI / 2,
+    dialogues: [
+      "Bip bop ! Insérez un jeton sablé pour piloter l'auto-tamponneuse beignet !",
+      "Système de propulsion au sirop d'érable opérationnel à 100% !"
+    ]
+  },
+  {
+    id: 'npc-frankenbwed',
+    pawnId: 'frankenbwed',
+    name: 'Barnabé le Doux',
+    role: 'Jardinier Fleuri',
+    gridX: 7,
+    gridZ: 27,
+    rotationY: Math.PI / 2,
+    dialogues: [
+      "Petites fleurs de sucre... si douces... Barnabé arrose avec du lait vanillé...",
+      "Barnabé aime beaucoup les papillons de sucre filé !"
+    ]
+  },
+  {
+    id: 'npc-nerdy',
+    pawnId: 'nerdy-buddy',
+    name: 'Lucien l\'Érudit',
+    role: 'Historien du Village',
+    gridX: 11,
+    gridZ: 34,
+    rotationY: 0,
+    dialogues: [
+      "Savais-tu que la Grand-Place a été pavée en l'an 124 avec de véritables gaufres liégeoises ?",
+      "Je rédige le grand grimoire de la fermentation... C'est un sujet passionnant !"
+    ]
+  },
+  {
+    id: 'npc-bandit',
+    pawnId: 'toast-bandit',
+    name: 'Rico la Miette',
+    role: 'Filou Croustillant',
+    gridX: 39,
+    gridZ: 17,
+    rotationY: Math.PI,
+    dialogues: [
+      "Chut ! Tu n'as rien vu... Je vérifie juste si les pots de confiture d'abricot sont bien scellés !",
+      "Ne parle pas trop fort, la patronne de la taverne a l'ouïe fine !"
+    ]
+  }
 ];

@@ -131,104 +131,180 @@
     <div class="modal-backdrop" id="modalBackdrop" hidden></div>
 
     <!-- ==================================================================== -->
-    <!-- 1. MODAL GARDE-ROBE & AVATAR -->
+    <!-- 1. MODAL GARDE-ROBE & AVATARS GLB HAUTE FIDÉLITÉ -->
     <!-- ==================================================================== -->
     <div class="bwed-modal" id="wardrobeModal" hidden role="dialog" aria-modal="true" aria-labelledby="wardrobeTitle">
       <div class="modal-header">
         <div>
-          <span class="modal-kicker">PERSONNALISATION DU HÉROS</span>
-          <h2 class="modal-title" id="wardrobeTitle">Garde-Robe de Bwedville</h2>
+          <span class="modal-kicker">COLLECTION DE HÉROS 3D</span>
+          <h2 class="modal-title" id="wardrobeTitle">Choix de l'Avatar du Village</h2>
         </div>
         <button class="modal-close-btn" data-close="wardrobe" type="button" aria-label="Fermer la garde-robe">&times;</button>
       </div>
 
-      <!-- Tab Navigation -->
-      <div class="modal-tabs">
-        <button class="modal-tab-btn active" data-wardrobe-tab="custom" type="button">Bwed Gourmand (Sur Mesure)</button>
-        <button class="modal-tab-btn" data-wardrobe-tab="pawns" type="button">Héros du Bwedverse (Pions 3D)</button>
-      </div>
-
-      <!-- Tab Content: Custom Bwed -->
-      <div class="modal-content tab-panel active" id="wardrobePanelCustom">
-        <div class="customizer-section">
-          <label class="customizer-label">Couleur des Baskets Rouges Iconiques</label>
-          <div class="swatch-grid" id="sneakerSwatches">
-            <button class="swatch-btn active" data-color="0xcc291e" style="--swatch-c: #cc291e;" title="Rouge Fraise Original">
-              <span class="swatch-check">✓</span>
-            </button>
-            <button class="swatch-btn" data-color="0x2ec4b6" style="--swatch-c: #2ec4b6;" title="Matcha &amp; Pistache">
-              <span class="swatch-check">✓</span>
-            </button>
-            <button class="swatch-btn" data-color="0xffb703" style="--swatch-c: #ffb703;" title="Miel &amp; Caramel Doré">
-              <span class="swatch-check">✓</span>
-            </button>
-            <button class="swatch-btn" data-color="0x3a86ff" style="--swatch-c: #3a86ff;" title="Myrtille Sauvage">
-              <span class="swatch-check">✓</span>
-            </button>
-            <button class="swatch-btn" data-color="0x26140d" style="--swatch-c: #26140d;" title="Chocolat Noir &amp; Sésame">
-              <span class="swatch-check">✓</span>
-            </button>
-            <button class="swatch-btn" data-color="0xff70a6" style="--swatch-c: #ff70a6;" title="Glaçage Barbe à Papa">
-              <span class="swatch-check">✓</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="customizer-section">
-          <label class="customizer-label">Fournée &amp; Cuisson de la Mie</label>
-          <div class="pill-group" id="crustPills">
-            <button class="pill-btn active" data-crust="classic" type="button">Pain de Campagne Doré</button>
-            <button class="pill-btn" data-crust="brioche" type="button">Brioche Pur Beurre</button>
-            <button class="pill-btn" data-crust="chocolate" type="button">Pain au Cacao Foncé</button>
-            <button class="pill-btn" data-crust="matcha" type="button">Pâte au Thé Vert Matcha</button>
-          </div>
-        </div>
-
-        <div class="customizer-section">
-          <label class="customizer-label">Chapeau &amp; Décoration Sucrée</label>
-          <div class="pill-group" id="hatPills">
-            <button class="pill-btn active" data-hat="none" type="button">Aucun (Tête Nue)</button>
-            <button class="pill-btn" data-hat="toque" type="button">Toque de Grand Chef</button>
-            <button class="pill-btn" data-hat="butter" type="button">Noisette de Beurre Fondant</button>
-            <button class="pill-btn" data-hat="strawberry" type="button">Fraise Confite Givrée</button>
-            <button class="pill-btn" data-hat="crown" type="button">Couronne Royale de Sucre</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab Content: GLB Hero Pawns -->
-      <div class="modal-content tab-panel" id="wardrobePanelPawns" hidden>
-        <p class="tab-helper">Sélectionnez l'un des 6 héros légendaires du Bwedverse modélisés en pion 3D :</p>
+      <div class="modal-content" id="wardrobePanelPawns">
+        <p class="tab-helper">Sélectionnez votre avatar 3D parmi les 18 héros du Bwedverse pour explorer Bwedville :</p>
         <div class="pawn-grid" id="pawnGrid">
-          <button class="pawn-card" data-pawn="tiny-baker" type="button">
+          <button class="pawn-card active" data-pawn="tiny-baker" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/tiny-baker.png" alt="Le Petit Boulanger" class="pawn-thumb" loading="lazy" />
+            </div>
             <span class="pawn-badge">MAÎTRE</span>
             <h4>Le Petit Boulanger</h4>
             <p>Le gardien des secrets du levain d'antan, armé de sa toque immaculée.</p>
           </button>
+
           <button class="pawn-card" data-pawn="super-hero-bwed" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/super-hero-bwed.png" alt="Super Bwed" class="pawn-thumb" loading="lazy" />
+            </div>
             <span class="pawn-badge">HÉROS</span>
             <h4>Super Bwed</h4>
             <p>Cape en drap de sucre et masque protecteur prêt à défendre le village.</p>
           </button>
+
           <button class="pawn-card" data-pawn="shadow-ninja" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/shadow-ninja.png" alt="Ninja de l'Ombre" class="pawn-thumb" loading="lazy" />
+            </div>
             <span class="pawn-badge">FURTIF</span>
             <h4>Ninja de l'Ombre</h4>
             <p>Silencieux comme la levée d'une pâte de nuit, agile sur les toits sablés.</p>
           </button>
+
           <button class="pawn-card" data-pawn="crimson-samurai" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/crimson-samurai.png" alt="Samouraï Écarlate" class="pawn-thumb" loading="lazy" />
+            </div>
             <span class="pawn-badge">GUERRIER</span>
             <h4>Samouraï Écarlate</h4>
             <p>Armure laquée aux éclats de griottes et code d'honneur boulanger.</p>
           </button>
+
           <button class="pawn-card" data-pawn="brave-firefighter" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/brave-firefighter.png" alt="Pompier Gourmand" class="pawn-thumb" loading="lazy" />
+            </div>
             <span class="pawn-badge">SECOURS</span>
             <h4>Pompier Gourmand</h4>
-            <p>Casque renforcé et dévoué à éteindre les fours trop ardents.</p>
+            <p>Casque renforcé et dévoué à veiller sur la température des grands fours.</p>
           </button>
+
           <button class="pawn-card" data-pawn="crimson-mage" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/crimson-mage.png" alt="Mage Cramoisi" class="pawn-thumb" loading="lazy" />
+            </div>
             <span class="pawn-badge">ARCANES</span>
             <h4>Mage Cramoisi</h4>
-            <p>Maîtrise les sortilèges de caramélisation et de téléportation sucrée.</p>
+            <p>Maîtrise les sortilèges de caramélisation et d'étoiles en sucre filé.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="choco-drip" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/choco-drip.png" alt="Choco Drip" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">EXPLORATEUR</span>
+            <h4>Choco Drip</h4>
+            <p>Toujours prêt à braver les flots onctueux du canal de chocolat chaud.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="cloud-ninja" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/cloud-ninja.png" alt="Ninja des Nuages" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">AÉRIEN</span>
+            <h4>Ninja des Nuages</h4>
+            <p>Virtuose des sauts aériens sur les marches en gaufrette croustillante.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="crumb-burglar" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/crumb-burglar.png" alt="Voleur de Miettes" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">COQUIN</span>
+            <h4>Voleur de Miettes</h4>
+            <p>Amateur insatiable de croûtes dorées chapardées dans les arrière-boutiques.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="frankenbwed" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/frankenbwed.png" alt="Frankenbwed" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">COLOSSE</span>
+            <h4>Frankenbwed</h4>
+            <p>Doux colosse au grand cœur né d'une fermentation centenaire mystique.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="glow-toast" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/glow-toast.png" alt="Toast Lumineux" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">RAYONNANT</span>
+            <h4>Toast Lumineux</h4>
+            <p>Diffuse une douce clarté dorée sur les pavés lors des promenades nocturnes.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="judge-gaveltoes" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/judge-gaveltoes.png" alt="Juge Sablé" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">MAGISTRAT</span>
+            <h4>Juge Sablé</h4>
+            <p>Garant de l'équité des recettes et du respect scrupuleux des temps de repos.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="nerdy-buddy" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/nerdy-buddy.png" alt="Compère Savant" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">ÉRUDIT</span>
+            <h4>Compère Savant</h4>
+            <p>Incollable sur les levains sauvages et les grands mystères de l'amidon.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="rusty-buttonbot" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/rusty-buttonbot.png" alt="Robot Rustique" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">AUTOMATE</span>
+            <h4>Robot Rustique</h4>
+            <p>Mécanique à vapeur douce conçue pour pétrir sans jamais faiblir.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="saiyan-toast" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/saiyan-toast.png" alt="Toast Super Saiyan" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">PUISSANCE</span>
+            <h4>Toast Super Saiyan</h4>
+            <p>Pâte survoltée cuite à haute intensité dégageant une aura dorée flamboyante.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="toast-bandit" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/toast-bandit.png" alt="Bandit Croustillant" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">RÔDEUR</span>
+            <h4>Bandit Croustillant</h4>
+            <p>Gentleman rôdeur des clairières de cannelle et de miel sauvage.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="toast-tycoon" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/toast-tycoon.png" alt="Magnat du Toast" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">NÉGOCIANT</span>
+            <h4>Magnat du Toast</h4>
+            <p>Grand architecte des marchés et promoteur du bon goût villageois.</p>
+          </button>
+
+          <button class="pawn-card" data-pawn="whale-buddy" type="button">
+            <div class="pawn-thumb-wrap">
+              <img src="./assets/pawns/thumbs/whale-buddy.png" alt="Baleine Sucrée" class="pawn-thumb" loading="lazy" />
+            </div>
+            <span class="pawn-badge">GÉANT</span>
+            <h4>Baleine Sucrée</h4>
+            <p>Amie marine géante glissant avec grâce dans les doux remous de cacao.</p>
           </button>
         </div>
       </div>
