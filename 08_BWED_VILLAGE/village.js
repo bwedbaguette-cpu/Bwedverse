@@ -179,7 +179,8 @@ function init() {
     // 4. Lights & Sky
     setupLighting();
 
-    // 5. Load Unified 3D Level Map (Bwedville Sculpted Terrain, Roads, Bridges & Canal)
+    // 5. Build Immediate Procedural Ground Fallback (Frame 1 instant visibility) & Load 3D Level Map
+    buildImmediateFallbackTerrain();
     loadUnifiedTerrainMap();
 
     // 6. Build Grid Helpers & Cursors
@@ -227,14 +228,14 @@ function init() {
     applySettings();
     updateQuestsUI();
 
-    // 17. Safety fallback timeout for loader (max 3.5s to ensure immediate playability)
+    // 17. Immediate safety release for loader (500ms max to guarantee instant playability)
     setTimeout(() => {
-      if (!loaderEl.classList.contains('fade-out')) {
+      if (loaderEl && !loaderEl.classList.contains('fade-out')) {
         loaderBar.style.width = '100%';
         loaderStatus.textContent = 'Village prêt ! Bienvenue à Bwedville.';
         loaderEl.classList.add('fade-out');
       }
-    }, 3500);
+    }, 500);
 
     // 18. Start Loop
     renderer.setAnimationLoop(animate);
@@ -376,6 +377,79 @@ function setTimeOfDay(tod) {
 // UNIFIED 3D LEVEL MAP (BWEDVILLE SCULPTED TERRAIN, ROADS, BRIDGES & CHOCOLATE CANAL)
 // ============================================================================
 let unifiedTerrainGroup = null;
+let fallbackTerrainGroup = null;
+
+// Immediate Frame-1 Procedural Ground (Guarantees visible ground before GLB finishes loading)
+function buildImmediateFallbackTerrain() {
+  fallbackTerrainGroup = new THREE.Group();
+
+  // 1. Matcha Grass Island Base
+  const islandGeo = new THREE.BoxGeometry(92, 2.5, 92);
+  const grassMat = new THREE.MeshStandardMaterial({
+    color: 0x6ea343,
+    roughness: 0.85
+  });
+  const islandMesh = new THREE.Mesh(islandGeo, grassMat);
+  islandMesh.position.set(50, -1.25, 50);
+  islandMesh.receiveShadow = true;
+  fallbackTerrainGroup.add(islandMesh);
+
+  // 2. Chocolate River Trench (z = 36.0, width 8.4)
+  const canalGeo = new THREE.PlaneGeometry(92, 8.4);
+  canalGeo.rotateX(-Math.PI / 2);
+  const chocoMat = new THREE.MeshStandardMaterial({
+    color: 0x26120a,
+    roughness: 0.18,
+    metalness: 0.08
+  });
+  const canalMesh = new THREE.Mesh(canalGeo, chocoMat);
+  canalMesh.position.set(50, 0.01, 36.0);
+  fallbackTerrainGroup.add(canalMesh);
+
+  // 3. Caramel Boulevards (North-South & East-West)
+  const roadMat = new THREE.MeshStandardMaterial({
+    color: 0xdfa858,
+    roughness: 0.65
+  });
+
+  const nsRoadGeo = new THREE.PlaneGeometry(6.0, 92);
+  nsRoadGeo.rotateX(-Math.PI / 2);
+  const nsRoad = new THREE.Mesh(nsRoadGeo, roadMat);
+  nsRoad.position.set(50, 0.03, 50);
+  fallbackTerrainGroup.add(nsRoad);
+
+  const ewRoadGeo = new THREE.PlaneGeometry(92, 5.4);
+  ewRoadGeo.rotateX(-Math.PI / 2);
+  const ewRoad = new THREE.Mesh(ewRoadGeo, roadMat);
+  ewRoad.position.set(50, 0.03, 52);
+  fallbackTerrainGroup.add(ewRoad);
+
+  // 4. Grand-Place Waffle Octagon
+  const plazaGeo = new THREE.CylinderGeometry(13.5, 13.5, 0.06, 8);
+  const plazaMat = new THREE.MeshStandardMaterial({
+    color: 0xe5ac5e,
+    roughness: 0.6
+  });
+  const plazaMesh = new THREE.Mesh(plazaGeo, plazaMat);
+  plazaMesh.position.set(50, 0.04, 52);
+  fallbackTerrainGroup.add(plazaMesh);
+
+  // 5. Wooden Bridges
+  const woodMat = new THREE.MeshStandardMaterial({
+    color: 0x733a1e,
+    roughness: 0.7
+  });
+  [50.0, 20.0, 80.0].forEach(bx => {
+    const brGeo = new THREE.BoxGeometry(bx === 50 ? 6.6 : 4.8, 0.25, 10.4);
+    const brMesh = new THREE.Mesh(brGeo, woodMat);
+    brMesh.position.set(bx, 0.35, 36.0);
+    brMesh.castShadow = true;
+    brMesh.receiveShadow = true;
+    fallbackTerrainGroup.add(brMesh);
+  });
+
+  scene.add(fallbackTerrainGroup);
+}
 
 function loadUnifiedTerrainMap() {
   const loader = new GLTFLoader();
@@ -394,15 +468,26 @@ function loadUnifiedTerrainMap() {
         }
       });
 
+      // Remove fallback terrain smoothly when GLB is ready
+      if (fallbackTerrainGroup) {
+        scene.remove(fallbackTerrainGroup);
+        fallbackTerrainGroup = null;
+      }
+
       scene.add(unifiedTerrainGroup);
-      if (loaderStatus && !loaderEl.classList.contains('fade-out')) {
-        loaderStatus.textContent = 'Diorama stylisé 3D & niveau en place...';
-        loaderBar.style.width = '45%';
+      if (loaderEl && !loaderEl.classList.contains('fade-out')) {
+        loaderBar.style.width = '100%';
+        loaderStatus.textContent = 'Diorama stylisé 3D & niveau en place !';
+        loaderEl.classList.add('fade-out');
       }
     },
     undefined,
     err => {
-      console.warn('Erreur chargement terrain unifié Bwedville:', err);
+      console.warn('Erreur chargement terrain unifié Bwedville (le sol de secours reste actif):', err);
+      if (loaderEl && !loaderEl.classList.contains('fade-out')) {
+        loaderBar.style.width = '100%';
+        loaderEl.classList.add('fade-out');
+      }
     }
   );
 }

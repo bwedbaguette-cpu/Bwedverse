@@ -450,7 +450,7 @@ bpy.ops.export_scene.gltf(
     export_format='GLB',
     use_selection=False,
     export_apply=True,
-    export_yup=True,
+    export_yup=False,
     export_materials='EXPORT',
     export_cameras=False,
     export_lights=False
