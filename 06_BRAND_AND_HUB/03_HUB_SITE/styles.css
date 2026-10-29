@@ -3029,6 +3029,8 @@ button {
     padding: 8px 14px;
     height: 56px;
     box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
   }
 
   .brand-copy small {
@@ -3096,7 +3098,7 @@ button {
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw;
+    width: 100%;
     height: calc(100vh - 56px);
     background: rgba(14, 6, 3, 0.98);
     backdrop-filter: blur(28px);
@@ -3335,8 +3337,10 @@ button {
     gap: 10px;
   }
 
-  .depot-search-box {
+  .depot-search-box,
+  .depot-search-wrap {
     width: 100%;
+    min-width: 0;
   }
 
   .depot-sort-select {

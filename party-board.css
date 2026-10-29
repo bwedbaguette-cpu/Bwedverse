@@ -1393,13 +1393,376 @@ h1 em { color: var(--yellow); font-style: normal; }
 
 @media (max-width: 768px) {
   /* Front door start menu on mobile */
-  .front-header { padding: 12px 14px; }
-  .front-status { display: none; }
-  .menu-frame { width: calc(100% - 20px); min-height: auto; padding: 14px 0 30px; }
-  .menu-actions { grid-template-columns: 1fr; gap: 8px; }
-  .primary-menu-button { padding: 14px 20px; font-size: 14px; }
-  .player-count-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .pawn-catalog { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .front-header {
+    padding: 12px 14px;
+  }
+  .front-status {
+    display: none;
+  }
+  .menu-frame {
+    width: calc(100% - 20px);
+    min-height: auto;
+    padding: 12px 0 24px;
+  }
+  .menu-actions {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .primary-menu-button {
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+  .menu-copy h2 {
+    font-size: clamp(38px, 10vw, 56px);
+    line-height: 0.95;
+    margin: 12px 0;
+  }
+  .menu-lead {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .menu-proof {
+    margin-top: 22px;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+  .menu-art-frame, .menu-art-frame img {
+    min-height: 240px;
+    max-height: 280px;
+    transform: none;
+    border-radius: 20px;
+  }
+  .menu-art-label strong {
+    font-size: 24px;
+  }
+  .menu-art-stamp {
+    width: 72px;
+    height: 72px;
+    font-size: 15px;
+    top: 16px;
+    right: 16px;
+  }
+
+  /* Screen 1: Player Count Screen */
+  .player-count-screen {
+    padding: 8px 0 20px;
+  }
+  .count-heading {
+    margin: 14px auto 0;
+  }
+  .count-heading h2 {
+    font-size: 34px;
+    margin: 10px 0;
+  }
+  .count-heading > p {
+    font-size: 12px;
+  }
+  .player-count-grid {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 8px;
+    margin: 20px 0;
+  }
+  .player-count-card {
+    padding: 12px 8px;
+    border-radius: 14px;
+  }
+  .player-count-card strong {
+    font-size: 22px;
+  }
+  .player-count-card span {
+    font-size: 9px;
+  }
+  .player-count-card small {
+    display: none;
+  }
+  .count-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    text-align: center;
+  }
+  .count-footer .primary-menu-button {
+    width: 100%;
+  }
+
+  /* Screen 2: Hero Selection Screen — Unified AAA Mobile Gaming Layout */
+  .select-screen {
+    padding: 6px 0 24px;
+  }
+  .screen-topline {
+    padding-bottom: 12px;
+    font-size: 9px;
+  }
+  .back-menu-button {
+    padding: 6px 10px;
+    font-size: 9px;
+  }
+
+  .select-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 12px 0 14px;
+  }
+  .select-heading h2 {
+    font-size: 28px;
+    line-height: 1.05;
+    margin: 4px 0 0;
+  }
+  .select-heading > p {
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: #d5a682;
+  }
+
+  .selection-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Horizontal swipeable lineup bar for Player Slots */
+  .slot-column-header {
+    margin-bottom: 6px;
+  }
+  .slot-tabs {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+  .slot-tab {
+    flex: 0 0 auto;
+    min-width: 125px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .slot-tab:hover {
+    transform: none;
+  }
+  .slot-tab.active {
+    transform: none;
+  }
+  .slot-avatar-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .slot-number {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .slot-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .slot-info strong {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .slot-info small {
+    font-size: 7.5px;
+  }
+  .slot-bot-badge {
+    font-size: 7px;
+    padding: 2px 6px;
+    flex-shrink: 0;
+  }
+  .selection-note {
+    display: none;
+  }
+
+  /* Unified Hero Stage: 3D Turntable on top, Details below — No 50/50 vertical cut */
+  .selection-stage {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 247, 234, 0.22);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  }
+  .selection-preview {
+    width: 100%;
+    height: 190px;
+    min-height: 190px;
+    position: relative;
+    background: radial-gradient(circle at 50% 60%, rgba(255, 247, 234, 0.12), transparent 70%);
+  }
+  .selected-character {
+    width: 100%;
+    padding: 12px 16px 16px;
+    background: rgba(30, 14, 9, 0.88);
+    backdrop-filter: blur(12px);
+    box-sizing: border-box;
+  }
+  .selected-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  .selected-role {
+    font-size: 8.5px;
+    letter-spacing: 0.1em;
+  }
+  .bot-toggle-pill {
+    font-size: 8px;
+    padding: 3px 9px;
+  }
+  .selected-character h3 {
+    font-size: 24px;
+    line-height: 1;
+    margin: 6px 0 4px;
+  }
+  .selected-character p {
+    font-size: 11.5px;
+    line-height: 1.4;
+    max-width: 100%;
+    color: #f1cfac;
+  }
+  .selected-talent {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 247, 234, 0.15);
+  }
+  .selected-talent > span {
+    font-size: 7.5px;
+    letter-spacing: 0.08em;
+  }
+  .selected-talent strong {
+    font-size: 14px;
+    margin-top: 2px;
+  }
+  .selected-talent p {
+    font-size: 10.5px;
+    margin-top: 2px;
+  }
+
+  /* 18 Heroes Catalog: Vertical Card Format — Zero overlap, zero clipping */
+  .pawn-catalog {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+    max-height: 290px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 2px 8px;
+  }
+  .pawn-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: auto;
+    padding: 8px 6px 7px;
+    border-radius: 14px;
+    gap: 4px;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+    background: rgba(35, 17, 12, 0.7);
+  }
+  .pawn-card:hover:not(:disabled) {
+    transform: none;
+  }
+  .pawn-card.selected {
+    transform: scale(1.02);
+  }
+  .pawn-card-art {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    margin: 0 auto;
+  }
+  .pawn-card-art img.pawn-card-thumb {
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+  .pawn-card-num {
+    display: none;
+  }
+  .pawn-card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 2px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .pawn-card-title-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 2px;
+  }
+  .pawn-card strong {
+    font-size: 11px;
+    line-height: 1.2;
+    width: 100%;
+    max-width: 96px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+  .pawn-card-role {
+    font-size: 7px;
+    width: 100%;
+    max-width: 96px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    color: #d59d7c;
+  }
+  .pawn-claim-pill {
+    font-size: 6.5px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+  .pawn-card-talent-pill {
+    display: none;
+  }
+
+  .select-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 14px;
+    text-align: center;
+  }
+  #selectionProgress {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+  .start-party-button {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 13px;
+  }
 
   /* In-Game Header on Mobile */
   .game-header {
@@ -1442,30 +1805,38 @@ h1 em { color: var(--yellow); font-style: normal; }
     display: none;
   }
 
-  /* Game Layout on Mobile: 3D Board on top, Controller on bottom */
+  /* Game Layout on Mobile: Seamless Handheld Console — No harsh screen cut */
   .game-layout {
     display: flex;
     flex-direction: column;
     min-height: auto;
-    padding: 8px;
-    gap: 10px;
+    padding: 6px;
+    gap: 6px;
   }
 
   .viewport-shell {
     order: 1;
-    height: 52vh;
-    min-height: 52vh;
-    border-radius: 20px;
+    height: 56vh;
+    min-height: 56vh;
+    border-radius: 18px 18px 0 0;
     border-width: 2px;
+    border-bottom: none;
+    margin-bottom: -2px;
+    position: relative;
+    z-index: 2;
   }
 
   .left-panel {
     order: 2;
-    padding: 14px;
-    border-radius: 20px;
+    padding: 12px 14px;
+    border-radius: 0 0 18px 18px;
+    border-top: 1px solid rgba(244, 189, 95, 0.35);
     display: flex;
     flex-direction: column;
     gap: 10px;
+    position: relative;
+    z-index: 1;
+    background: rgba(30, 14, 9, 0.94);
   }
 
   .panel-header-row {
@@ -1517,5 +1888,38 @@ h1 em { color: var(--yellow); font-style: normal; }
     bottom: 10px;
     right: 10px;
     max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .pawn-catalog {
+    gap: 5px;
+  }
+  .pawn-card {
+    padding: 6px 3px 5px;
+    border-radius: 12px;
+  }
+  .pawn-card-art {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+  .pawn-card strong {
+    font-size: 10px;
+    max-width: 82px;
+  }
+  .pawn-card-role {
+    font-size: 6.5px;
+    max-width: 82px;
+  }
+  .selection-preview {
+    height: 175px;
+    min-height: 175px;
+  }
+  .selected-character {
+    padding: 10px 12px 14px;
+  }
+  .selected-character h3 {
+    font-size: 21px;
   }
 }
