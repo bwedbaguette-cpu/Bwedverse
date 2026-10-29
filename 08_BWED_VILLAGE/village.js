@@ -650,9 +650,17 @@ function loadVillageBuildings() {
     const worldX = b.gridX * MAP_CONFIG.tileSize;
     const worldZ = b.gridZ * MAP_CONFIG.tileSize;
 
-    model.position.set(worldX, 0, worldZ);
+    // Apply scale and rotation first to compute true world bounding box
     model.scale.set(b.scale, b.scale, b.scale);
     model.rotation.y = b.rotationY || 0;
+    model.position.set(worldX, 0, worldZ);
+    model.updateMatrixWorld(true);
+
+    // Align base of building perfectly with ground elevation (solves sunken models bug)
+    const box = new THREE.Box3().setFromObject(model);
+    const tile = state.grid[b.gridZ] && state.grid[b.gridZ][b.gridX];
+    const targetGroundY = tile ? tile.elevation * MAP_CONFIG.elevationStep + 0.02 : 0.02;
+    model.position.y += (targetGroundY - box.min.y);
 
     // Shadows & Material optimization
     model.traverse(child => {
