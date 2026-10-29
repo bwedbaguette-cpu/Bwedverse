@@ -37,6 +37,12 @@ export class LocalPlayer {
     this.setPosition(0, 0, 0);
   }
 
+  changeAvatar(newAvatarId) {
+    if (!newAvatarId || this.avatarId === newAvatarId) return;
+    this.avatarId = newAvatarId;
+    this.avatar.loadAvatar(newAvatarId);
+  }
+
   setPosition(x, y, z) {
     this.position.set(x, y, z);
     this.avatar.rootGroup.position.copy(this.position);

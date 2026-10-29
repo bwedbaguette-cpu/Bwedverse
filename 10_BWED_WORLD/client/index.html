@@ -37,7 +37,7 @@
       <!-- Barre Supérieure -->
       <header class="hud-top-bar">
         <div class="district-badge">
-          <span class="district-kicker">VILLAGE CENTRAL &middot; HUB</span>
+          <span class="district-kicker" id="districtKicker">VILLAGE CENTRAL &middot; HUB</span>
           <h1 class="district-name" id="districtName">La Grand-Place du Beurre Doré</h1>
         </div>
 
@@ -45,6 +45,11 @@
           <button class="hud-pill player-count-pill" id="playerCountPill" type="button" title="Joueurs connectés en temps réel">
             <span class="live-indicator"></span>
             <span id="playerCountBadge">1 joueur dans le village</span>
+          </button>
+
+          <button class="hud-pill wardrobe-pill" id="changeAvatarBtn" type="button" title="Changer d'avatar (18 pions)">
+            <span>Avatar :</span>
+            <strong id="currentAvatarName">Chef Émile</strong>
           </button>
 
           <button class="hud-pill" id="changeNameBtn" type="button" title="Changer votre pseudo">
@@ -77,6 +82,18 @@
           <button class="modal-btn" id="cancelNameBtn" type="button">Annuler</button>
           <button class="modal-btn primary" id="saveNameBtn" type="button">Valider</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modale Garde-Robe (Sélection parmi les 18 Pions) -->
+    <div class="modal-overlay" id="wardrobeModal" hidden>
+      <div class="modal-card wardrobe-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Garde-Robe des Pâtissiers (18 Pions)</h2>
+          <button class="modal-close-btn" id="closeWardrobeBtn" type="button" title="Fermer">&times;</button>
+        </div>
+        <p class="modal-subtitle">Sélectionnez votre pion 3D pour explorer le Bwedverse :</p>
+        <div class="wardrobe-grid" id="wardrobeGrid"></div>
       </div>
     </div>
 

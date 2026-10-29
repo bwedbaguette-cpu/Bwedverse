@@ -49,6 +49,11 @@ export class NetworkAdapter {
     });
   }
 
+  setAvatar(newAvatarId) {
+    this.avatarId = newAvatarId;
+    this.broadcastJoin();
+  }
+
   broadcastLeave() {
     this.send({
       type: 'LEAVE',

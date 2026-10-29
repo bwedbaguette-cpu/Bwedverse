@@ -28,12 +28,15 @@ export const MOVEMENT = {
 export const CAMERA = {
   PITCH_DEG: 50.0, // Angle 3/4 plongeant type Pokémon / Animal Crossing
   YAW_DEG: 45.0,   // Vue isométrique à 45 degrés
-  DISTANCE: 14.0,
+  DISTANCE: 24.0,  // Vue large et aérée sur le quartier
+  MIN_DISTANCE: 14.0,
+  MAX_DISTANCE: 38.0,
   FOV: 42,
   FOLLOW_LERP: 0.08
 };
 
 export const ZONES = {
   VILLAGE_CENTER: 'village-center',
+  CACAO_FOREST: 'cacao-forest',
   CHUNK_SIZE: 80
 };

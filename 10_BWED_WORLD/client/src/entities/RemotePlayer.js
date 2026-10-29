@@ -32,6 +32,12 @@ export class RemotePlayer {
     this.avatar.rootGroup.add(this.nameplate);
   }
 
+  changeAvatar(newAvatarId) {
+    if (!newAvatarId || this.avatarId === newAvatarId) return;
+    this.avatarId = newAvatarId;
+    this.avatar.loadAvatar(newAvatarId);
+  }
+
   createNameplate(name) {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
@@ -70,6 +76,10 @@ export class RemotePlayer {
 
   // Réception d'un snapshot réseau
   pushSnapshot(packet) {
+    if (packet.avatarId && packet.avatarId !== this.avatarId) {
+      this.changeAvatar(packet.avatarId);
+    }
+
     const now = performance.now();
     this.snapshots.push({
       time: now,

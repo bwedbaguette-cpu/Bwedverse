@@ -1,15 +1,16 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { CONFIG } from '../config.js';
 
 /* ==========================================================================
    MODÈLE D'AVATAR & MOTEUR D'ANIMATION PROCÉDURALE — BWED WORLD
-   Compatible avec les modèles GLB statiques (bobbing/waddle) et squelettes
+   Prend en charge les 18 pions GLB avec changement dynamique à la volée,
+   recalibrage d'échelle, pivot au sol et animation procédurale kawaii
    ========================================================================== */
 
 export class AvatarModel {
-  constructor(avatarId = 'tiny-baker', filePath = './assets/avatars/tiny-baker.glb') {
+  constructor(avatarId = 'tiny-baker') {
     this.avatarId = avatarId;
-    this.filePath = filePath;
 
     this.rootGroup = new THREE.Group();
     this.visualGroup = new THREE.Group();
@@ -18,12 +19,14 @@ export class AvatarModel {
     this.isLoaded = false;
     this.mixer = null;
     this.animTime = 0;
+    this.targetHeight = 1.8;
+    this.targetScaleModifier = 1.0;
 
     // Ombre circulaire douce sous les pieds
     this.shadowMesh = null;
     this.buildShadow();
 
-    this.loadGLTF();
+    this.loadAvatar(avatarId);
   }
 
   buildShadow() {
@@ -40,30 +43,47 @@ export class AvatarModel {
     this.rootGroup.add(this.shadowMesh);
   }
 
-  loadGLTF() {
+  loadAvatar(avatarId) {
+    this.avatarId = avatarId;
+    const def = CONFIG.avatars[avatarId] || CONFIG.avatars['tiny-baker'];
+    const filePath = def?.file || `./assets/avatars/${avatarId}.glb`;
+    this.targetScaleModifier = def?.scale || 1.15;
+
+    // Nettoyage de l'ancien modèle si existant
+    this.clearVisualGroup();
+    this.isLoaded = false;
+    this.mixer = null;
+
     const loader = new GLTFLoader();
     loader.load(
-      this.filePath,
+      filePath,
       (gltf) => {
+        // Sécurité si l'avatar a changé entre-temps
+        if (this.avatarId !== avatarId) return;
+
         const model = gltf.scene;
 
-        // Calcul des dimensions d'origine pour normaliser la hauteur à 1.8 m
+        // Calcul de la boîte englobante pour normaliser la hauteur à 1.8m
         const bbox = new THREE.Box3().setFromObject(model);
         const size = new THREE.Vector3();
         bbox.getSize(size);
-        const targetHeight = 1.8;
-        const scaleFactor = targetHeight / (size.y || 1.8);
 
+        const currentHeight = size.y > 0.01 ? size.y : 1.8;
+        const scaleFactor = (this.targetHeight / currentHeight) * this.targetScaleModifier;
         model.scale.setScalar(scaleFactor);
 
-        // Recalibrage du pivot pour que les pieds touchent Y = 0
-        const minPoint = bbox.min.clone().multiplyScalar(scaleFactor);
-        model.position.y = -minPoint.y;
+        // Recalcul après mise à l'échelle pour aligner la base des pieds à Y = 0
+        const scaledBbox = new THREE.Box3().setFromObject(model);
+        model.position.y = -scaledBbox.min.y;
 
+        // Activation des ombres portées et reçues
         model.traverse((child) => {
           if (child.isMesh) {
             child.castShadow = true;
             child.receiveShadow = true;
+            if (child.material) {
+              child.material.roughness = Math.max(0.35, child.material.roughness ?? 0.5);
+            }
           }
         });
 
@@ -76,14 +96,32 @@ export class AvatarModel {
       },
       undefined,
       (err) => {
-        console.warn('Fallback modèle avatar procédural:', err);
-        this.buildFallbackModel();
+        console.warn(`Fallback pour avatar ${avatarId}:`, err);
+        if (this.avatarId === avatarId) {
+          this.buildFallbackModel();
+        }
       }
     );
   }
 
+  clearVisualGroup() {
+    while (this.visualGroup.children.length > 0) {
+      const child = this.visualGroup.children[0];
+      this.visualGroup.remove(child);
+      child.traverse((obj) => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach((m) => m.dispose());
+          } else {
+            obj.material.dispose();
+          }
+        }
+      });
+    }
+  }
+
   buildFallbackModel() {
-    // Petit chef pâtissier cubique en secours
     const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffeed6, roughness: 0.4 });
     const apronMat = new THREE.MeshStandardMaterial({ color: 0xe59b24, roughness: 0.5 });
     const hatMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
@@ -106,7 +144,7 @@ export class AvatarModel {
     this.isLoaded = true;
   }
 
-  // Animation procédurale fluide (waddle en course, respiration au repos)
+  // Animation procédurale fluide (waddle en course, respiration douce au repos)
   updateAnimation(delta, state = 'idle', speed = 0) {
     if (this.mixer) {
       this.mixer.update(delta);

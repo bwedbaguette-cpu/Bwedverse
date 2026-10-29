@@ -20,6 +20,20 @@ export class CameraController {
     // Calcul initial de l'offset relatif
     this.offset = new THREE.Vector3();
     this.updateOffset();
+    this.initZoomListener();
+  }
+
+  initZoomListener() {
+    window.addEventListener('wheel', (e) => {
+      // Zoom fluide avec la molette
+      const zoomDelta = e.deltaY * 0.015;
+      this.distance = THREE.MathUtils.clamp(
+        this.distance + zoomDelta,
+        CAMERA.MIN_DISTANCE,
+        CAMERA.MAX_DISTANCE
+      );
+      this.updateOffset();
+    }, { passive: true });
   }
 
   updateOffset() {

@@ -11,8 +11,10 @@ import { VirtualJoystick } from './ui/VirtualJoystick.js';
 import { NETWORK } from '../../shared/constants.js';
 
 /* ==========================================================================
-   POINT D'ENTRÉE PRINCIPAL — BWED WORLD (JALON 1)
-   Orchestration du monde 3D, des joueurs locaux et de la synchronisation 2 onglets
+   POINT D'ENTRÉE PRINCIPAL — BWED WORLD (JALON 2)
+   - 18 Pions jouables avec sélection instantanée
+   - 2 Biomes connectés par le Pont du Beurre d'Amande
+   - Fondu progressif d'ambiance et synchronisation multi-joueurs à 15 Hz
    ========================================================================== */
 
 class BwedWorldApp {
@@ -34,59 +36,69 @@ class BwedWorldApp {
   }
 
   init() {
-    // 1. Identité du joueur (pseudo mémorisé ou aléatoire)
+    // 1. Identité du joueur et pion mémorisé
     const storedName = localStorage.getItem('bwed_world_pseudo');
+    const storedAvatar = localStorage.getItem('bwed_world_avatar');
+
     const defaultPseudos = ['Chef Émile', 'Mitron Doré', 'Boulanger Miel', 'Pâtissier Matcha', 'Brioche Fan'];
     const randomDefault = defaultPseudos[Math.floor(Math.random() * defaultPseudos.length)] + '_' + Math.floor(100 + Math.random() * 900);
     const playerName = storedName || randomDefault;
     const playerId = 'player_' + Math.random().toString(36).substr(2, 9);
-    const avatarId = 'tiny-baker';
+    const avatarId = storedAvatar || 'tiny-baker';
 
     // 2. Moteur de rendu 3D
     const canvasContainer = document.getElementById('canvasContainer');
     this.engine = new Engine(canvasContainer);
 
-    // 3. Physique & Monde
+    // 3. Physique & Monde multi-biomes
     this.physics = new PhysicsWorld();
-    this.world = new WorldManager(this.engine.scene, this.physics);
+    this.world = new WorldManager(this.engine.scene, this.physics, ({ kicker, name }) => {
+      this.hud?.setDistrict(kicker, name);
+    });
 
-    // 4. Caméra 3/4 isométrique
+    // 4. Caméra 3/4 plongeante panoramique
     this.cameraController = new CameraController(this.engine.camera);
 
     // 5. Entrées clavier & sol
     this.input = new InputManager(this.engine.camera, this.world.groundMesh);
 
-    // 6. Joystick virtuel tactile
+    // 6. Joystick virtuel tactile mobile
     new VirtualJoystick(document.body, (x, y) => {
       this.input.setJoystickVector(x, y);
     });
 
     // 7. Joueur Local
     this.localPlayer = new LocalPlayer(playerId, playerName, avatarId, this.engine.scene, this.physics);
-    // Position initiale sur la place
+    // Position initiale sur la grand-place
     const spawnAngle = Math.random() * Math.PI * 2;
     const spawnDist = 4.0 + Math.random() * 3.0;
     this.localPlayer.setPosition(Math.cos(spawnAngle) * spawnDist, 0, Math.sin(spawnAngle) * spawnDist);
     this.cameraController.setInstantTarget(this.localPlayer.position);
 
-    // 8. Interface utilisateur (HUD)
+    // 8. Interface utilisateur (HUD) & Garde-robe
     this.hud = new HUD({
       playerName,
+      currentAvatarId: avatarId,
       onNameChange: (newName) => {
         this.localPlayer.name = newName;
         localStorage.setItem('bwed_world_pseudo', newName);
         this.network?.broadcastJoin();
+      },
+      onAvatarChange: (newAvatarId) => {
+        this.localPlayer.changeAvatar(newAvatarId);
+        localStorage.setItem('bwed_world_avatar', newAvatarId);
+        this.network?.setAvatar(newAvatarId);
       }
     });
 
-    // 9. Adaptateur Multijoueur (BroadcastChannel / Colyseus)
+    // 9. Adaptateur Multijoueur
     this.initNetwork(playerId, playerName, avatarId);
 
-    // 10. Boucle de mise à jour Three.js
+    // 10. Boucle de rendu
     this.engine.onUpdate((delta, elapsed) => this.update(delta, elapsed));
     this.engine.start();
 
-    // Masquage immédiat du loader
+    // Masquage du loader
     const loaderEl = document.getElementById('worldLoader');
     if (loaderEl) {
       loaderEl.style.opacity = '0';
@@ -105,6 +117,11 @@ class BwedWorldApp {
         const remote = new RemotePlayer(data.id, data.name, data.avatarId || 'tiny-baker', this.engine.scene);
         this.remotePlayers.set(data.id, remote);
         this.updatePlayerCount();
+      } else {
+        const remote = this.remotePlayers.get(data.id);
+        if (data.avatarId && data.avatarId !== remote.avatarId) {
+          remote.changeAvatar(data.avatarId);
+        }
       }
     };
 
@@ -142,16 +159,20 @@ class BwedWorldApp {
     const inputResult = this.input.getMovementVector(this.localPlayer.position);
     this.localPlayer.update(delta, inputResult);
 
-    // 2. Suivi caméra fluide
+    // 2. Monde, animations et fondu d'atmosphère
+    this.world.update(delta, elapsed);
+    this.world.updateAtmosphere(this.localPlayer.position);
+
+    // 3. Suivi caméra fluide
     this.cameraController.setTarget(this.localPlayer.position);
     this.cameraController.update(delta);
 
-    // 3. Mise à jour des joueurs distants (interpolation)
+    // 4. Joueurs distants interpolés
     for (const remote of this.remotePlayers.values()) {
       remote.update(delta);
     }
 
-    // 4. Envoi réseau cadencé à 15 Hz
+    // 5. Envoi réseau cadencé à 15 Hz
     const now = performance.now();
     if (now - this.lastNetworkTick >= NETWORK.TICK_INTERVAL_MS) {
       this.lastNetworkTick = now;
