@@ -30,3 +30,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+
+# Local 3D Highpoly Backups
+07_3D_MODEL/buildings_highpoly_backup/
