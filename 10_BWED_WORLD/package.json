@@ -1,0 +1,12 @@
+{
+  "name": "bwed-world",
+  "version": "1.0.0",
+  "description": "Hub 3D Multijoueur Cosy et Stylé du Bwedverse (Pudgy World / Animal Crossing spirit)",
+  "main": "client/index.html",
+  "scripts": {
+    "server": "node server/index.js"
+  },
+  "keywords": ["threejs", "multiplayer", "bwedverse", "hub", "cosy"],
+  "author": "Bwedverse Team",
+  "license": "MIT"
+}
