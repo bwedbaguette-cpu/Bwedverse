@@ -145,90 +145,97 @@ let pollenPoints = null;
 // INITIALIZATION
 // ============================================================================
 function init() {
-  clock = new THREE.Clock();
-  loadSavedState();
-  state.grid = generateVillageGrid();
+  try {
+    clock = new THREE.Clock();
+    loadSavedState();
+    state.grid = generateVillageGrid();
 
-  // 1. Scene & Atmosphere (Warm, Luminous Ghibli/Animal Crossing Bakery Palette)
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xfcf5e8); // Luminous soft honey-cream daylight sky
-  scene.fog = new THREE.FogExp2(0xf6ebe0, 0.0035); // Gentle atmospheric perspective
+    // 1. Scene & Atmosphere (Warm, Luminous Ghibli/Animal Crossing Bakery Palette)
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xfcf5e8); // Luminous soft honey-cream daylight sky
+    scene.fog = new THREE.FogExp2(0xf6ebe0, 0.0035); // Gentle atmospheric perspective
 
-  // 2. Camera (Isometric Perspective with close diorama intimacy)
-  const aspect = window.innerWidth / window.innerHeight;
-  camera = new THREE.PerspectiveCamera(40, aspect, 0.5, 320);
-  updateCameraPosition(true);
+    // 2. Camera (Isometric Perspective with close diorama intimacy)
+    const aspect = window.innerWidth / window.innerHeight;
+    camera = new THREE.PerspectiveCamera(40, aspect, 0.5, 320);
+    updateCameraPosition(true);
 
-  // 3. Renderer (Optimized for thermal efficiency: balanced DPR, standard PCF shadows)
-  renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    powerPreference: 'default'
-  });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.25;
-  container.appendChild(renderer.domElement);
+    // 3. Renderer (Optimized for thermal efficiency: balanced DPR, standard PCF shadows)
+    renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: 'default'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    container.appendChild(renderer.domElement);
 
-  // 4. Lights & Sky
-  setupLighting();
+    // 4. Lights & Sky
+    setupLighting();
 
-  // 5. Load Unified 3D Level Map (Bwedville Sculpted Terrain, Roads, Bridges & Canal)
-  loadUnifiedTerrainMap();
+    // 5. Load Unified 3D Level Map (Bwedville Sculpted Terrain, Roads, Bridges & Canal)
+    loadUnifiedTerrainMap();
 
-  // 6. Build Grid Helpers & Cursors
-  setupCursors();
+    // 6. Build Grid Helpers & Cursors
+    setupCursors();
 
-  // 7. Spawn Player Avatar (18 High-Fidelity GLB Heroes with Grounded Feet)
-  initPlayerAvatar();
+    // 7. Spawn Player Avatar (18 High-Fidelity GLB Heroes with Grounded Feet)
+    initPlayerAvatar();
 
-  // 8. Build Procedural Brioche Trees & Flora
-  buildVillageVegetation();
+    // 8. Build Procedural Brioche Trees & Flora
+    buildVillageVegetation();
 
-  // 9. Build Modular Procedural Citizen Houses (10 Distinct Homes)
-  buildCitizenHouses();
+    // 9. Build Modular Procedural Citizen Houses (10 Distinct Homes)
+    buildCitizenHouses();
 
-  // 10. Build Instanced Street Furniture & Props Kit (Benches, Barrels, Sacks)
-  buildInstancedBenches();
-  buildInstancedBarrelsAndCrates();
+    // 10. Build Instanced Street Furniture & Props Kit (Benches, Barrels, Sacks)
+    buildInstancedBenches();
+    buildInstancedBarrelsAndCrates();
 
-  // 11. Build Living Village NPCs (12 Interactive GLB Villagers)
-  buildVillageNPCs();
+    // 11. Build Living Village NPCs (12 Interactive GLB Villagers)
+    buildVillageNPCs();
 
-  // 12. Build Living Village Systems (Chimney Smoke, Canal Buoys, Bunting, Pollen)
-  buildChimneySmoke();
-  buildChocolateCanalProps();
-  buildStreetBunting();
-  buildFloatingPollenParticles();
+    // 12. Build Living Village Systems (Chimney Smoke, Canal Buoys, Bunting, Pollen)
+    buildChimneySmoke();
+    buildChocolateCanalProps();
+    buildStreetBunting();
+    buildFloatingPollenParticles();
 
-  // 13. Setup Key Landmark Colored Glows
-  setupLandmarkLights();
+    // 13. Setup Key Landmark Colored Glows
+    setupLandmarkLights();
 
-  // 14. Load Village GLB Buildings & Props (Tracks actual progress)
-  loadVillageBuildings();
+    // 14. Load Village GLB Buildings & Props (Tracks actual progress)
+    loadVillageBuildings();
 
-  // 15. Input & Event Listeners
-  setupEventListeners();
+    // 15. Input & Event Listeners
+    setupEventListeners();
 
-  // 16. UI Modals, Audio System & Quests Initialization
-  initAudioSystem();
-  setupModals();
-  applySettings();
-  updateQuestsUI();
+    // 16. UI Modals, Audio System & Quests Initialization
+    initAudioSystem();
+    setupModals();
+    applySettings();
+    updateQuestsUI();
 
-  // 17. Safety fallback timeout for loader
-  setTimeout(() => {
-    if (!loaderEl.classList.contains('fade-out')) {
-      loaderBar.style.width = '100%';
-      loaderStatus.textContent = 'Village prêt ! Bienvenue à Bwedville.';
+    // 17. Safety fallback timeout for loader (max 3.5s to ensure immediate playability)
+    setTimeout(() => {
+      if (!loaderEl.classList.contains('fade-out')) {
+        loaderBar.style.width = '100%';
+        loaderStatus.textContent = 'Village prêt ! Bienvenue à Bwedville.';
+        loaderEl.classList.add('fade-out');
+      }
+    }, 3500);
+
+    // 18. Start Loop
+    renderer.setAnimationLoop(animate);
+  } catch (err) {
+    console.error('Erreur critique initialisation Bwed Village:', err);
+    if (loaderEl && !loaderEl.classList.contains('fade-out')) {
       loaderEl.classList.add('fade-out');
     }
-  }, 7000);
-
-  // 18. Start Loop
-  renderer.setAnimationLoop(animate);
+  }
 }
 
 // ============================================================================
@@ -344,6 +351,10 @@ function loadUnifiedTerrainMap() {
       });
 
       scene.add(unifiedTerrainGroup);
+      if (loaderStatus && !loaderEl.classList.contains('fade-out')) {
+        loaderStatus.textContent = 'Terrain sculpté & niveau 3D en place...';
+        loaderBar.style.width = '35%';
+      }
     },
     undefined,
     err => {
@@ -567,6 +578,7 @@ function buildVillageVegetation() {
     dummy.updateMatrix();
     pearlInstanced.setMatrixAt(idx, dummy.matrix);
 
+    const tile = state.grid[pos.z] && state.grid[pos.z][pos.x];
     if (tile) tile.walkable = false;
   });
 
@@ -741,6 +753,7 @@ function buildInstancedBenches() {
       legInstanced.setMatrixAt(legCount++, dummy.matrix);
     });
 
+    const tile = state.grid[b.z] && state.grid[b.z][b.x];
     if (tile) tile.walkable = false;
   });
 
@@ -803,6 +816,7 @@ function buildInstancedBarrelsAndCrates() {
       sackInst.setMatrixAt(sCount++, dummy.matrix);
     }
 
+    const tile = state.grid[it.z] && state.grid[it.z][it.x];
     if (tile) tile.walkable = false;
   });
 
@@ -972,6 +986,7 @@ function buildVillageNPCs() {
 
     scene.add(npcGroup);
 
+    const tile = state.grid[npc.gridZ] && state.grid[npc.gridZ][npc.gridX];
     if (tile) {
       tile.walkable = false;
     }
@@ -1334,47 +1349,51 @@ function loadVillageBuildings() {
   let loadedCount = 0;
 
   function onBuildingLoaded(b, gltf) {
-    const model = gltf.scene;
-    const worldX = b.gridX * MAP_CONFIG.tileSize;
-    const worldZ = b.gridZ * MAP_CONFIG.tileSize;
+    try {
+      const model = gltf.scene;
+      const worldX = b.gridX * MAP_CONFIG.tileSize;
+      const worldZ = b.gridZ * MAP_CONFIG.tileSize;
 
-    // Apply scale and rotation first to compute true world bounding box
-    model.scale.set(b.scale, b.scale, b.scale);
-    model.rotation.y = b.rotationY || 0;
-    model.position.set(worldX, 0, worldZ);
-    model.updateMatrixWorld(true);
+      // Apply scale and rotation first to compute true world bounding box
+      model.scale.set(b.scale, b.scale, b.scale);
+      model.rotation.y = b.rotationY || 0;
+      model.position.set(worldX, 0, worldZ);
+      model.updateMatrixWorld(true);
 
-    // Align base of building perfectly with ground elevation (solves sunken models bug)
-    const box = new THREE.Box3().setFromObject(model);
-    const targetGroundY = getTerrainElevation(worldX, worldZ) + 0.02;
-    model.position.y += (targetGroundY - box.min.y);
+      // Align base of building perfectly with ground elevation (solves sunken models bug)
+      const box = new THREE.Box3().setFromObject(model);
+      const targetGroundY = getTerrainElevation(worldX, worldZ) + 0.02;
+      model.position.y += (targetGroundY - box.min.y);
 
-    // Shadows & Material optimization
-    model.traverse(child => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        if (child.material) {
-          child.material.roughness = Math.min(child.material.roughness, 0.85);
+      // Shadows & Material optimization
+      model.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.roughness = Math.min(child.material.roughness, 0.85);
+          }
+        }
+      });
+
+      scene.add(model);
+      buildingObjects.push({ config: b, mesh: model });
+
+      // Mark tiles as occupied in the grid
+      const halfW = Math.max(1, Math.floor(b.sizeX / 2));
+      const halfH = Math.max(1, Math.floor(b.sizeZ / 2));
+      for (let dz = -halfH; dz <= halfH; dz++) {
+        for (let dx = -halfW; dx <= halfW; dx++) {
+          const gx = b.gridX + dx;
+          const gz = b.gridZ + dz;
+          if (state.grid[gz] && state.grid[gz][gx]) {
+            state.grid[gz][gx].walkable = false;
+            state.grid[gz][gx].occupant = b;
+          }
         }
       }
-    });
-
-    scene.add(model);
-    buildingObjects.push({ config: b, mesh: model });
-
-    // Mark tiles as occupied in the grid
-    const halfW = Math.max(1, Math.floor(b.sizeX / 2));
-    const halfH = Math.max(1, Math.floor(b.sizeZ / 2));
-    for (let dz = -halfH; dz <= halfH; dz++) {
-      for (let dx = -halfW; dx <= halfW; dx++) {
-        const gx = b.gridX + dx;
-        const gz = b.gridZ + dz;
-        if (state.grid[gz] && state.grid[gz][gx]) {
-          state.grid[gz][gx].walkable = false;
-          state.grid[gz][gx].occupant = b;
-        }
-      }
+    } catch (err) {
+      console.warn('Erreur initialisation modèle bâtisse:', b.name, err);
     }
 
     loadedCount++;
