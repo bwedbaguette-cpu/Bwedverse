@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>BwedTris 3D — Le Tetris Pâtissier du Bwedverse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./tetris.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- 3D Canvas Viewport -->
+    <div id="canvasContainer"></div>
+
+    <!-- HUD Overlay Frame -->
+    <div class="tetris-ui">
+      <!-- Top Navigation Header -->
+      <header class="tetris-header">
+        <div class="brand-pill">
+          <a class="nav-back-link" href="../index.html" title="Retourner au Hub Bwedverse">&larr; Bwedverse Hub</a>
+          <span class="pill-sep">&middot;</span>
+          <a class="nav-village-link" href="../08_BWED_VILLAGE/index.html" title="Visiter le Village 3D">Village 3D</a>
+        </div>
+
+        <div class="title-banner">
+          <span class="game-kicker">MINI-JEU D'ARCADE BWEDWARE</span>
+          <h1 class="game-title">BWEDTRIS 3D</h1>
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-btn" id="soundBtn" type="button" title="Activer / Couper la musique">
+            <span id="soundLabel">Musique : OFF</span>
+          </button>
+          <button class="icon-btn" id="pauseBtn" type="button" title="Mettre en pause (P)">
+            <span>Pause</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Game Columns Layout -->
+      <main class="tetris-columns">
+        <!-- Left Column: Hold Slot & Mascot Stage -->
+        <aside class="side-panel left-panel">
+          <div class="hud-box hold-box">
+            <span class="box-kicker">RÉSERVE [C]</span>
+            <div class="preview-stage" id="holdStage">
+              <!-- Rendered via Three.js secondary view / canvas -->
+              <span class="empty-hint" id="holdEmptyHint">Vide</span>
+            </div>
+          </div>
+
+          <!-- Score & Stats Widget -->
+          <div class="hud-box stats-box">
+            <span class="box-kicker">FOURNÉE</span>
+            <div class="stat-row">
+              <span class="stat-label">SCORE</span>
+              <strong class="stat-value" id="scoreVal">0</strong>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">RECORD</span>
+              <span class="stat-value highlight" id="highScoreVal">0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">NIVEAU</span>
+              <span class="stat-value" id="levelVal">1</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">LIGNES</span>
+              <span class="stat-value" id="linesVal">0</span>
+            </div>
+          </div>
+
+          <!-- Baker Mascot Reaction Bubble -->
+          <div class="mascot-widget" id="mascotWidget">
+            <div class="mascot-bubble" id="mascotSpeech">
+              Prépare la pâte ! La première pièce arrive !
+            </div>
+            <div class="mascot-name">Chef Émile le Pâtissier</div>
+          </div>
+        </aside>
+
+        <!-- Center Column: 3D Oven Chamber Viewport Center Marker -->
+        <div class="center-stage">
+          <!-- Floating In-Game Toast (Combos, Tetris, Level Up) -->
+          <div class="event-banner" id="eventBanner" hidden>
+            <h2 id="eventTitle">TETRIS !</h2>
+            <p id="eventSubtitle">+800 Points Farinés</p>
+          </div>
+        </div>
+
+        <!-- Right Column: Next Piece Preview & Controls Card -->
+        <aside class="side-panel right-panel">
+          <div class="hud-box next-box">
+            <span class="box-kicker">SUIVANT</span>
+            <div class="preview-stage" id="nextStage">
+              <!-- Rendered via Three.js -->
+            </div>
+          </div>
+
+          <!-- Controls Reminder Card -->
+          <div class="hud-box controls-card">
+            <span class="box-kicker">COMMANDES CLAVIER</span>
+            <div class="control-key-row">
+              <kbd>&larr;</kbd><kbd>&rarr;</kbd><span>Déplacer</span>
+            </div>
+            <div class="control-key-row">
+              <kbd>&uarr;</kbd> / <kbd>W</kbd><span>Pivoter</span>
+            </div>
+            <div class="control-key-row">
+              <kbd>&darr;</kbd> / <kbd>S</kbd><span>Chute Douce</span>
+            </div>
+            <div class="control-key-row">
+              <kbd>Espace</kbd><span>Chute Immédiate</span>
+            </div>
+            <div class="control-key-row">
+              <kbd>C</kbd><span>Mettre en Réserve</span>
+            </div>
+          </div>
+        </aside>
+      </main>
+
+      <!-- Bottom Touch Controls Bar (Mobile / Tablet Friendly) -->
+      <footer class="touch-bar" id="touchBar">
+        <button class="touch-btn" id="btnTouchLeft" type="button" aria-label="Gauche">&larr;</button>
+        <button class="touch-btn" id="btnTouchRight" type="button" aria-label="Droite">&rarr;</button>
+        <button class="touch-btn rotate-btn" id="btnTouchRotate" type="button" aria-label="Pivoter">&#8635;</button>
+        <button class="touch-btn drop-btn" id="btnTouchSoftDrop" type="button" aria-label="Descendre">&darr;</button>
+        <button class="touch-btn hard-btn" id="btnTouchHardDrop" type="button" aria-label="Chute Immédiate">&#8650;</button>
+        <button class="touch-btn hold-btn" id="btnTouchHold" type="button" aria-label="Réserver">Réserve</button>
+      </footer>
+    </div>
+
+    <!-- Pause Modal Overlay -->
+    <div class="game-modal" id="pauseModal" hidden>
+      <div class="modal-card">
+        <span class="modal-kicker">PAUSE AU FOURNIL</span>
+        <h2>Partie Suspendue</h2>
+        <p>Les blocs de pâte sont figés dans l'air tiède de la cuisine.</p>
+        <div class="modal-buttons">
+          <button class="modal-btn primary-btn" id="resumeBtn" type="button">Reprendre la Partie</button>
+          <button class="modal-btn" id="restartBtn" type="button">Nouvelle Fournée</button>
+          <a class="modal-btn hub-btn" href="../index.html">Quitter vers le Hub</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Modal Overlay -->
+    <div class="game-modal" id="gameOverModal" hidden>
+      <div class="modal-card gameover-card">
+        <span class="modal-kicker">DÉBORDEMENT DU FOUR !</span>
+        <h2>Fournée Terminée</h2>
+        <div class="final-scores">
+          <div class="score-pill">
+            <small>SCORE FINAL</small>
+            <strong id="finalScoreVal">0</strong>
+          </div>
+          <div class="score-pill">
+            <small>LIGNES CUISINÉES</small>
+            <strong id="finalLinesVal">0</strong>
+          </div>
+        </div>
+        <p id="gameOverSummary">Le moule était trop plein ! Belle performance de pâtisserie.</p>
+        <div class="modal-buttons">
+          <button class="modal-btn primary-btn" id="retryBtn" type="button">Recommencer une Fournée</button>
+          <a class="modal-btn hub-btn" href="../index.html">Retour au Bwedverse</a>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./tetris.js"></script>
+  </body>
+</html>
