@@ -7,17 +7,17 @@ import { LocalPlayer } from './entities/LocalPlayer.js';
 import { RemotePlayer } from './entities/RemotePlayer.js';
 import { NetworkAdapter } from './net/NetworkAdapter.js';
 import { HUD } from './ui/HUD.js';
+import { ChatManager } from './ui/ChatManager.js';
 import { VirtualJoystick } from './ui/VirtualJoystick.js';
 import { NETWORK } from '../../shared/constants.js';
 
 /* ==========================================================================
-   POINT D'ENTRÉE PRINCIPAL — BWED WORLD
-   - Mini-Map & Boussole rotative temps réel
-   - Carte du Monde interactive & Téléportation rapide (Fast Travel)
-   - Menu complet des Paramètres (Ombres, Résolution, Distance caméra, Respawn)
-   - 18 Pions jouables avec sélection instantanée
-   - 2 Biomes connectés par le Pont du Beurre d'Amande
-   - Portail des Mini-Jeux & Overlays de boutiques
+   MAIN CLIENT APPLICATION — BWED WORLD
+   - 3D overhead speech bubbles & in-game chat (Public & Direct Whispers)
+   - Real-time rotating compass radar & fast travel teleportation
+   - Non-intrusive docked interaction prompts
+   - 18 playable pawns with instant wardrobe swap
+   - Fully bilingual / English interface
    ========================================================================== */
 
 class BwedWorldApp {
@@ -28,6 +28,7 @@ class BwedWorldApp {
     this.cameraController = null;
     this.input = null;
     this.hud = null;
+    this.chat = null;
 
     this.localPlayer = null;
     this.remotePlayers = new Map();
@@ -39,46 +40,45 @@ class BwedWorldApp {
   }
 
   init() {
-    // 1. Identité du joueur et pion mémorisé
+    // 1. Player identity and remembered avatar
     const storedName = localStorage.getItem('bwed_world_pseudo');
     const storedAvatar = localStorage.getItem('bwed_world_avatar');
 
-    const defaultPseudos = ['Chef Émile', 'Mitron Doré', 'Boulanger Miel', 'Pâtissier Matcha', 'Brioche Fan'];
+    const defaultPseudos = ['Chef Emile', 'Golden Baker', 'Honey Artisan', 'Matcha Crafter', 'Brioche Fan'];
     const randomDefault = defaultPseudos[Math.floor(Math.random() * defaultPseudos.length)] + '_' + Math.floor(100 + Math.random() * 900);
     const playerName = storedName || randomDefault;
     const playerId = 'player_' + Math.random().toString(36).substr(2, 9);
     const avatarId = storedAvatar || 'tiny-baker';
 
-    // 2. Moteur de rendu 3D
+    // 2. 3D WebGL Engine
     const canvasContainer = document.getElementById('canvasContainer');
     this.engine = new Engine(canvasContainer);
 
-    // 3. Physique & Monde multi-biomes avec détection de quartier
+    // 3. Multi-biome physics & world manager
     this.physics = new PhysicsWorld();
     this.world = new WorldManager(this.engine.scene, this.physics, ({ kicker, name }) => {
       this.hud?.setDistrict(kicker, name);
     });
 
-    // 4. Caméra 3/4 plongeante panoramique
+    // 4. Panoramic isometric camera
     this.cameraController = new CameraController(this.engine.camera);
 
-    // 5. Entrées clavier & sol
+    // 5. Input manager
     this.input = new InputManager(this.engine.camera, this.world.groundMesh);
 
-    // 6. Joystick virtuel tactile mobile
+    // 6. Mobile virtual joystick
     new VirtualJoystick(document.body, (x, y) => {
       this.input.setJoystickVector(x, y);
     });
 
-    // 7. Joueur Local
+    // 7. Local player instance
     this.localPlayer = new LocalPlayer(playerId, playerName, avatarId, this.engine.scene, this.physics);
-    // Position initiale sur la grand-place
     const spawnAngle = Math.random() * Math.PI * 2;
     const spawnDist = 4.0 + Math.random() * 3.0;
     this.localPlayer.setPosition(Math.cos(spawnAngle) * spawnDist, 0, Math.sin(spawnAngle) * spawnDist);
     this.cameraController.setInstantTarget(this.localPlayer.position);
 
-    // 8. Interface utilisateur (HUD), Mini-Map & Paramètres
+    // 8. 2D HUD, Mini-Map & Settings
     this.hud = new HUD({
       playerName,
       currentAvatarId: avatarId,
@@ -116,14 +116,32 @@ class BwedWorldApp {
       }
     });
 
-    // 9. Adaptateur Multijoueur
+    // 9. Multiplayer network adapter
     this.initNetwork(playerId, playerName, avatarId);
 
-    // 10. Boucle de rendu
+    // 10. In-game chat & 3D speech bubbles manager
+    this.chat = new ChatManager({
+      camera: this.engine.camera,
+      localPlayer: this.localPlayer,
+      remotePlayers: this.remotePlayers,
+      network: this.network,
+      onFocusChange: (isFocused) => {
+        if (isFocused) {
+          this.input.resetKeys();
+        }
+      }
+    });
+
+    // Connect incoming chat to chat manager
+    this.network.onChatMessage = (data) => {
+      this.chat.handleIncomingMessage(data);
+    };
+
+    // 11. Render loop
     this.engine.onUpdate((delta, elapsed) => this.update(delta, elapsed));
     this.engine.start();
 
-    // Masquage du loader
+    // Hide loading screen
     const loaderEl = document.getElementById('worldLoader');
     if (loaderEl) {
       loaderEl.style.opacity = '0';
@@ -134,7 +152,7 @@ class BwedWorldApp {
   initNetwork(playerId, playerName, avatarId) {
     this.network = new NetworkAdapter(playerId, playerName, avatarId);
 
-    // Connexion d'un autre joueur
+    // Player joined
     this.network.onPlayerJoined = (data) => {
       if (data.id === playerId) return;
 
@@ -142,6 +160,7 @@ class BwedWorldApp {
         const remote = new RemotePlayer(data.id, data.name, data.avatarId || 'tiny-baker', this.engine.scene);
         this.remotePlayers.set(data.id, remote);
         this.updatePlayerCount();
+        this.chat?.updateRecipientOptions();
       } else {
         const remote = this.remotePlayers.get(data.id);
         if (data.avatarId && data.avatarId !== remote.avatarId) {
@@ -150,7 +169,7 @@ class BwedWorldApp {
       }
     };
 
-    // Mise à jour de la position d'un autre joueur
+    // Player position update
     this.network.onPlayerUpdated = (data) => {
       if (data.id === playerId) return;
 
@@ -159,17 +178,19 @@ class BwedWorldApp {
         remote = new RemotePlayer(data.id, data.name, data.avatarId || 'tiny-baker', this.engine.scene);
         this.remotePlayers.set(data.id, remote);
         this.updatePlayerCount();
+        this.chat?.updateRecipientOptions();
       }
       remote.pushSnapshot(data);
     };
 
-    // Déconnexion d'un joueur
+    // Player left
     this.network.onPlayerLeft = (id) => {
       const remote = this.remotePlayers.get(id);
       if (remote) {
         remote.dispose();
         this.remotePlayers.delete(id);
         this.updatePlayerCount();
+        this.chat?.updateRecipientOptions();
       }
     };
   }
@@ -180,19 +201,19 @@ class BwedWorldApp {
   }
 
   update(delta, elapsed) {
-    // 1. Entrées & Déplacement joueur local
+    // 1. Local player inputs & physics
     const inputResult = this.input.getMovementVector(this.localPlayer.position);
     this.localPlayer.update(delta, inputResult);
 
-    // 2. Monde, animations et fondu d'atmosphère
+    // 2. World props animation & smooth atmospheric blend
     this.world.update(delta, elapsed);
     this.world.updateAtmosphere(this.localPlayer.position);
 
-    // 3. Suivi caméra fluide
+    // 3. Smooth camera tracking
     this.cameraController.setTarget(this.localPlayer.position);
     this.cameraController.update(delta);
 
-    // 4. Détection des zones interactives (bâtiments et portail)
+    // 4. Discreet contextual interaction prompt
     const activeZone = this.world.getNearestInteraction(this.localPlayer.position);
     if (activeZone) {
       this.hud.showInteractionPrompt(activeZone.actionLabel, () => {
@@ -202,7 +223,7 @@ class BwedWorldApp {
       this.hud.hideInteractionPrompt();
     }
 
-    // 5. Mise à jour de la mini-map boussole
+    // 5. Rotating compass radar update
     this.hud.updateMiniMap(
       this.localPlayer.position,
       this.localPlayer.rotationY,
@@ -210,12 +231,17 @@ class BwedWorldApp {
       Array.from(this.remotePlayers.values())
     );
 
-    // 6. Joueurs distants interpolés
+    // 6. 3D speech bubbles positioning
+    if (this.chat) {
+      this.chat.update(delta);
+    }
+
+    // 7. Interpolate remote players
     for (const remote of this.remotePlayers.values()) {
       remote.update(delta);
     }
 
-    // 7. Envoi réseau cadencé à 15 Hz
+    // 8. Broadcast network packet at 15 Hz
     const now = performance.now();
     if (now - this.lastNetworkTick >= NETWORK.TICK_INTERVAL_MS) {
       this.lastNetworkTick = now;
@@ -226,7 +252,7 @@ class BwedWorldApp {
   }
 }
 
-// Initialisation garantie sans bloquer sur DOMContentLoaded
+// Boot application
 function boot() {
   if (!window.bwedWorldApp) {
     window.bwedWorldApp = new BwedWorldApp();

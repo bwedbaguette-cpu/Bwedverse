@@ -158,8 +158,8 @@ export const CONFIG = {
   biomes: {
     'village-center': {
       id: 'village-center',
-      name: 'La Grand-Place du Beurre Doré',
-      kicker: 'QUARTIER CENTRAL',
+      name: 'The Golden Butter Square',
+      kicker: 'CENTRAL VILLAGE &middot; HUB',
       skyColor: 0xfff4e6,
       fogColor: 0xf5dfc6,
       fogNear: 60,
@@ -172,8 +172,8 @@ export const CONFIG = {
     },
     'cacao-forest': {
       id: 'cacao-forest',
-      name: 'Le Bois Cacao & Clairière Matcha',
-      kicker: 'QUARTIER GOURMAND & NATURE',
+      name: 'Cocoa Woods & Matcha Clearing',
+      kicker: 'COCOA DISTRICT &middot; NATURE',
       skyColor: 0x1d2e24,
       fogColor: 0x18241c,
       fogNear: 50,

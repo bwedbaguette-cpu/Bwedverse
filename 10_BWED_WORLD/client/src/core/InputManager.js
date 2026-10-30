@@ -31,8 +31,21 @@ export class InputManager {
     this.groundMesh = mesh;
   }
 
+  resetKeys() {
+    this.keys.up = false;
+    this.keys.down = false;
+    this.keys.left = false;
+    this.keys.right = false;
+    this.keys.shift = false;
+  }
+
   initKeyboard() {
     window.addEventListener('keydown', (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
+        return;
+      }
+
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
         e.preventDefault();
       }
@@ -73,6 +86,12 @@ export class InputManager {
     });
 
     window.addEventListener('keyup', (e) => {
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
+        this.resetKeys();
+        return;
+      }
+
       switch (e.key) {
         case 'ArrowUp':
         case 'z':

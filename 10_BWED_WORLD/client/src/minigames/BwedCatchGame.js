@@ -247,7 +247,7 @@ export class BwedCatchGame {
       this.score = Math.max(0, this.score + it.pts);
       this.combo = 0;
       this.emitParticles(it.x, it.y, '#3d1c0e', 14);
-      this.addPopup(it.x, it.y, `${it.pts} (Brûlé)`, '#ff5544');
+      this.addPopup(it.x, it.y, `${it.pts} (Burnt)`, '#ff5544');
     } else {
       this.combo++;
       if (this.combo > this.maxCombo) this.maxCombo = this.combo;
@@ -395,27 +395,27 @@ export class BwedCatchGame {
       ctx.restore();
     });
 
-    // Bandeau supérieur HUD du jeu
+    // Top game HUD bar
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 20px Fredoka, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`Score : ${this.score}`, 18, 32);
+    ctx.fillText(`Score: ${this.score}`, 18, 32);
 
-    // Chronomètre
+    // Timer
     ctx.textAlign = 'center';
     const s = Math.ceil(this.timeLeft);
     ctx.fillStyle = s <= 10 ? '#ff5544' : '#ffd15a';
-    ctx.fillText(`Temps : ${s}s`, this.width / 2, 32);
+    ctx.fillText(`Time: ${s}s`, this.width / 2, 32);
 
     // Combo
     ctx.textAlign = 'right';
     if (this.combo > 1) {
       ctx.fillStyle = '#22c55e';
-      ctx.fillText(`Combo : x${this.combo}`, this.width - 18, 32);
+      ctx.fillText(`Combo: x${this.combo}`, this.width - 18, 32);
     } else {
       ctx.fillStyle = '#d4bfab';
       ctx.font = '14px DM Mono, monospace';
-      ctx.fillText(`Max combo : ${this.maxCombo}`, this.width - 18, 32);
+      ctx.fillText(`Max combo: ${this.maxCombo}`, this.width - 18, 32);
     }
   }
 

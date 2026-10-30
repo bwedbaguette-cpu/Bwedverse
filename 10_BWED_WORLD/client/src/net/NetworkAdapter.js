@@ -19,6 +19,7 @@ export class NetworkAdapter {
     this.onPlayerJoined = null;
     this.onPlayerUpdated = null;
     this.onPlayerLeft = null;
+    this.onChatMessage = null;
 
     // Timbres des joueurs distants pour détecter les déconnexions
     this.remoteHeartbeats = new Map();
@@ -68,6 +69,22 @@ export class NetworkAdapter {
     });
   }
 
+  sendChatMessage(text, targetId = null, targetName = null) {
+    const isPrivate = !!targetId;
+    const packet = {
+      type: isPrivate ? 'CHAT_PRIVATE' : 'CHAT_PUBLIC',
+      id: this.localPlayerId,
+      senderId: this.localPlayerId,
+      senderName: this.playerName,
+      targetId: targetId || null,
+      targetName: targetName || null,
+      text: text.trim(),
+      ts: Date.now()
+    };
+    this.send(packet);
+    return packet;
+  }
+
   send(data) {
     if (this.channel) {
       this.channel.postMessage(data);
@@ -114,6 +131,20 @@ export class NetworkAdapter {
           this.onPlayerLeft(data.id);
         }
         this.remoteHeartbeats.delete(data.id);
+        break;
+
+      case 'CHAT_PUBLIC':
+        if (this.onChatMessage) {
+          this.onChatMessage(data);
+        }
+        break;
+
+      case 'CHAT_PRIVATE':
+        if (data.targetId === this.localPlayerId || data.senderId === this.localPlayerId) {
+          if (this.onChatMessage) {
+            this.onChatMessage(data);
+          }
+        }
         break;
     }
   }

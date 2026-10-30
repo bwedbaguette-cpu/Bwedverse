@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>Bwed World — Village Multijoueur 3D</title>
+    <title>Bwed World — 3D Multiplayer Village Hub</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/world.css?v=2.1.0" />
-    <link rel="stylesheet" href="./css/hud.css?v=2.1.0" />
+    <link rel="stylesheet" href="./css/world.css?v=2.2.0" />
+    <link rel="stylesheet" href="./css/hud.css?v=2.2.0" />
     <script type="importmap">
       {
         "imports": {
@@ -22,214 +22,249 @@
     </script>
   </head>
   <body>
-    <!-- Écran de chargement ultra-rapide -->
+    <!-- Fast splash loader -->
     <div class="world-loader" id="worldLoader">
       <div class="loader-spinner"></div>
       <div class="loader-title">BWED WORLD</div>
-      <div class="loader-sub">Arrivée sur la Place du Beurre Doré...</div>
+      <div class="loader-sub">Arriving at Golden Butter Square...</div>
     </div>
 
     <!-- 3D Canvas Viewport -->
     <div id="canvasContainer"></div>
 
-    <!-- Interface 2D (HUD) -->
+    <!-- 3D Overhead Speech Bubbles Layer -->
+    <div class="chat-bubbles-layer" id="chatBubblesLayer"></div>
+
+    <!-- 2D HUD Layer -->
     <div class="hud-layer">
-      <!-- Barre Supérieure -->
+      <!-- Top Bar -->
       <header class="hud-top-bar">
         <div class="district-badge">
-          <span class="district-kicker" id="districtKicker">VILLAGE CENTRAL &middot; HUB</span>
-          <h1 class="district-name" id="districtName">La Grand-Place du Beurre Doré</h1>
+          <span class="district-kicker" id="districtKicker">CENTRAL VILLAGE &middot; HUB</span>
+          <h1 class="district-name" id="districtName">The Golden Butter Square</h1>
         </div>
 
         <div class="hud-right-actions">
-          <button class="hud-pill player-count-pill" id="playerCountPill" type="button" title="Joueurs connectés en temps réel">
+          <button class="hud-pill player-count-pill" id="playerCountPill" type="button" title="Live connected players">
             <span class="live-indicator"></span>
-            <span id="playerCountBadge">1 joueur dans le village</span>
+            <span id="playerCountBadge">1 player in village</span>
           </button>
 
-          <button class="hud-pill wardrobe-pill" id="changeAvatarBtn" type="button" title="Changer d'avatar (18 pions)">
-            <span>Avatar :</span>
-            <strong id="currentAvatarName">Chef Émile</strong>
+          <button class="hud-pill wardrobe-pill" id="changeAvatarBtn" type="button" title="Select Avatar (18 pawns)">
+            <span>Avatar:</span>
+            <strong id="currentAvatarName">Chef Emile</strong>
           </button>
 
-          <button class="hud-pill" id="openWorldMapBtn" type="button" title="Carte du Monde & Téléportation">
-            <span>Carte &amp; TP</span>
+          <button class="hud-pill" id="openWorldMapBtn" type="button" title="World Map & Fast Travel">
+            <span>Map &amp; TP</span>
           </button>
 
-          <button class="hud-pill" id="openSettingsBtn" type="button" title="Paramètres et Options">
-            <span>Paramètres</span>
+          <button class="hud-pill" id="openSettingsBtn" type="button" title="Settings & Options">
+            <span>Settings</span>
           </button>
 
-          <a class="hud-pill back-link" href="../../index.html" title="Retourner au Hub Bwedverse">&larr; Hub Bwedverse</a>
+          <a class="hud-pill back-link" href="../../index.html" title="Return to Bwedverse Hub">&larr; Bwedverse Hub</a>
         </div>
       </header>
 
-      <!-- Mini-Map & Boussole Radiale Interactive -->
-      <div class="hud-minimap-wrap" id="miniMapWrap" title="Cliquer pour ouvrir la Carte du Monde et voyager rapidement">
+      <!-- Mini-Map & Compass Radar -->
+      <div class="hud-minimap-wrap" id="miniMapWrap" title="Click to open World Map & Fast Travel">
         <canvas id="miniMapCanvas" width="140" height="140"></canvas>
-        <div class="minimap-hint">CARTE &middot; TP</div>
+        <div class="minimap-hint">MAP &middot; TP</div>
       </div>
 
-      <!-- Bulle d'Interaction avec le Décor -->
+      <!-- Docked Interaction Prompt -->
       <div class="interaction-prompt" id="interactionPrompt" hidden>
-        <span class="interact-key">ESPACE</span>
-        <span class="interact-text" id="interactText">Interagir</span>
+        <span class="interact-key">SPACE</span>
+        <span class="interact-text" id="interactText">Interact</span>
       </div>
 
-      <!-- Contrôles de Zoom Panoramique -->
+      <!-- In-Game Chat Widget (Bottom-Left) -->
+      <div class="chat-container" id="chatContainer">
+        <div class="chat-drawer" id="chatDrawer">
+          <div class="chat-tabs">
+            <button class="chat-tab-btn active" id="chatTabGlobal" type="button">Global</button>
+            <button class="chat-tab-btn" id="chatTabPrivate" type="button">Direct (DM)</button>
+          </div>
+
+          <div class="chat-recipient-wrap" id="chatRecipientSelectWrap" hidden>
+            <span>To:</span>
+            <select class="chat-recipient-select" id="chatRecipientSelect"></select>
+          </div>
+
+          <div class="chat-messages-list" id="chatMessagesList">
+            <div class="chat-row system">
+              <span class="chat-system-tag">SYSTEM:</span>
+              <span class="chat-body">Welcome to Bwed World! Press Enter to chat, /w [name] to whisper.</span>
+            </div>
+          </div>
+
+          <div class="chat-input-bar">
+            <input class="chat-input-field" id="chatInput" type="text" maxlength="120" placeholder="Type a message... (Press Enter to send)" autocomplete="off" />
+            <button class="chat-send-btn" id="chatSendBtn" type="button">Send</button>
+          </div>
+        </div>
+
+        <button class="chat-toggle-btn" id="chatToggleBtn" type="button" title="Open Chat (or press Enter)">
+          <span>Chat [Enter]</span>
+          <span class="chat-unread-badge" id="chatUnreadBadge" hidden>0</span>
+        </button>
+      </div>
+
+      <!-- Panoramic Zoom Controls -->
       <div class="hud-zoom-controls">
-        <button class="zoom-btn" id="zoomInBtn" type="button" title="Zoom avant (plus près)">+</button>
-        <button class="zoom-btn" id="zoomOutBtn" type="button" title="Zoom arrière (vue panoramique)">&minus;</button>
+        <button class="zoom-btn" id="zoomInBtn" type="button" title="Zoom In">+</button>
+        <button class="zoom-btn" id="zoomOutBtn" type="button" title="Zoom Out">&minus;</button>
       </div>
 
-      <!-- Barre Inférieure : Guide des Contrôles -->
+      <!-- Bottom Controls Guide -->
       <footer class="hud-bottom-bar">
         <div class="controls-hint-pill">
-          <span>Déplacement :</span>
+          <span>Move:</span>
           <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd>
           <span>/</span>
-          <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd>
-          <span>&middot; Course : <kbd>Shift</kbd> &middot; Mobile : Joystick &middot; Zoom : +/- &middot; Menu : <kbd>Échap</kbd></span>
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+          <span>&middot; Run: <kbd>Shift</kbd> &middot; Chat: <kbd>Enter</kbd> &middot; Menu: <kbd>Esc</kbd></span>
         </div>
       </footer>
     </div>
 
-    <!-- Modale de Changement de Pseudo -->
+    <!-- Nickname Modal -->
     <div class="modal-overlay" id="nameModal" hidden>
       <div class="modal-card">
-        <h2 class="modal-title">Choisir votre Pseudo de Pâtissier</h2>
-        <input class="modal-input" id="playerNameInput" type="text" maxlength="18" placeholder="Votre pseudo..." />
+        <h2 class="modal-title">Choose Your Baker Nickname</h2>
+        <input class="modal-input" id="playerNameInput" type="text" maxlength="18" placeholder="Enter nickname..." />
         <div class="modal-buttons">
-          <button class="modal-btn" id="cancelNameBtn" type="button">Annuler</button>
-          <button class="modal-btn primary" id="saveNameBtn" type="button">Valider</button>
+          <button class="modal-btn" id="cancelNameBtn" type="button">Cancel</button>
+          <button class="modal-btn primary" id="saveNameBtn" type="button">Save</button>
         </div>
       </div>
     </div>
 
-    <!-- Modale Garde-Robe (Sélection parmi les 18 Pions) -->
+    <!-- Wardrobe Modal (18 Pawns) -->
     <div class="modal-overlay" id="wardrobeModal" hidden>
       <div class="modal-card wardrobe-card">
         <div class="modal-header">
-          <h2 class="modal-title">Garde-Robe des Pâtissiers (18 Pions)</h2>
-          <button class="modal-close-btn" id="closeWardrobeBtn" type="button" title="Fermer">&times;</button>
+          <h2 class="modal-title">Baker Wardrobe (18 Pawns)</h2>
+          <button class="modal-close-btn" id="closeWardrobeBtn" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Sélectionnez votre pion 3D pour explorer le Bwedverse :</p>
+        <p class="modal-subtitle">Select your 3D pawn to explore Bwed World:</p>
         <div class="wardrobe-grid" id="wardrobeGrid"></div>
       </div>
     </div>
 
-    <!-- Modale Carte du Monde & Téléportation (Fast Travel) -->
+    <!-- World Map & Fast Travel Modal -->
     <div class="modal-overlay" id="worldMapModal" hidden>
       <div class="modal-card world-map-card">
         <div class="modal-header">
           <div>
-            <span class="overlay-kicker">NAVIGATION &middot; VOYAGE RAPIDE</span>
-            <h2 class="modal-title">Carte du Bwedverse &amp; Téléportation</h2>
+            <span class="overlay-kicker">NAVIGATION &middot; FAST TRAVEL</span>
+            <h2 class="modal-title">Bwedverse World Map &amp; Teleport</h2>
           </div>
-          <button class="modal-close-btn" data-close-modal="worldMapModal" type="button" title="Fermer">&times;</button>
+          <button class="modal-close-btn" data-close-modal="worldMapModal" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Cliquez sur un lieu remarquable pour vous y téléporter instantanément :</p>
+        <p class="modal-subtitle">Click on any landmark to instantly fast-travel there:</p>
         <div class="teleport-grid">
           <!-- Zone 1 -->
           <div class="teleport-card" data-tp-x="0" data-tp-z="4">
-            <span class="teleport-zone-tag">Quartier Central</span>
-            <h4 class="teleport-title">La Fontaine au Beurre Fondant</h4>
-            <span class="teleport-coords">Coordonnées : X: 0 &middot; Z: 0</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+            <span class="teleport-zone-tag">Central District</span>
+            <h4 class="teleport-title">Golden Butter Fountain</h4>
+            <span class="teleport-coords">Coords: X: 0 &middot; Z: 0</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
-          <div class="teleport-card" data-tp-x="-22" data-tp-z="-2">
-            <span class="teleport-zone-tag">Quartier Central</span>
-            <h4 class="teleport-title">La Fournée Dorée (Boulangerie)</h4>
-            <span class="teleport-coords">Coordonnées : X: -27 &middot; Z: -2</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+          <div class="teleport-card" data-tp-x="-22" data-tp-z="-2.4">
+            <span class="teleport-zone-tag">Central District</span>
+            <h4 class="teleport-title">Golden Crust Bakery</h4>
+            <span class="teleport-coords">Coords: X: -27 &middot; Z: -2</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <div class="teleport-card" data-tp-x="22" data-tp-z="-2">
-            <span class="teleport-zone-tag">Quartier Central</span>
-            <h4 class="teleport-title">Le Café « Le Toast Joyeux »</h4>
-            <span class="teleport-coords">Coordonnées : X: 27 &middot; Z: -2</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+            <span class="teleport-zone-tag">Central District</span>
+            <h4 class="teleport-title">The Happy Toast Cafe</h4>
+            <span class="teleport-coords">Coords: X: 27 &middot; Z: -2</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <div class="teleport-card" data-tp-x="20" data-tp-z="-20">
-            <span class="teleport-zone-tag">Quartier Central</span>
-            <h4 class="teleport-title">Le Moulin du Levain</h4>
-            <span class="teleport-coords">Coordonnées : X: 24 &middot; Z: -24</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+            <span class="teleport-zone-tag">Central District</span>
+            <h4 class="teleport-title">The Sourdough Windmill</h4>
+            <span class="teleport-coords">Coords: X: 24 &middot; Z: -24</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <!-- Transition -->
           <div class="teleport-card highlight" data-tp-x="0" data-tp-z="41">
-            <span class="teleport-zone-tag">Passage du Canal</span>
-            <h4 class="teleport-title">Le Pont du Beurre d'Amande</h4>
-            <span class="teleport-coords">Coordonnées : X: 0 &middot; Z: 41</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+            <span class="teleport-zone-tag">Canal Crossing</span>
+            <h4 class="teleport-title">Almond Butter Bridge</h4>
+            <span class="teleport-coords">Coords: X: 0 &middot; Z: 41</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <!-- Zone 2 -->
           <div class="teleport-card" data-tp-x="-14" data-tp-z="84">
-            <span class="teleport-zone-tag">Quartier Cacao</span>
-            <h4 class="teleport-title">La Gare du Train Chocolat</h4>
-            <span class="teleport-coords">Coordonnées : X: -18 &middot; Z: 84</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+            <span class="teleport-zone-tag">Cocoa District</span>
+            <h4 class="teleport-title">Chocolate Train Station</h4>
+            <span class="teleport-coords">Coords: X: -18 &middot; Z: 84</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <div class="teleport-card" data-tp-x="14" data-tp-z="92">
-            <span class="teleport-zone-tag">Quartier Cacao</span>
-            <h4 class="teleport-title">La Clairière des Chamallows</h4>
-            <span class="teleport-coords">Coordonnées : X: 18 &middot; Z: 92</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+            <span class="teleport-zone-tag">Cocoa District</span>
+            <h4 class="teleport-title">Marshmallow Campfire</h4>
+            <span class="teleport-coords">Coords: X: 18 &middot; Z: 92</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <div class="teleport-card highlight" data-tp-x="0" data-tp-z="112">
-            <span class="teleport-zone-tag">Quartier Cacao</span>
-            <h4 class="teleport-title">L'Arche du Portail Mini-Jeux</h4>
-            <span class="teleport-coords">Coordonnées : X: 0 &middot; Z: 118</span>
-            <button class="modal-btn primary tiny" type="button">Se téléporter &rarr;</button>
+            <span class="teleport-zone-tag">Cocoa District</span>
+            <h4 class="teleport-title">Mini-Game Arcade Portal</h4>
+            <span class="teleport-coords">Coords: X: 0 &middot; Z: 118</span>
+            <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modale Paramètres & Options -->
+    <!-- Settings Modal -->
     <div class="modal-overlay" id="settingsModal" hidden>
       <div class="modal-card settings-card">
         <div class="modal-header">
           <div>
-            <span class="overlay-kicker">CONFIGURATION &middot; OPTIONS</span>
-            <h2 class="modal-title">Paramètres du Monde 3D</h2>
+            <span class="overlay-kicker">CONFIGURATION &middot; SETTINGS</span>
+            <h2 class="modal-title">3D World Settings</h2>
           </div>
-          <button class="modal-close-btn" data-close-modal="settingsModal" type="button" title="Fermer">&times;</button>
+          <button class="modal-close-btn" data-close-modal="settingsModal" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Ajustez vos préférences graphiques, votre caméra et vos commandes :</p>
+        <p class="modal-subtitle">Adjust your graphics, camera and gameplay preferences:</p>
 
         <div class="settings-sections">
-          <!-- Section 1 : Graphismes -->
+          <!-- Graphics Group -->
           <div class="settings-group">
-            <h3 class="settings-group-title">Rendu &amp; Graphismes</h3>
+            <h3 class="settings-group-title">Graphics &amp; Rendering</h3>
             
             <div class="settings-row">
               <div class="settings-label">
-                <strong>Ombres dynamiques</strong>
-                <span>Désactiver pour un gain de fluidité sur petit appareil</span>
+                <strong>Dynamic Shadows</strong>
+                <span>Disable for increased performance on lower-end devices</span>
               </div>
               <div class="settings-control">
                 <select class="settings-select" id="shadowsSettingSelect">
-                  <option value="true" selected>Activées (Doux)</option>
-                  <option value="false">Désactivées (Rapide)</option>
+                  <option value="true" selected>Enabled (Soft)</option>
+                  <option value="false">Disabled (Fast)</option>
                 </select>
               </div>
             </div>
 
             <div class="settings-row">
               <div class="settings-label">
-                <strong>Qualité de Résolution</strong>
-                <span>Rendu haute densité Retina ou économique</span>
+                <strong>Display Resolution</strong>
+                <span>Retina 2x high resolution or battery-saving 1x</span>
               </div>
               <div class="settings-control">
                 <select class="settings-select" id="resolutionSettingSelect">
-                  <option value="high" selected>Élevée (Retina 2x)</option>
+                  <option value="high" selected>High (Retina 2x)</option>
                   <option value="standard">Standard (1x)</option>
                 </select>
               </div>
@@ -237,8 +272,8 @@
 
             <div class="settings-row">
               <div class="settings-label">
-                <strong>Distance de Caméra Panoramique</strong>
-                <span id="camDistanceDisplay">Distance : 46 mètres</span>
+                <strong>Panoramic Camera Distance</strong>
+                <span id="camDistanceDisplay">Distance: 46 meters</span>
               </div>
               <div class="settings-control">
                 <input class="settings-slider" id="camDistanceSlider" type="range" min="18" max="85" value="46" step="1" />
@@ -246,26 +281,26 @@
             </div>
           </div>
 
-          <!-- Section 2 : Identité & Session -->
+          <!-- Identity & Session Group -->
           <div class="settings-group">
-            <h3 class="settings-group-title">Session &amp; Multijoueur</h3>
+            <h3 class="settings-group-title">Session &amp; Multiplayer</h3>
             <div class="settings-row">
               <div class="settings-label">
-                <strong>Pseudo en jeu</strong>
-                <span id="settingsCurrentPseudo">Chef Émile</span>
+                <strong>In-Game Nickname</strong>
+                <span id="settingsCurrentPseudo">Chef Emile</span>
               </div>
               <div class="settings-control">
-                <button class="modal-btn tiny" id="settingsChangePseudoBtn" type="button">Modifier</button>
+                <button class="modal-btn tiny" id="settingsChangePseudoBtn" type="button">Change</button>
               </div>
             </div>
 
             <div class="settings-row">
               <div class="settings-label">
-                <strong>Réapparition au centre</strong>
-                <span>Vous replace sur la place en cas de blocage</span>
+                <strong>Respawn at Center</strong>
+                <span>Relocates character to Golden Butter Square</span>
               </div>
               <div class="settings-control">
-                <button class="modal-btn tiny primary" id="settingsRespawnBtn" type="button">Réapparaître</button>
+                <button class="modal-btn tiny primary" id="settingsRespawnBtn" type="button">Respawn</button>
               </div>
             </div>
           </div>
@@ -273,251 +308,251 @@
       </div>
     </div>
 
-    <!-- Overlay Bâtiment 1 : La Boulangerie du Beurre Doré -->
+    <!-- Building Overlay 1: Bakery -->
     <div class="modal-overlay" id="bakeryModal" hidden>
       <div class="modal-card section-overlay-card">
         <div class="modal-header">
           <div>
-            <span class="overlay-kicker">COMMERCE &middot; BOUTIQUE DU VILLAGE</span>
-            <h2 class="modal-title">La Fournée Dorée</h2>
+            <span class="overlay-kicker">SHOP &middot; VILLAGE BAKERY</span>
+            <h2 class="modal-title">Golden Crust Bakery</h2>
           </div>
-          <button class="modal-close-btn" data-close-modal="bakeryModal" type="button" title="Fermer">&times;</button>
+          <button class="modal-close-btn" data-close-modal="bakeryModal" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Sélection des meilleures pâtisseries artisanales cuites au feu de bois :</p>
+        <p class="modal-subtitle">Artisanal wood-fired pastries baked fresh daily by the chefs:</p>
         <div class="products-grid">
           <div class="product-item">
             <div class="product-badge">Best-Seller</div>
-            <div class="product-name">Brioche au Beurre Doré</div>
-            <div class="product-desc">Moelleuse, dorée au jaune d'oeuf fermier et parsemée de perles de sucre.</div>
+            <div class="product-name">Golden Butter Brioche</div>
+            <div class="product-desc">Fluffy brioche brushed with organic egg yolk and pearl sugar.</div>
             <div class="product-footer">
               <span class="product-price">50 BWED</span>
-              <button class="modal-btn primary tiny" type="button">Commander</button>
+              <button class="modal-btn primary tiny" type="button">Order</button>
             </div>
           </div>
           <div class="product-item">
-            <div class="product-badge">Spécialité</div>
-            <div class="product-name">Pain Perdu au Miel Sauvage</div>
-            <div class="product-desc">Caramélisé à la poêle avec cannelle de Ceylan et miel de forêt.</div>
+            <div class="product-badge">Specialty</div>
+            <div class="product-name">Wild Honey French Toast</div>
+            <div class="product-desc">Caramelized on cast iron with Ceylon cinnamon and forest honey.</div>
             <div class="product-footer">
               <span class="product-price">75 BWED</span>
-              <button class="modal-btn primary tiny" type="button">Commander</button>
+              <button class="modal-btn primary tiny" type="button">Order</button>
             </div>
           </div>
           <div class="product-item">
             <div class="product-badge">Signature</div>
-            <div class="product-name">Tartelette Matcha & Pistache</div>
-            <div class="product-desc">Pâte sablée croquante, ganache onctueuse au thé vert et éclats de pistache.</div>
+            <div class="product-name">Matcha &amp; Pistachio Tart</div>
+            <div class="product-desc">Crisp shortbread crust with smooth green tea ganache and pistachio crumb.</div>
             <div class="product-footer">
               <span class="product-price">90 BWED</span>
-              <button class="modal-btn primary tiny" type="button">Commander</button>
+              <button class="modal-btn primary tiny" type="button">Order</button>
             </div>
           </div>
           <div class="product-item">
             <div class="product-badge">Tradition</div>
-            <div class="product-name">Baguette Tradition Levain</div>
-            <div class="product-desc">Fermentation lente de 24h, mie alvéolée et croûte croustillante dorée.</div>
+            <div class="product-name">Sourdough Heritage Baguette</div>
+            <div class="product-desc">24h slow cold fermentation with crisp blistered golden crust.</div>
             <div class="product-footer">
               <span class="product-price">40 BWED</span>
-              <button class="modal-btn primary tiny" type="button">Commander</button>
+              <button class="modal-btn primary tiny" type="button">Order</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Overlay Bâtiment 2 : Le Café « Le Toast Joyeux » (Salon Communautaire) -->
+    <!-- Building Overlay 2: Cafe -->
     <div class="modal-overlay" id="cafeModal" hidden>
       <div class="modal-card section-overlay-card">
         <div class="modal-header">
           <div>
-            <span class="overlay-kicker">COMMUNAUTÉ &middot; SALON DE RENCONTRE</span>
-            <h2 class="modal-title">Le Toast Joyeux &middot; Café Communautaire</h2>
+            <span class="overlay-kicker">COMMUNITY &middot; SOCIAL LOUNGE</span>
+            <h2 class="modal-title">The Happy Toast &middot; Community Cafe</h2>
           </div>
-          <button class="modal-close-btn" data-close-modal="cafeModal" type="button" title="Fermer">&times;</button>
+          <button class="modal-close-btn" data-close-modal="cafeModal" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Rejoignez la communauté des bâtisseurs et créateurs du Bwedverse :</p>
+        <p class="modal-subtitle">Meet with fellow explorers and creators across the Bwedverse:</p>
         <div class="community-grid">
           <div class="community-card">
-            <h3 class="community-title">Serveur Discord Officiel</h3>
-            <p class="community-desc">Discutez en direct avec l'équipe de développement, proposez des idées de mini-jeux et partagez vos retours.</p>
-            <a class="modal-btn primary" href="https://discord.gg" target="_blank" rel="noopener">Rejoindre Discord &rarr;</a>
+            <h3 class="community-title">Official Discord Server</h3>
+            <p class="community-desc">Chat directly with the core dev team, propose mini-game concepts and share feedback.</p>
+            <a class="modal-btn primary" href="https://discord.gg" target="_blank" rel="noopener">Join Discord &rarr;</a>
           </div>
           <div class="community-card">
-            <h3 class="community-title">Compte X / Twitter @Bwed</h3>
-            <p class="community-desc">Suivez les annonces exclusives, concours de gâteaux et révélations des futurs biomes en avant-première.</p>
-            <a class="modal-btn" href="https://x.com" target="_blank" rel="noopener">Suivre sur X &rarr;</a>
+            <h3 class="community-title">X / Twitter @Bwed</h3>
+            <p class="community-desc">Follow announcements, pastry giveaways and sneak peeks of upcoming 3D biomes.</p>
+            <a class="modal-btn" href="https://x.com" target="_blank" rel="noopener">Follow on X &rarr;</a>
           </div>
           <div class="community-card">
-            <h3 class="community-title">Événements de la Semaine</h3>
-            <p class="community-desc">Participez aux tournois du samedi soir sur les mini-jeux avec récompenses de rôles exclusifs pour votre pion.</p>
-            <span class="community-tag">Samedi 20h00 CET</span>
+            <h3 class="community-title">Weekly Community Events</h3>
+            <p class="community-desc">Join Saturday night mini-game tournaments with exclusive pawn roles and titles.</p>
+            <span class="community-tag">Every Saturday 8 PM CET</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Overlay Bâtiment 3 : Le Moulin du Levain (Histoire & Roadmap) -->
+    <!-- Building Overlay 3: Windmill -->
     <div class="modal-overlay" id="millModal" hidden>
       <div class="modal-card section-overlay-card">
         <div class="modal-header">
           <div>
-            <span class="overlay-kicker">LORE &middot; FEUILLE DE ROUTE</span>
-            <h2 class="modal-title">Le Moulin du Levain &middot; Vision Bwed</h2>
+            <span class="overlay-kicker">LORE &middot; ROADMAP</span>
+            <h2 class="modal-title">The Sourdough Windmill &middot; Vision</h2>
           </div>
-          <button class="modal-close-btn" data-close-modal="millModal" type="button" title="Fermer">&times;</button>
+          <button class="modal-close-btn" data-close-modal="millModal" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Genèse du monde 3D, feuille de route progressive et philosophie cosy :</p>
+        <p class="modal-subtitle">Origins of Bwed World, progressive roadmap and cozy game philosophy:</p>
         <div class="roadmap-list">
           <div class="roadmap-step done">
             <div class="roadmap-bullet">&check;</div>
             <div class="roadmap-content">
-              <strong>Jalon 1 &middot; Fondations 3D & Multijoueur</strong>
-              <span>Moteur Three.js temps réel, déplacement physique Rapier/sol, premier pion GLB, caméra isométrique et synchronisation 2 onglets.</span>
+              <strong>Milestone 1 &middot; 3D Engine &amp; Dual Sync</strong>
+              <span>Real-time Three.js engine, physics movement, first pawn, isometric camera and 2-tab multiplayer sync.</span>
             </div>
           </div>
           <div class="roadmap-step done">
             <div class="roadmap-bullet">&check;</div>
             <div class="roadmap-content">
-              <strong>Jalon 2 &middot; Deux Biomes & Garde-Robe 18 Pions</strong>
-              <span>Grand-Place du Beurre Doré reliée au Quartier Cacao par le Pont d'Amande, fondu d'atmosphère ciel/brouillard et 18 pions jouables.</span>
+              <strong>Milestone 2 &middot; Two Biomes &amp; 18-Pawn Wardrobe</strong>
+              <span>Golden Butter Square connected to Cocoa Woods by Almond Bridge, progressive atmospheric fading and 18 pawns.</span>
             </div>
           </div>
           <div class="roadmap-step done">
             <div class="roadmap-bullet">&check;</div>
             <div class="roadmap-content">
-              <strong>Jalon 3 &middot; Portail Mini-Jeux & Overlays de Bâtiments</strong>
-              <span>Portail de la clairière ouvrant une salle d'arcade dédiée, mini-jeu Bwed Catch en lazy-load et fenêtres interactives sur chaque boutique.</span>
+              <strong>Milestone 3 &middot; Mini-Games &amp; Building Overlays</strong>
+              <span>Forest portal opening dedicated arcade room, lazy-loaded Bwed Catch game and interactive shop modals.</span>
             </div>
           </div>
           <div class="roadmap-step current">
             <div class="roadmap-bullet">&rarr;</div>
             <div class="roadmap-content">
-              <strong>Jalon 4 &middot; Mini-Map Boussole, Téléportation & Paramètres</strong>
-              <span>Radar interactif avec boussole tournante, carte de voyage rapide, menu de réglages complet et outils d'administration.</span>
+              <strong>Milestone 4 &middot; Compass Mini-Map, Chat &amp; Teleport</strong>
+              <span>Rotating compass radar, in-game chat with overhead speech bubbles, private whispers and fast travel.</span>
             </div>
           </div>
           <div class="roadmap-step future">
             <div class="roadmap-bullet">&bull;</div>
             <div class="roadmap-content">
-              <strong>Jalon 5 &middot; Vie du Monde : Cycle Jour/Nuit & PNJ vivants</strong>
-              <span>Horloge synchronisée, personnages non-joueurs avec dialogues cosy et système d'emotes.</span>
+              <strong>Milestone 5 &middot; Living World: Day/Night &amp; Cozy NPCs</strong>
+              <span>Server-synchronized clock, interactive village NPCs with dialogue trees and cute emote reactions.</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Overlay Bâtiment 4 : La Gare du Train Chocolat -->
+    <!-- Building Overlay 4: Train Station -->
     <div class="modal-overlay" id="trainModal" hidden>
       <div class="modal-card section-overlay-card">
         <div class="modal-header">
           <div>
-            <span class="overlay-kicker">TRANSPORT &middot; LIGNES FERROVIAIRES</span>
-            <h2 class="modal-title">La Gare du Train Chocolat</h2>
+            <span class="overlay-kicker">TRANSIT &middot; RAILWAY NETWORK</span>
+            <h2 class="modal-title">Chocolate Train Station</h2>
           </div>
-          <button class="modal-close-btn" data-close-modal="trainModal" type="button" title="Fermer">&times;</button>
+          <button class="modal-close-btn" data-close-modal="trainModal" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Consultez les liaisons du réseau ferré pour voyager entre les quartiers :</p>
+        <p class="modal-subtitle">Check railway connections across the Bwedverse:</p>
         <div class="train-lines-list">
           <div class="train-line-item active">
-            <span class="line-badge line-1">Ligne 1</span>
+            <span class="line-badge line-1">Line 1</span>
             <div class="line-info">
-              <strong>Grand-Place &harr; Bois de Matcha</strong>
-              <span>Service régulier toutes les 5 minutes &middot; Actif</span>
+              <strong>Golden Butter Square &harr; Cocoa Woods</strong>
+              <span>Regular service every 5 minutes &middot; Active</span>
             </div>
-            <span class="line-status open">Ouvert</span>
+            <span class="line-status open">Open</span>
           </div>
           <div class="train-line-item upcoming">
-            <span class="line-badge line-2">Ligne 2</span>
+            <span class="line-badge line-2">Line 2</span>
             <div class="line-info">
-              <strong>Bois de Matcha &harr; Montagne de Sucre Glacé</strong>
-              <span>Prolongement vers le biome alpin &middot; En travaux</span>
+              <strong>Cocoa Woods &harr; Sugar Frost Mountain</strong>
+              <span>Extension to alpine snowy biome &middot; Under construction</span>
             </div>
-            <span class="line-status wait">Bientôt</span>
+            <span class="line-status wait">Soon</span>
           </div>
           <div class="train-line-item upcoming">
-            <span class="line-badge line-3">Ligne 3</span>
+            <span class="line-badge line-3">Line 3</span>
             <div class="line-info">
-              <strong>Grand-Place &harr; Plage Caramel & Port Croissant</strong>
-              <span>Ligne balnéaire vers le biome côtier &middot; En projet</span>
+              <strong>Golden Butter Square &harr; Caramel Coastline</strong>
+              <span>Seaside line to the croissant marina &middot; Planned</span>
             </div>
-            <span class="line-status wait">Bientôt</span>
+            <span class="line-status wait">Soon</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modale Portail des Mini-Jeux -->
+    <!-- Mini-Game Arcade Portal Modal -->
     <div class="modal-overlay" id="minigameModal" hidden>
       <div class="modal-card minigame-portal-card">
         <div class="modal-header">
           <div>
-            <span class="overlay-kicker">PORTAIL D'ARCADE &middot; SALLE MULTIJOUEUR DÉDIÉE</span>
-            <h2 class="modal-title">Portail des Mini-Jeux du Bwedverse</h2>
+            <span class="overlay-kicker">ARCADE PORTAL &middot; DEDICATED ROOM</span>
+            <h2 class="modal-title">Bwedverse Mini-Game Portal</h2>
           </div>
-          <button class="modal-close-btn" id="closeMinigameModalBtn" type="button" title="Quitter et retourner au village">&times;</button>
+          <button class="modal-close-btn" id="closeMinigameModalBtn" type="button" title="Exit and return to village">&times;</button>
         </div>
 
-        <!-- Vue 1 : Choix du Mini-Jeu -->
+        <!-- View 1: Lobby Selection -->
         <div id="minigameLobbyView">
-          <p class="modal-subtitle">Sélectionnez une attraction pour lancer une partie dans une salle dédiée :</p>
+          <p class="modal-subtitle">Select an arcade attraction to launch in a dedicated session:</p>
           <div class="minigames-selection-grid">
             <div class="minigame-choice-card active-game" id="selectBwedCatchBtn">
-              <div class="game-choice-badge">60 Secondes</div>
-              <h3 class="game-choice-title">Bwed Catch &middot; La Pluie de Brioches</h3>
-              <p class="game-choice-desc">Attrapez un maximum de brioches dorées, croissants croustillants et tartelettes tout en évitant les morceaux de levain brûlé !</p>
+              <div class="game-choice-badge">60 Seconds</div>
+              <h3 class="game-choice-title">Bwed Catch &middot; Pastry Shower</h3>
+              <p class="game-choice-desc">Catch as many golden brioches, crisp croissants and star sugar tarts as you can while dodging burnt sourdough chunks!</p>
               <div class="game-choice-stats">
-                <span>Record personnel : <strong id="bestCatchScore">0</strong> pts</span>
-                <span>Dernier score : <strong id="lastCatchScore">0</strong> pts</span>
+                <span>Personal Best: <strong id="bestCatchScore">0</strong> pts</span>
+                <span>Last Score: <strong id="lastCatchScore">0</strong> pts</span>
               </div>
-              <button class="modal-btn primary" id="launchCatchGameBtn" type="button">Lancer la Partie (60s) &rarr;</button>
+              <button class="modal-btn primary" id="launchCatchGameBtn" type="button">Start Game (60s) &rarr;</button>
             </div>
 
             <div class="minigame-choice-card">
-              <div class="game-choice-badge">Puzzle 3D</div>
-              <h3 class="game-choice-title">Bwed Tetris &middot; Tétrominos Dorés</h3>
-              <p class="game-choice-desc">Empilez les blocs de pain dorés et réalisez des lignes parfaites avec les véritables tétrominos GLB du Bwedverse.</p>
+              <div class="game-choice-badge">3D Puzzle</div>
+              <h3 class="game-choice-title">Bwed Tetris &middot; Golden Tetrominos</h3>
+              <p class="game-choice-desc">Stack golden bread blocks and clear perfect lines using authentic 3D GLB tetrominos.</p>
               <div class="game-choice-stats">
-                <span>Mode solo & multijoueur</span>
+                <span>Solo &amp; Multiplayer Lobby</span>
               </div>
-              <a class="modal-btn" href="../../09_BWED_TETRIS/index.html" target="_blank" rel="noopener">Ouvrir Bwed Tetris &rarr;</a>
+              <a class="modal-btn" href="../../09_BWED_TETRIS/index.html" target="_blank" rel="noopener">Open Bwed Tetris &rarr;</a>
             </div>
           </div>
         </div>
 
-        <!-- Vue 2 : Session de Jeu Active (Bwed Catch) -->
+        <!-- View 2: Active Game Session (Bwed Catch) -->
         <div id="minigameActiveView" hidden>
           <div class="active-game-header">
-            <span class="active-game-title">Bwed Catch &middot; La Pluie de Brioches</span>
+            <span class="active-game-title">Bwed Catch &middot; Pastry Shower</span>
             <div class="active-game-actions">
-              <button class="modal-btn tiny" id="restartGameBtn" type="button">Rejouer</button>
-              <button class="modal-btn tiny" id="exitToHubBtn" type="button">Retour au Hub</button>
+              <button class="modal-btn tiny" id="restartGameBtn" type="button">Restart</button>
+              <button class="modal-btn tiny" id="exitToHubBtn" type="button">Exit to Hub</button>
             </div>
           </div>
           <div class="canvas-wrap">
             <canvas id="catchGameCanvas" width="640" height="480"></canvas>
           </div>
           <div class="game-controls-help">
-            <span>Contrôles : Flèches Gauche/Droite ou Q/D ou Glisser à la souris / toucher</span>
+            <span>Controls: Left/Right Arrows or A/D or Drag mouse / touch</span>
           </div>
         </div>
 
-        <!-- Vue 3 : Résultat de Fin de Partie -->
+        <!-- View 3: Game Over Result -->
         <div id="minigameResultView" hidden>
           <div class="result-box">
-            <span class="result-kicker">FIN DE LA PARTIE</span>
+            <span class="result-kicker">GAME OVER</span>
             <h3 class="result-score" id="finalScoreVal">0 pts</h3>
-            <p class="result-summary" id="finalSummaryText">Belle récolte de brioches !</p>
+            <p class="result-summary" id="finalSummaryText">Great pastry harvest!</p>
             <div class="result-buttons">
-              <button class="modal-btn primary" id="replayBtn" type="button">Rejouer une Partie</button>
-              <button class="modal-btn" id="returnToVillageBtn" type="button">Retourner au Village</button>
+              <button class="modal-btn primary" id="replayBtn" type="button">Play Again</button>
+              <button class="modal-btn" id="returnToVillageBtn" type="button">Return to Village</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Moteur Principal du Monde -->
-    <script type="module" src="./src/main.js?v=2.1.0"></script>
+    <!-- Main Client Engine -->
+    <script type="module" src="./src/main.js?v=2.2.0"></script>
   </body>
 </html>

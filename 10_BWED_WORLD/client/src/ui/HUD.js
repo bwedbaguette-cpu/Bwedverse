@@ -170,7 +170,7 @@ export class HUD {
     this.playerCount = Math.max(1, count);
     if (this.dom.playerCountBadge) {
       const s = this.playerCount > 1 ? 's' : '';
-      this.dom.playerCountBadge.textContent = `${this.playerCount} joueur${s} dans le village`;
+      this.dom.playerCountBadge.textContent = `${this.playerCount} player${s} in village`;
     }
   }
 
@@ -301,7 +301,7 @@ export class HUD {
       this.dom.finalScoreVal.textContent = `${score} pts`;
     }
     if (this.dom.finalSummaryText) {
-      this.dom.finalSummaryText.textContent = `Combo maximum : x${maxCombo} ! Félicitations pour cette belle récolte de brioches.`;
+      this.dom.finalSummaryText.textContent = `Max combo: x${maxCombo}! Great pastry harvest.`;
     }
 
     if (this.dom.minigameActiveView) this.dom.minigameActiveView.hidden = true;
@@ -414,7 +414,7 @@ export class HUD {
     this.dom.camDistanceSlider?.addEventListener('input', (e) => {
       const val = parseFloat(e.target.value);
       if (this.dom.camDistanceDisplay) {
-        this.dom.camDistanceDisplay.textContent = `Distance : ${val} mètres`;
+        this.dom.camDistanceDisplay.textContent = `Distance: ${val} meters`;
       }
       if (this.onCameraDistance) {
         this.onCameraDistance(val);

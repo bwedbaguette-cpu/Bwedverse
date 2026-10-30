@@ -14,16 +14,16 @@ export class MiniMap {
     this.canvas.width = this.size;
     this.canvas.height = this.size;
 
-    // Définition des repères du monde (Landmarks)
+    // World landmarks
     this.landmarks = [
-      { id: 'fountain', name: 'Fontaine', x: 0, z: 0, color: '#ffd15a', symbol: 'F' },
-      { id: 'bakery', name: 'Boulangerie', x: -27, z: -2, color: '#e59b24', symbol: 'B' },
-      { id: 'cafe', name: 'Café', x: 27, z: -2, color: '#ffb84d', symbol: 'C' },
-      { id: 'mill', name: 'Moulin', x: 24, z: -24, color: '#d4a373', symbol: 'M' },
-      { id: 'bridge', name: 'Pont', x: 0, z: 41, color: '#a86738', symbol: 'P' },
-      { id: 'station', name: 'Gare', x: -18, z: 84, color: '#3d1c06', symbol: 'G' },
-      { id: 'campfire', name: 'Feu de camp', x: 18, z: 92, color: '#ff5533', symbol: 'C' },
-      { id: 'portal', name: 'Portail', x: 0, z: 118, color: '#22c55e', symbol: 'O' }
+      { id: 'fountain', name: 'Fountain', x: 0, z: 0, color: '#ffd15a', symbol: 'F' },
+      { id: 'bakery', name: 'Bakery', x: -27, z: -2, color: '#e59b24', symbol: 'B' },
+      { id: 'cafe', name: 'Cafe', x: 27, z: -2, color: '#ffb84d', symbol: 'C' },
+      { id: 'mill', name: 'Windmill', x: 24, z: -24, color: '#d4a373', symbol: 'M' },
+      { id: 'bridge', name: 'Bridge', x: 0, z: 41, color: '#a86738', symbol: 'P' },
+      { id: 'station', name: 'Station', x: -18, z: 84, color: '#3d1c06', symbol: 'G' },
+      { id: 'campfire', name: 'Campfire', x: 18, z: 92, color: '#ff5533', symbol: 'C' },
+      { id: 'portal', name: 'Portal', x: 0, z: 118, color: '#22c55e', symbol: 'O' }
     ];
 
     this.initEvents();
@@ -196,9 +196,9 @@ export class MiniMap {
     ctx.fillStyle = '#ffd15a';
     ctx.fillText('E', radius - 6, 0);
 
-    // Ouest
+    // West
     ctx.fillStyle = '#ffd15a';
-    ctx.fillText('O', -radius + 6, 0);
+    ctx.fillText('W', -radius + 6, 0);
 
     ctx.restore();
   }

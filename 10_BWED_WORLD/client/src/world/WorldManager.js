@@ -32,51 +32,51 @@ export class WorldManager {
     this.animatedProps = [];
     this.groundMesh = null;
 
-    // Zones interactives avec le joueur (Jalon 3)
+    // Zones interactives avec le joueur (Jalon 3 & 4)
     this.interactionZones = [
       {
         id: 'bakery',
-        title: 'La Fournée Dorée (Boulangerie)',
-        actionLabel: 'Entrer dans la Boulangerie',
-        x: -27,
-        z: -2,
-        radius: 7.5,
+        title: 'Golden Crust Bakery',
+        actionLabel: 'Enter Bakery',
+        x: -22,
+        z: -2.4,
+        radius: 3.6,
         targetOverlay: 'bakeryModal'
       },
       {
         id: 'cafe',
-        title: 'Le Café Le Toast Joyeux',
-        actionLabel: 'S installer au Salon Communautaire',
-        x: 27,
+        title: 'The Happy Toast Cafe',
+        actionLabel: 'Visit Community Cafe',
+        x: 22,
         z: -2,
-        radius: 7.5,
+        radius: 3.6,
         targetOverlay: 'cafeModal'
       },
       {
         id: 'mill',
-        title: 'Le Moulin du Levain',
-        actionLabel: 'Consulter l Histoire & Roadmap',
+        title: 'The Sourdough Windmill',
+        actionLabel: 'View Lore & Roadmap',
         x: 24,
-        z: -24,
-        radius: 7.0,
+        z: -20,
+        radius: 3.6,
         targetOverlay: 'millModal'
       },
       {
         id: 'train_station',
-        title: 'La Gare du Train Chocolat',
-        actionLabel: 'Consulter les Lignes du Train',
-        x: -18,
+        title: 'Chocolate Train Station',
+        actionLabel: 'Check Train Routes',
+        x: -14,
         z: 84,
-        radius: 8.0,
+        radius: 3.8,
         targetOverlay: 'trainModal'
       },
       {
         id: 'portal',
-        title: 'Portail des Mini-Jeux du Bwedverse',
-        actionLabel: 'Entrer dans le Portail Mini-Jeux',
+        title: 'Mini-Game Arcade Portal',
+        actionLabel: 'Enter Mini-Game Portal',
         x: 0,
         z: 118,
-        radius: 6.5,
+        radius: 3.8,
         targetOverlay: 'minigameModal'
       }
     ];
@@ -170,17 +170,17 @@ export class WorldManager {
 
     // Détection du quartier pour le badge du HUD
     let newDistrictKey = 'village-center';
-    let kicker = 'VILLAGE CENTRAL &middot; HUB';
-    let name = 'La Grand-Place du Beurre Doré';
+    let kicker = 'CENTRAL VILLAGE &middot; HUB';
+    let name = 'The Golden Butter Square';
 
     if (playerPos.z >= 31 && playerPos.z <= 51) {
       newDistrictKey = 'bridge-passage';
-      kicker = 'PASSAGE &middot; CANAL CHOCOLAT';
-      name = "Le Pont du Beurre d'Amande";
+      kicker = 'CROSSING &middot; CHOCOLATE CANAL';
+      name = 'Almond Butter Bridge';
     } else if (playerPos.z > 51) {
       newDistrictKey = 'cacao-forest';
-      kicker = 'QUARTIER GOURMAND &middot; NATURE';
-      name = 'Le Quartier Cacao & Bois de Matcha';
+      kicker = 'COCOA DISTRICT &middot; NATURE';
+      name = 'Cocoa Woods & Matcha Clearing';
     }
 
     if (newDistrictKey !== this.currentDistrictKey) {
