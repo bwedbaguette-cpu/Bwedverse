@@ -69,9 +69,9 @@
       }
     </style>
 
-    <link rel="stylesheet" href="./styles.css?v=5.4.0" />
-    <script src="./depot-data.js?v=5.4.0"></script>
-    <script src="./app.js?v=5.4.0" defer></script>
+    <link rel="stylesheet" href="./styles.css?v=5.5.0" />
+    <script src="./depot-data.js?v=5.5.0"></script>
+    <script src="./app.js?v=5.5.0" defer></script>
   </head>
   <body>
     <!-- Live Moving Mosaic Wallpaper (Pure GPU-accelerated CSS marquee with dozens of real Bwed memes & PFPs) -->
@@ -127,6 +127,7 @@
         <a class="nav-link" href="#buildings">Buildings</a>
         <a class="nav-link" href="#roster">18 Heroes</a>
         <a class="nav-link" href="#archive">Lore &amp; Memes</a>
+        <a class="nav-link" href="#vault">Butter Vault</a>
       </nav>
 
       <div class="header-controls">
@@ -593,7 +594,7 @@
         <!-- Live Depot Stats Banner -->
         <div class="depot-stats-banner reveal">
           <div class="depot-stat">
-            <span class="d-val" id="depotTotalCount">163</span>
+            <span class="d-val" id="depotTotalCount">186</span>
             <span class="d-lbl">Available Assets</span>
           </div>
           <div class="depot-stat">
@@ -613,7 +614,8 @@
         <!-- Depot Filter Tabs, Search & Sort Toolbar -->
         <div class="depot-toolbar reveal">
           <div class="depot-filter-tabs" id="depotCategoryTabs" role="tablist" aria-label="Filter media categories">
-            <button class="depot-tab active" data-cat="all" role="tab" aria-selected="true">All (163)</button>
+            <button class="depot-tab active" data-cat="all" role="tab" aria-selected="true">All (186)</button>
+            <button class="depot-tab" data-cat="stickers" role="tab" aria-selected="false">TG Stickers (23)</button>
             <button class="depot-tab" data-cat="memes" role="tab" aria-selected="false">Memes &amp; Social</button>
             <button class="depot-tab" data-cat="comics" role="tab" aria-selected="false">Comics &amp; Strips</button>
             <button class="depot-tab" data-cat="adventures" role="tab" aria-selected="false">Adventures</button>
@@ -649,6 +651,148 @@
           <button type="button" class="btn btn-secondary" id="btnLoadMoreDepot">
             <span>Load More Media</span> <b>&darr;</b>
           </button>
+        </div>
+      </section>
+
+      <!-- Section 4: Community Butter Vault (Treasury & Public Support) -->
+      <section class="hub-section bwed-vault-section reveal" id="vault">
+        <div class="section-head reveal">
+          <div class="tag-badge"><i></i> 100% ON-CHAIN &bull; SOLANA COMMUNITY TREASURY</div>
+          <h2 class="section-title">
+            The Community <em>Butter Vault</em>
+          </h2>
+          <p class="section-desc">
+            Direct on-chain community treasury to fuel future liquidity, marketing campaigns, buyback &amp; burns, and community bounties. Every contribution is verified transparently on Solana.
+          </p>
+        </div>
+
+        <div class="vault-container reveal">
+          <!-- Left: Interactive 3D Safe / Concept Showcase -->
+          <div class="vault-visual-card">
+            <div class="vault-visual-canvas-wrap">
+              <canvas id="vaultCanvas3D" class="vault-canvas" aria-label="Interactive 3D Butter Vault Safe"></canvas>
+              <div class="vault-fallback-img" id="vaultFallbackImg">
+                <img src="./assets/buildings/concepts/03-bwedbank-vault.jpg" alt="BwedBank Butter Vault" />
+              </div>
+              <div class="vault-interactive-tag">
+                <span class="live-pulse-dot" aria-hidden="true"></span>
+                <span>INTERACTIVE 3D VAULT</span>
+              </div>
+            </div>
+            <div class="vault-visual-footer">
+              <div class="vault-title-wrap">
+                <strong class="vault-asset-name">BwedBank Butter Safe</strong>
+                <span class="vault-asset-desc">Forged in pure butter &amp; biscuit pillars</span>
+              </div>
+              <span class="vault-secure-pill">Solana Secure</span>
+            </div>
+          </div>
+
+          <!-- Right: Donation Address, Stats & Transparency -->
+          <div class="vault-details-card">
+            <div class="vault-header-row">
+              <div class="vault-badge-group">
+                <span class="vault-status-badge">COMMUNITY TREASURY</span>
+                <span class="vault-chain-badge">SOLANA MAINNET</span>
+              </div>
+              <span class="vault-lock-icon" title="On-chain public treasury">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+            </div>
+
+            <!-- Address Box -->
+            <div class="vault-address-box">
+              <div class="vault-address-meta">
+                <span class="vault-address-label">Donation &amp; Treasury Address</span>
+                <span class="vault-network-hint">Send only SOL or Solana SPL tokens ($BWED)</span>
+              </div>
+              <div class="vault-input-copy-group">
+                <code class="vault-address-code" id="vaultAddressText">HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa</code>
+                <div class="vault-btn-cluster">
+                  <button type="button" class="btn-vault-copy" id="btnCopyVaultAddress" title="Copy Vault Address">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span id="copyVaultBadgeText">COPY</span>
+                  </button>
+                  <button type="button" class="btn-vault-qr" id="btnToggleVaultQR" title="Show QR Code">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>QR</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- QR Code Dropdown / Drawer (hidden by default) -->
+            <div class="vault-qr-drawer" id="vaultQrDrawer" hidden>
+              <div class="vault-qr-content">
+                <div class="vault-qr-frame">
+                  <img id="vaultQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=solana:HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa&color=ffd15a&bgcolor=1a0a04" alt="Solana Vault Donation QR Code" loading="lazy" />
+                </div>
+                <div class="vault-qr-instructions">
+                  <strong>Scan with Phantom or Solflare</strong>
+                  <p>Send any amount of SOL or $BWED to support village development &amp; community burns.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Treasury Metrics Row -->
+            <div class="vault-metrics-row">
+              <div class="vault-mini-stat">
+                <span class="v-label">Vault SOL Balance</span>
+                <strong class="v-value" id="vaultSolBalance">0.00 SOL</strong>
+                <span class="v-sub" id="vaultSolUsd">On-chain live</span>
+              </div>
+              <div class="vault-mini-stat">
+                <span class="v-label">$BWED Treasury</span>
+                <strong class="v-value" id="vaultBwedBalance">0 $BWED</strong>
+                <span class="v-sub">Community Reserve</span>
+              </div>
+              <div class="vault-mini-stat">
+                <span class="v-label">Next Target Milestone</span>
+                <strong class="v-value" style="color: var(--mint);">10M Burn</strong>
+                <span class="v-sub">Buyback &amp; Burn Event</span>
+              </div>
+            </div>
+
+            <!-- Community Purposes Grid -->
+            <div class="vault-purposes-grid">
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9879;</span>
+                <div class="p-body">
+                  <strong>Token Buyback &amp; Burn</strong>
+                  <p>Accumulated tokens get burned on-chain to decrease circulating supply forever.</p>
+                </div>
+              </div>
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9881;</span>
+                <div class="p-body">
+                  <strong>Game Server Hosting</strong>
+                  <p>Ensuring 100% free, low-latency Colyseus multiplayer rooms for all players.</p>
+                </div>
+              </div>
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9733;</span>
+                <div class="p-body">
+                  <strong>Bwed Community Bounties</strong>
+                  <p>Rewards for community artists, 3D modellers, meme creators, and shillers.</p>
+                </div>
+              </div>
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9878;</span>
+                <div class="p-body">
+                  <strong>Marketing &amp; Listings</strong>
+                  <p>Funding DexScreener trending promotions, Coingecko/CMC fast-tracks.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vault Footer Actions -->
+            <div class="vault-footer-links">
+              <a href="https://solscan.io/account/HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa" target="_blank" rel="noopener noreferrer" class="vault-explorer-btn">
+                <span>View Full Treasury on Solscan</span> <b>&rarr;</b>
+              </a>
+              <span class="vault-transparency-note">Audit verified on Solana public ledger</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -746,6 +890,7 @@
         <a href="#buildings">Buildings</a>
         <a href="#roster">18 Heroes</a>
         <a href="#archive">BwedDepot</a>
+        <a href="#vault">Butter Vault</a>
         <a href="./party-board.html">Play in 3D &rarr;</a>
       </div>
     </footer>
@@ -792,52 +937,80 @@
           </div>
         </div>
 
-        <!-- Main Price Banner -->
-        <div class="live-price-banner">
-          <div class="live-price-col">
-            <span class="live-label">Price USD</span>
-            <span class="live-big-price" id="cardPrice">--</span>
-            <span class="live-sol-price" id="cardPriceSol">-- SOL</span>
+        <!-- View Mode Switcher Tabs -->
+        <div class="live-card-tabs" role="tablist" aria-label="Widget View Mode">
+          <button type="button" class="live-view-tab active" id="liveTabOverview" role="tab" aria-selected="true" data-tab="overview">
+            <span>Overview</span>
+          </button>
+          <button type="button" class="live-view-tab" id="liveTabChart" role="tab" aria-selected="false" data-tab="chart">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            <span>Live Chart</span>
+          </button>
+        </div>
+
+        <!-- Overview Panel -->
+        <div class="live-panel-overview" id="liveOverviewPanel">
+          <!-- Main Price Banner -->
+          <div class="live-price-banner">
+            <div class="live-price-col">
+              <span class="live-label">Price USD</span>
+              <span class="live-big-price" id="cardPrice">--</span>
+              <span class="live-sol-price" id="cardPriceSol">-- SOL</span>
+            </div>
+            <div class="live-change-col">
+              <span class="live-change-badge" id="cardChange">--%</span>
+              <span class="live-period">24h Change</span>
+            </div>
           </div>
-          <div class="live-change-col">
-            <span class="live-change-badge" id="cardChange">--%</span>
-            <span class="live-period">24h Change</span>
+
+          <!-- Metrics Grid (Glass Tiles) -->
+          <div class="live-metrics-grid">
+            <div class="metric-glass-tile">
+              <span class="metric-name">Market Cap</span>
+              <strong class="metric-val" id="cardMcap">--</strong>
+              <span class="metric-sub" id="cardFdv">FDV: --</span>
+            </div>
+
+            <div class="metric-glass-tile">
+              <span class="metric-name">24h Volume</span>
+              <strong class="metric-val" id="cardVolume">--</strong>
+              <span class="metric-sub" id="cardTxns">-- txns</span>
+            </div>
+
+            <div class="metric-glass-tile">
+              <span class="metric-name">Holders</span>
+              <strong class="metric-val" id="cardHolders">--</strong>
+              <span class="metric-sub">Solscan Verified</span>
+            </div>
+
+            <div class="metric-glass-tile">
+              <span class="metric-name">Circulating</span>
+              <strong class="metric-val" id="cardSupply">1,000,000,000</strong>
+              <span class="metric-sub">100% Minted</span>
+            </div>
           </div>
         </div>
 
-        <!-- Metrics Grid (Glass Tiles) -->
-        <div class="live-metrics-grid">
-          <div class="metric-glass-tile">
-            <span class="metric-name">Market Cap</span>
-            <strong class="metric-val" id="cardMcap">--</strong>
-            <span class="metric-sub" id="cardFdv">FDV: --</span>
-          </div>
-
-          <div class="metric-glass-tile">
-            <span class="metric-name">24h Volume</span>
-            <strong class="metric-val" id="cardVolume">--</strong>
-            <span class="metric-sub" id="cardTxns">-- txns</span>
-          </div>
-
-          <div class="metric-glass-tile">
-            <span class="metric-name">Holders</span>
-            <strong class="metric-val" id="cardHolders">--</strong>
-            <span class="metric-sub">Solscan Verified</span>
-          </div>
-
-          <div class="metric-glass-tile">
-            <span class="metric-name">Circulating</span>
-            <strong class="metric-val" id="cardSupply">1,000,000,000</strong>
-            <span class="metric-sub">100% Minted</span>
+        <!-- Live Chart Panel (DexScreener Embed) -->
+        <div class="live-panel-chart" id="liveChartPanel" hidden>
+          <div class="live-chart-iframe-wrap">
+            <iframe
+              id="liveDexIframe"
+              src=""
+              data-src="https://dexscreener.com/solana/5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump?embed=1&theme=dark&trades=0&info=0"
+              title="DexScreener Live Candlestick Chart"
+              loading="lazy"
+              allow="fullscreen"
+            ></iframe>
           </div>
         </div>
 
         <!-- Quick Explorer Actions Row -->
         <div class="live-card-footer">
-          <a class="live-action-btn" href="https://dexscreener.com/solana/bnttpswsrsvl2dphptsuqkkujbr8fprtb2ejrfbhgjev" target="_blank" rel="noopener noreferrer" title="View Real-Time Chart">
+          <button type="button" class="live-action-btn" id="liveToggleChartBtn" title="Toggle Live Chart">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-            <span>Chart</span>
-          </a>
+            <span id="liveToggleChartText">Live Chart</span>
+          </button>
           <a class="live-action-btn" href="https://pump.fun/coin/5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump" target="_blank" rel="noopener noreferrer" title="Trade on Pump.fun">
             <span>Pump.fun</span>
           </a>

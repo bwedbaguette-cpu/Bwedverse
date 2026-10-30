@@ -883,10 +883,26 @@ function initBwedDepot() {
       return;
     }
 
-    grid.innerHTML = slice.map(item => {
+    const isStickersTab = currentCategory === 'stickers';
+    let bannerHtml = '';
+    if (isStickersTab) {
+      bannerHtml = `
+        <div class="depot-sticker-banner" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(38,18,10,0.85) 0%, rgba(20,8,4,0.95) 100%); border: 1px solid var(--border-gold); border-radius: 18px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 8px;">
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 16px; color: var(--gold-main); margin-bottom: 4px;">Official Bwed Telegram Sticker Pack</h3>
+            <p style="font-size: 13px; color: var(--cream-soft); margin: 0;">23 exclusive transparent Bwed stickers for Telegram and community chats. Download individually or use across web3.</p>
+          </div>
+          <a href="https://t.me/addstickers/bwed" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size: 12px; padding: 10px 20px;">
+            <span>Open in Telegram</span> <b>&rarr;</b>
+          </a>
+        </div>
+      `;
+    }
+
+    grid.innerHTML = bannerHtml + slice.map(item => {
       const likes = likesMap[item.id] || item.baseLikes || 180;
       const isLiked = userLikesSet.has(item.id);
-      const isPfp = item.category === 'pfp';
+      const isPfp = item.category === 'pfp' || item.category === 'stickers';
 
       return `
         <article class="depot-card ${isPfp ? 'pfp-card' : ''}" data-id="${item.id}">
@@ -1398,6 +1414,66 @@ function initBwedLiveWidget() {
     }, 450);
   }
 
+  // Card View Switching (Overview vs Live Chart)
+  const tabOverview = document.getElementById('liveTabOverview');
+  const tabChart = document.getElementById('liveTabChart');
+  const panelOverview = document.getElementById('liveOverviewPanel');
+  const panelChart = document.getElementById('liveChartPanel');
+  const dexIframe = document.getElementById('liveDexIframe');
+  const toggleChartBtn = document.getElementById('liveToggleChartBtn');
+  const toggleChartText = document.getElementById('liveToggleChartText');
+
+  let currentView = 'overview';
+
+  function switchWidgetView(view) {
+    currentView = view;
+    if (view === 'chart') {
+      card.classList.add('has-chart');
+      if (panelOverview) panelOverview.hidden = true;
+      if (panelChart) panelChart.hidden = false;
+      if (tabOverview) {
+        tabOverview.classList.remove('active');
+        tabOverview.setAttribute('aria-selected', 'false');
+      }
+      if (tabChart) {
+        tabChart.classList.add('active');
+        tabChart.setAttribute('aria-selected', 'true');
+      }
+      if (toggleChartText) toggleChartText.textContent = 'Stats';
+      if (dexIframe && !dexIframe.src && dexIframe.dataset.src) {
+        dexIframe.src = dexIframe.dataset.src;
+      }
+    } else {
+      card.classList.remove('has-chart');
+      if (panelChart) panelChart.hidden = true;
+      if (panelOverview) panelOverview.hidden = false;
+      if (tabChart) {
+        tabChart.classList.remove('active');
+        tabChart.setAttribute('aria-selected', 'false');
+      }
+      if (tabOverview) {
+        tabOverview.classList.add('active');
+        tabOverview.setAttribute('aria-selected', 'true');
+      }
+      if (toggleChartText) toggleChartText.textContent = 'Live Chart';
+    }
+  }
+
+  tabOverview?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    switchWidgetView('overview');
+  });
+
+  tabChart?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    switchWidgetView('chart');
+  });
+
+  toggleChartBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    switchWidgetView(currentView === 'overview' ? 'chart' : 'overview');
+  });
+
   // Toggle card / pill display
   function openCard() {
     pill.hidden = true;
@@ -1445,6 +1521,238 @@ function initBwedLiveWidget() {
   // Initial fetch and auto-refresh every 45s
   fetchTokenData();
   setInterval(fetchTokenData, 45000);
+}
+
+// Community Butter Vault ($BWED Treasury & Public Support)
+function initCommunityVault() {
+  const vaultSection = document.getElementById('vault');
+  if (!vaultSection) return;
+
+  const VAULT_ADDRESS = 'HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa';
+  const TOKEN_MINT = '5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump';
+  const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
+
+  const copyBtn = document.getElementById('btnCopyVaultAddress');
+  const copyBadgeText = document.getElementById('copyVaultBadgeText');
+  const toggleQrBtn = document.getElementById('btnToggleVaultQR');
+  const qrDrawer = document.getElementById('vaultQrDrawer');
+  const solBalanceEl = document.getElementById('vaultSolBalance');
+  const bwedBalanceEl = document.getElementById('vaultBwedBalance');
+  const canvas = document.getElementById('vaultCanvas3D');
+  const fallbackImg = document.getElementById('vaultFallbackImg');
+
+  // Copy address to clipboard
+  copyBtn?.addEventListener('click', () => {
+    navigator.clipboard.writeText(VAULT_ADDRESS).then(() => {
+      if (typeof audio !== 'undefined' && audio.heroSelect) audio.heroSelect();
+      copyBtn.classList.add('copied');
+      if (copyBadgeText) copyBadgeText.textContent = 'COPIED!';
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        if (copyBadgeText) copyBadgeText.textContent = 'COPY';
+      }, 2200);
+    }).catch(() => {
+      prompt('Vault Solana Address:', VAULT_ADDRESS);
+    });
+  });
+
+  // Toggle QR Code
+  toggleQrBtn?.addEventListener('click', () => {
+    if (typeof audio !== 'undefined' && audio.click) audio.click();
+    if (qrDrawer) {
+      qrDrawer.hidden = !qrDrawer.hidden;
+      toggleQrBtn.classList.toggle('active', !qrDrawer.hidden);
+    }
+  });
+
+  // Fetch live on-chain balances from Solana RPC
+  async function fetchVaultOnChainData() {
+    try {
+      // 1. SOL balance
+      const solRes = await fetch(SOLANA_RPC, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method: 'getBalance',
+          params: [VAULT_ADDRESS]
+        })
+      });
+      if (solRes.ok) {
+        const solData = await solRes.json();
+        if (solData?.result?.value !== undefined) {
+          const lamports = solData.result.value;
+          const sol = lamports / 1e9;
+          if (solBalanceEl) {
+            solBalanceEl.textContent = `${sol.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL`;
+          }
+        }
+      }
+
+      // 2. $BWED SPL token balance
+      const splRes = await fetch(SOLANA_RPC, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 2,
+          method: 'getTokenAccountsByOwner',
+          params: [
+            VAULT_ADDRESS,
+            { mint: TOKEN_MINT },
+            { encoding: 'jsonParsed' }
+          ]
+        })
+      });
+      if (splRes.ok) {
+        const splData = await splRes.json();
+        if (splData?.result?.value && splData.result.value.length > 0) {
+          const tokenAmount = splData.result.value[0]?.account?.data?.parsed?.info?.tokenAmount;
+          if (tokenAmount) {
+            const rawAmount = parseFloat(tokenAmount.uiAmountString || tokenAmount.uiAmount || 0);
+            if (bwedBalanceEl) {
+              bwedBalanceEl.textContent = `${rawAmount >= 1e6 ? (rawAmount / 1e6).toFixed(2) + 'M' : rawAmount.toLocaleString()} $BWED`;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Graceful offline fallback
+    }
+  }
+
+  fetchVaultOnChainData();
+
+  // Lazy initialize 3D interactive Chest / Safe with Three.js
+  let threeLoaded = false;
+  function initVault3D() {
+    if (threeLoaded || !canvas) return;
+    threeLoaded = true;
+
+    // Dynamically load Three.js & GLTFLoader modules
+    import('https://unpkg.com/three@0.161.0/build/three.module.js').then(async (THREE) => {
+      const { GLTFLoader } = await import('https://unpkg.com/three@0.161.0/examples/jsm/loaders/GLTFLoader.js');
+
+      const width = canvas.parentElement.clientWidth || 380;
+      const height = canvas.parentElement.clientHeight || 380;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
+      camera.position.set(0, 1.6, 3.8);
+
+      // Warm bakery studio lights
+      const ambLight = new THREE.AmbientLight(0xfff5e6, 1.8);
+      scene.add(ambLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffd15a, 2.5);
+      dirLight.position.set(4, 6, 4);
+      scene.add(dirLight);
+
+      const rimLight = new THREE.DirectionalLight(0xff8c42, 1.5);
+      rimLight.position.set(-4, 3, -3);
+      scene.add(rimLight);
+
+      const loader = new GLTFLoader();
+      const modelPath = './assets/buildings/prop-treasure-chest.glb';
+
+      let modelRoot = null;
+      loader.load(modelPath, (gltf) => {
+        modelRoot = gltf.scene;
+
+        // Auto center and scale
+        const box = new THREE.Box3().setFromObject(modelRoot);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 2.0 / (maxDim || 1);
+
+        modelRoot.scale.setScalar(scale);
+        modelRoot.position.sub(center.multiplyScalar(scale));
+        modelRoot.position.y -= 0.15;
+
+        scene.add(modelRoot);
+      }, undefined, () => {
+        if (fallbackImg) fallbackImg.classList.add('active');
+        if (canvas) canvas.style.display = 'none';
+      });
+
+      // Mouse drag rotation interaction
+      let isDragging = false;
+      let prevMouseX = 0;
+      let rotSpeed = 0.005;
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        prevMouseX = e.clientX;
+      });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      window.addEventListener('mousemove', (e) => {
+        if (isDragging && modelRoot) {
+          const delta = e.clientX - prevMouseX;
+          modelRoot.rotation.y += delta * rotSpeed;
+          prevMouseX = e.clientX;
+        }
+      });
+
+      // Touch drag for mobile
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+      window.addEventListener('touchend', () => { isDragging = false; });
+      window.addEventListener('touchmove', (e) => {
+        if (isDragging && modelRoot && e.touches.length === 1) {
+          const delta = e.touches[0].clientX - prevMouseX;
+          modelRoot.rotation.y += delta * rotSpeed;
+          prevMouseX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        if (!canvas.parentElement) return;
+        const w = canvas.parentElement.clientWidth;
+        const h = canvas.parentElement.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      });
+
+      // Render loop
+      function animate() {
+        requestAnimationFrame(animate);
+        if (modelRoot && !isDragging) {
+          modelRoot.rotation.y += 0.007; // gentle idle rotation
+        }
+        renderer.render(scene, camera);
+      }
+      animate();
+    }).catch(() => {
+      if (fallbackImg) fallbackImg.classList.add('active');
+      if (canvas) canvas.style.display = 'none';
+    });
+  }
+
+  // Use IntersectionObserver to lazy load the 3D model only when visible
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        initVault3D();
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  observer.observe(vaultSection);
 }
 
 // Global UI controls (Motion, Sound, Mobile menu, Scroll reveals)
@@ -1527,5 +1835,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initBaguetteCA();
   initBwedClicker();
   initBwedLiveWidget();
+  initCommunityVault();
   initGlobalControls();
 });

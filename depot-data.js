@@ -1576,4 +1576,212 @@ const BWED_DEPOT_CATALOG = [
     "desc": "Official 3D transparent vinyl PFP : Whale Buddy.",
     "baseLikes": 0
   }
+,
+  {
+    "id": "bwed-sticker-01",
+    "category": "stickers",
+    "title": "Drake No",
+    "filename": "bwed-tg-01-drake-no.webp",
+    "path": "./assets/stickers/bwed-tg-01-drake-no.webp",
+    "desc": "Bwed disapproves in classic orange puffer jacket style.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-02",
+    "category": "stickers",
+    "title": "Sad Concern",
+    "filename": "bwed-tg-02-sad-concern.webp",
+    "path": "./assets/stickers/bwed-tg-02-sad-concern.webp",
+    "desc": "Cute worried slice looking up with puppy dog eyes.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-03",
+    "category": "stickers",
+    "title": "Finger Guns Shades",
+    "filename": "bwed-tg-03-sunglasses-fingerguns.webp",
+    "path": "./assets/stickers/bwed-tg-03-sunglasses-fingerguns.webp",
+    "desc": "Cool toasted slice rocking dark shades and double finger guns.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-04",
+    "category": "stickers",
+    "title": "Drake Yes",
+    "filename": "bwed-tg-04-drake-yes.webp",
+    "path": "./assets/stickers/bwed-tg-04-drake-yes.webp",
+    "desc": "Bwed approves enthusiastically with a warm smile.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-05",
+    "category": "stickers",
+    "title": "Hold The ",
+    "filename": "bwed-tg-05-hold-the-bwed.webp",
+    "path": "./assets/stickers/bwed-tg-05-hold-the-bwed.webp",
+    "desc": "Official diamond-hand toast reminder to hold .",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-06",
+    "category": "stickers",
+    "title": "Coffee Laptop Chill",
+    "filename": "bwed-tg-06-chill-coffee-laptop.webp",
+    "path": "./assets/stickers/bwed-tg-06-chill-coffee-laptop.webp",
+    "desc": "Relaxing with a steaming hot mug and laptop vibes.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-07",
+    "category": "stickers",
+    "title": "The Bwed Prayer",
+    "filename": "bwed-tg-07-prayer-cult.webp",
+    "path": "./assets/stickers/bwed-tg-07-prayer-cult.webp",
+    "desc": "An infinite army of mini Bwed slices meditating for the pump.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-08",
+    "category": "stickers",
+    "title": "Baguette Bat Shades",
+    "filename": "bwed-tg-08-baguette-bat-shades.webp",
+    "path": "./assets/stickers/bwed-tg-08-baguette-bat-shades.webp",
+    "desc": "Street-style toast carrying a sticker-covered baguette bat.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-09",
+    "category": "stickers",
+    "title": "BWED Pump Sign",
+    "filename": "bwed-tg-09-bwed-pump-sign.webp",
+    "path": "./assets/stickers/bwed-tg-09-bwed-pump-sign.webp",
+    "desc": "Holding up the official community pump sign with pride.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-10",
+    "category": "stickers",
+    "title": "Smoking Suit Boss",
+    "filename": "bwed-tg-10-smoking-suit.webp",
+    "path": "./assets/stickers/bwed-tg-10-smoking-suit.webp",
+    "desc": "Corporate Bwed in a blue suit lighting a cigarette.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-11",
+    "category": "stickers",
+    "title": "Toast Cheeks",
+    "filename": "bwed-tg-11-cheeks-back.webp",
+    "path": "./assets/stickers/bwed-tg-11-cheeks-back.webp",
+    "desc": "Rear view of Bwed showing off golden crust cheeks in red shoes.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-12",
+    "category": "stickers",
+    "title": "Bwed Squad Gathering",
+    "filename": "bwed-tg-12-squad-group.webp",
+    "path": "./assets/stickers/bwed-tg-12-squad-group.webp",
+    "desc": "The whole gang hanging out together with cupcakes and love.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-13",
+    "category": "stickers",
+    "title": "Happy Dance Pose",
+    "filename": "bwed-tg-13-twerk-pose.webp",
+    "path": "./assets/stickers/bwed-tg-13-twerk-pose.webp",
+    "desc": "Playful wiggly toast showing off its moves.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-14",
+    "category": "stickers",
+    "title": "The Office Handshake",
+    "filename": "bwed-tg-14-office-handshake.webp",
+    "path": "./assets/stickers/bwed-tg-14-office-handshake.webp",
+    "desc": "Michael Scott shaking Ed Truck hand recreated with Bwed.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-15",
+    "category": "stickers",
+    "title": "Arthur Clenched Fist",
+    "filename": "bwed-tg-15-arthur-clenched-fist.webp",
+    "path": "./assets/stickers/bwed-tg-15-arthur-clenched-fist.webp",
+    "desc": "Intense determination with the classic clenched fist meme.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-16",
+    "category": "stickers",
+    "title": "Duct-Taped Toast Art",
+    "filename": "bwed-tg-16-duct-tape-cattelan.webp",
+    "path": "./assets/stickers/bwed-tg-16-duct-tape-cattelan.webp",
+    "desc": "Maurizio Cattelan Comedian banana art piece reimagined as Bwed.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-17",
+    "category": "stickers",
+    "title": "Besties Shoulder Hug",
+    "filename": "bwed-tg-17-besties-shoulder-hug.webp",
+    "path": "./assets/stickers/bwed-tg-17-besties-shoulder-hug.webp",
+    "desc": "Two Bwed friends posing together with a wink and peace sign.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-18",
+    "category": "stickers",
+    "title": "Pepe Bwed Hikers",
+    "filename": "bwed-tg-18-pepe-mountain-hiker.webp",
+    "path": "./assets/stickers/bwed-tg-18-pepe-mountain-hiker.webp",
+    "desc": "Pepe the Frog with walking stick resting beside Bwed backpacker.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-19",
+    "category": "stickers",
+    "title": "Dollar Bill Cash",
+    "filename": "bwed-tg-19-dollar-bills-cash.webp",
+    "path": "./assets/stickers/bwed-tg-19-dollar-bills-cash.webp",
+    "desc": "United States currency featuring Bwed replacing George Washington.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-20",
+    "category": "stickers",
+    "title": "Soldier Dual Pistols",
+    "filename": "bwed-tg-20-soldier-dual-pistols.webp",
+    "path": "./assets/stickers/bwed-tg-20-soldier-dual-pistols.webp",
+    "desc": "Combat helmet Bwed aiming dual pistols with a cute smile.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-21",
+    "category": "stickers",
+    "title": "Market Cycle Emotions",
+    "filename": "bwed-tg-21-crypto-emotional-cycle.webp",
+    "path": "./assets/stickers/bwed-tg-21-crypto-emotional-cycle.webp",
+    "desc": "It is so over / We are so back circular crypto emotion chart.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-22",
+    "category": "stickers",
+    "title": "Proud Chest Thump",
+    "filename": "bwed-tg-22-chest-thump-proud.webp",
+    "path": "./assets/stickers/bwed-tg-22-chest-thump-proud.webp",
+    "desc": "Bwed pounding its crust chest with unwavering loyalty.",
+    "baseLikes": 0
+  },
+  {
+    "id": "bwed-sticker-23",
+    "category": "stickers",
+    "title": "Just Pump It Gift Box",
+    "filename": "bwed-tg-23-just-pump-it-gift.webp",
+    "path": "./assets/stickers/bwed-tg-23-just-pump-it-gift.webp",
+    "desc": "Presenting a golden luxury box with the JUST PUMP IT message.",
+    "baseLikes": 0
+  }
 ];
