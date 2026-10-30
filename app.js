@@ -47,6 +47,7 @@ class BwedHubAudio {
 }
 
 const audio = new BwedHubAudio();
+window.bwedAudio = audio;
 
 // 22 Heroes Catalog (Canon data synced with 3D board game, natural English)
 const heroes = [
@@ -2276,25 +2277,99 @@ function initBwedStudio() {
     });
   }
 
-  // Community Gallery Data & Management
-  const STORAGE_KEY = 'bwed_community_drawings_v1';
+  // ========================================================================
+  // BWED STUDIO PERSISTENT STORAGE: IndexedDB + Compressed LocalStorage + Canon
+  // ========================================================================
+  const DB_NAME = 'bwed_studio_db';
+  const DB_STORE = 'drawings';
+  const STORAGE_KEY = 'bwed_community_drawings_v2';
   const LIKES_KEY = 'bwed_community_likes_v1';
 
-  let localLikes = {};
-  try {
-    localLikes = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}');
-  } catch (_) {}
+  function openIndexedDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) return resolve(null);
+      try {
+        const req = window.indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(DB_STORE)) {
+            db.createObjectStore(DB_STORE, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      } catch (_) {
+        resolve(null);
+      }
+    });
+  }
 
-  // Starter Masterpieces
+  async function loadUserArtFromIndexedDB() {
+    try {
+      const db = await openIndexedDB();
+      if (!db) return [];
+      return new Promise((resolve) => {
+        const tx = db.transaction([DB_STORE], 'readonly');
+        const store = tx.objectStore(DB_STORE);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch (_) {
+      return [];
+    }
+  }
+
+  async function saveArtToIndexedDB(artItem) {
+    try {
+      const db = await openIndexedDB();
+      if (!db) return false;
+      return new Promise((resolve) => {
+        const tx = db.transaction([DB_STORE], 'readwrite');
+        const store = tx.objectStore(DB_STORE);
+        store.put(artItem);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      });
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function compressThumbnail(sourceCanvas, maxW = 320, maxH = 248) {
+    try {
+      const tCanvas = document.createElement('canvas');
+      tCanvas.width = maxW;
+      tCanvas.height = maxH;
+      const tCtx = tCanvas.getContext('2d');
+      tCtx.drawImage(sourceCanvas, 0, 0, maxW, maxH);
+      return tCanvas.toDataURL('image/jpeg', 0.82);
+    } catch (_) {
+      return sourceCanvas.toDataURL('image/png');
+    }
+  }
+
+  // Canonical Masterpieces (Always loaded globally for all visitors)
   function getStarterArt() {
     return [
+      {
+        id: 'art-chillbwed-eutelion',
+        title: 'chillbwed by eut',
+        author: '@eutelion',
+        time: 'Community Hall of Fame',
+        dataUrl: './assets/community/chillbwed-by-eutelion.png',
+        likes: 188,
+        isCanon: true,
+        badge: 'OFFICIAL CANON'
+      },
       {
         id: 'art-starter-1',
         title: 'Golden OG Loaf',
         author: '@BakerChad',
         time: '1h ago',
         dataUrl: './assets/stickers/bwed-tg-03-sunglasses-fingerguns.webp',
-        likes: 69
+        likes: 69,
+        isCanon: true
       },
       {
         id: 'art-starter-2',
@@ -2302,7 +2377,8 @@ function initBwedStudio() {
         author: '@SolanaDough',
         time: '3h ago',
         dataUrl: './assets/stickers/bwed-tg-08-baguette-bat-shades.webp',
-        likes: 42
+        likes: 42,
+        isCanon: true
       },
       {
         id: 'art-starter-3',
@@ -2310,7 +2386,8 @@ function initBwedStudio() {
         author: '@CrumbMaster',
         time: '5h ago',
         dataUrl: './assets/stickers/bwed-tg-05-hold-the-bwed.webp',
-        likes: 38
+        likes: 38,
+        isCanon: true
       },
       {
         id: 'art-starter-4',
@@ -2318,21 +2395,31 @@ function initBwedStudio() {
         author: '@FrenchBaguette',
         time: 'Yesterday',
         dataUrl: './assets/stickers/bwed-tg-06-chill-coffee-laptop.webp',
-        likes: 27
+        likes: 27,
+        isCanon: true
       }
     ];
   }
 
-  let communityArt = [];
+  let localLikes = {};
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      communityArt = JSON.parse(saved);
+    localLikes = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}');
+  } catch (_) {}
+
+  // In-memory array of user custom drawings
+  let userDrawings = [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      userDrawings = JSON.parse(raw);
     }
   } catch (_) {}
 
-  if (!communityArt || communityArt.length === 0) {
-    communityArt = getStarterArt();
+  function getCombinedArt() {
+    const canon = getStarterArt();
+    const canonIds = new Set(canon.map(c => c.id));
+    const custom = (userDrawings || []).filter(u => !canonIds.has(u.id));
+    return [...custom, ...canon];
   }
 
   function renderCommunityGallery() {
@@ -2340,9 +2427,10 @@ function initBwedStudio() {
     const badge = document.getElementById('galleryCountBadge');
     if (!container) return;
 
-    if (badge) badge.textContent = `${communityArt.length} Masterpiece${communityArt.length > 1 ? 's' : ''}`;
+    const list = getCombinedArt();
+    if (badge) badge.textContent = `${list.length} Masterpiece${list.length > 1 ? 's' : ''}`;
 
-    container.innerHTML = communityArt.map((art) => {
+    container.innerHTML = list.map((art) => {
       const isLiked = !!localLikes[art.id];
       const count = (art.likes || 0) + (isLiked ? 1 : 0);
       return `
@@ -2353,7 +2441,7 @@ function initBwedStudio() {
           <div class="card-meta-wrap">
             <div class="card-title-row">
               <strong>${art.title}</strong>
-              ${art.isNew ? '<span class="card-new-badge">NEW</span>' : ''}
+              ${art.badge ? `<span class="card-canon-badge">${art.badge}</span>` : (art.isNew ? '<span class="card-new-badge">NEW</span>' : '')}
             </div>
             <div class="card-author-time">by ${art.author} &bull; ${art.time}</div>
             <div class="card-actions-row">
@@ -2361,7 +2449,8 @@ function initBwedStudio() {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span>${count}</span>
               </button>
-              <button type="button" class="card-view-btn" data-view-url="${art.dataUrl}" data-view-title="${art.title}" data-view-author="${art.author}">View Full &rarr;</button>
+              <button type="button" class="card-load-btn" data-art-id="${art.id}" title="Load onto drawing canvas">Remix &rarr;</button>
+              <button type="button" class="card-view-btn" data-view-url="${art.dataUrl}" data-view-title="${art.title}" data-view-author="${art.author}">View &rarr;</button>
             </div>
           </div>
         </div>
@@ -2381,10 +2470,33 @@ function initBwedStudio() {
       });
     });
 
-    // Bind Fullview clicks (open lightbox modal)
+    // Bind Remix / Load onto canvas clicks
+    container.querySelectorAll('.card-load-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const artId = btn.dataset.artId;
+        const targetArt = list.find(a => a.id === artId);
+        if (targetArt && targetArt.dataUrl) {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            clearCanvas('#fffdf9');
+            ctx.drawImage(img, 0, 0, width, height);
+            pushHistory();
+            audio.heroSelect();
+            const studioSec = document.getElementById('paint');
+            if (studioSec) {
+              studioSec.scrollIntoView({ behavior: 'smooth' });
+            }
+          };
+          img.src = targetArt.dataUrl;
+        }
+      });
+    });
+
+    // Bind Fullview clicks (open depot lightbox modal)
     container.querySelectorAll('.card-view-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const modal = document.getElementById('lightboxModal');
+        const modal = document.getElementById('depotLightbox');
         const img = document.getElementById('lightboxImg');
         const title = document.getElementById('lightboxTitle');
         const desc = document.getElementById('lightboxDesc');
@@ -2392,7 +2504,7 @@ function initBwedStudio() {
         if (modal && img) {
           img.src = btn.dataset.viewUrl;
           if (title) title.textContent = btn.dataset.viewTitle;
-          if (desc) desc.textContent = `Original drawing created in Bwed Studio by ${btn.dataset.viewAuthor}`;
+          if (desc) desc.textContent = `Original creation in Bwed Studio by ${btn.dataset.viewAuthor}`;
           if (cat) cat.textContent = 'COMMUNITY ART';
           modal.classList.add('active');
           document.body.style.overflow = 'hidden';
@@ -2402,10 +2514,10 @@ function initBwedStudio() {
     });
   }
 
-  // Publish Artwork Button
+  // Publish Artwork Button with Multi-Tier Storage & Auto-Download Backup
   const publishBtn = document.getElementById('paintPublishBtn');
   if (publishBtn) {
-    publishBtn.addEventListener('click', () => {
+    publishBtn.addEventListener('click', async () => {
       const titlePrompt = window.prompt('Name your Bwed masterpiece:', 'Crispy Bwed Slice');
       if (titlePrompt === null) return;
       const title = titlePrompt.trim() || 'Crispy Bwed Slice';
@@ -2413,22 +2525,49 @@ function initBwedStudio() {
       const authorPrompt = window.prompt('Your Baker name / handle:', 'Solana Baker');
       const author = (authorPrompt && authorPrompt.trim()) || 'Anonymous Baker';
 
+      const fullData = canvas.toDataURL('image/png');
+      const thumbData = compressThumbnail(canvas, 320, 248);
+
       const newArt = {
         id: 'art-' + Date.now(),
         title: title,
         author: author,
         time: 'Just now',
-        dataUrl: canvas.toDataURL('image/png'),
+        dataUrl: fullData,
+        thumbUrl: thumbData,
         likes: 1,
         isNew: true
       };
 
-      communityArt.unshift(newArt);
+      userDrawings.unshift(newArt);
+      if (userDrawings.length > 50) userDrawings.pop();
 
-      if (communityArt.length > 25) communityArt.pop();
+      // 1. Save full-res artwork to IndexedDB (virtually unlimited browser storage)
+      await saveArtToIndexedDB(newArt);
 
+      // 2. Save compressed thumbnails to LocalStorage for fast sync
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(communityArt));
+        const forStorage = userDrawings.map(d => ({
+          id: d.id,
+          title: d.title,
+          author: d.author,
+          time: d.time,
+          dataUrl: d.thumbUrl || d.dataUrl,
+          likes: d.likes,
+          isNew: false
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(forStorage));
+      } catch (e) {
+        console.warn('LocalStorage save skipped; IndexedDB holds full art:', e);
+      }
+
+      // 3. Auto backup PNG download to local machine
+      try {
+        const dlLink = document.createElement('a');
+        const safeName = title.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 24);
+        dlLink.download = `${safeName || 'bwed-art'}-${Date.now()}.png`;
+        dlLink.href = fullData;
+        dlLink.click();
       } catch (_) {}
 
       audio.heroSelect();
@@ -2436,6 +2575,61 @@ function initBwedStudio() {
 
       const container = document.getElementById('communityArtCards');
       if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // Restore drawings from IndexedDB asynchronously on startup
+  loadUserArtFromIndexedDB().then(dbArts => {
+    if (dbArts && dbArts.length > 0) {
+      const existingIds = new Set(userDrawings.map(u => u.id));
+      let updated = false;
+      dbArts.forEach(item => {
+        if (!existingIds.has(item.id)) {
+          userDrawings.push(item);
+          updated = true;
+        }
+      });
+      if (updated) {
+        userDrawings.sort((a, b) => {
+          const tA = parseInt((a.id || '').replace('art-', ''), 10) || 0;
+          const tB = parseInt((b.id || '').replace('art-', ''), 10) || 0;
+          return tB - tA;
+        });
+        renderCommunityGallery();
+      }
+    }
+  });
+
+  // Drag and drop image files directly onto canvas
+  const viewport = document.getElementById('canvasViewport');
+  if (viewport) {
+    viewport.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      viewport.classList.add('drag-over');
+    });
+    viewport.addEventListener('dragleave', () => {
+      viewport.classList.remove('drag-over');
+    });
+    viewport.addEventListener('drop', (e) => {
+      e.preventDefault();
+      viewport.classList.remove('drag-over');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        const file = e.dataTransfer.files[0];
+        if (file.type && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (rev) => {
+            const img = new Image();
+            img.onload = () => {
+              clearCanvas('#fffdf9');
+              ctx.drawImage(img, 0, 0, width, height);
+              pushHistory();
+              audio.heroSelect();
+            };
+            img.src = rev.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      }
     });
   }
 

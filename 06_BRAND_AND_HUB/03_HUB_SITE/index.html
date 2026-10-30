@@ -70,8 +70,17 @@
     </style>
 
     <link rel="stylesheet" href="./styles.css?v=5.9.0" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
     <script src="./depot-data.js?v=5.9.0"></script>
     <script src="./app.js?v=5.9.0" defer></script>
+    <script type="module" src="./shiba-tv.js?v=1.0.0"></script>
   </head>
   <body>
     <!-- Live Moving Mosaic Wallpaper (Pure GPU-accelerated CSS marquee with dozens of real Bwed memes & PFPs) -->
@@ -127,6 +136,7 @@
         <a class="nav-link" href="#arcade">Arcade</a>
         <a class="nav-link" href="#roster">22 Heroes</a>
         <a class="nav-link" href="#paint">Bwed Studio</a>
+        <a class="nav-link" href="#shiba-tv">Shiba TV 3D</a>
         <a class="nav-link" href="#archive">Lore &amp; Memes</a>
       </nav>
 
@@ -1082,6 +1092,206 @@
             <!-- Quick Motivation Footer -->
             <div class="gallery-panel-footer">
               <p>Draw any toast idea, hit <strong>Publish to Gallery</strong>, and show the Bwed fam your art!</p>
+              <a class="community-tg-submit-btn" href="https://t.me/bwedbaguette" target="_blank" rel="noopener noreferrer">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                <span>Share Masterpiece in Telegram Group</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Cozy Shiba Buddy — 3D Retro TV & Tamagotchi Interactive Studio -->
+      <section class="hub-section shiba-tv-section" id="shiba-tv">
+        <div class="section-head reveal">
+          <div class="tag-badge"><i></i> INTERACTIVE 3D COMPANION &bull; RIGGED SKELETON ENGINE</div>
+          <h2 class="section-title">
+            Cozy Shiba TV : <em>The Retro Pocket Tamagotchi</em>
+          </h2>
+          <p class="section-desc">
+            Meet our fully animated 3D canine companion! Spin the 3D diorama 360&deg;, switch vintage CRT channels to preview all 13 motion capture animations one by one, and care for your pocket doggo with fresh bakery crumbs.
+          </p>
+        </div>
+
+        <div class="shiba-tv-layout reveal">
+          <!-- Left: Retro CRT TV Chassis -->
+          <div class="vintage-tv-wrapper">
+            <!-- Antenna Tops with Golden Butter Tips -->
+            <div class="tv-antennas" aria-hidden="true">
+              <div class="antenna-rod antenna-left">
+                <span class="antenna-butter-tip"></span>
+              </div>
+              <div class="antenna-rod antenna-right">
+                <span class="antenna-butter-tip"></span>
+              </div>
+            </div>
+
+            <!-- TV Main Cabinet Body -->
+            <div class="vintage-tv-cabinet">
+              <!-- CRT Screen Outer Bezel -->
+              <div class="crt-screen-bezel">
+                <!-- Inner Curved Tube Frame -->
+                <div class="crt-inner-tube" id="shibaTvTube">
+                  <!-- Real-time Three.js 3D Viewport Canvas -->
+                  <canvas id="shibaCanvas"></canvas>
+
+                  <!-- CRT Glass Overlay (Scanlines, Glare, Curved Vignette) -->
+                  <div class="crt-scanlines" aria-hidden="true"></div>
+                  <div class="crt-glare" aria-hidden="true"></div>
+
+                  <!-- CRT On-Screen Display (OSD) -->
+                  <div class="crt-osd-layer">
+                    <div class="osd-top-row">
+                      <div class="osd-channel-badge">
+                        <span class="osd-rec-dot"></span>
+                        <strong id="osdChannelNumber">CH 03</strong>
+                        <span id="osdChannelTitle">BOOM DANCE</span>
+                      </div>
+                      <div class="osd-stats-badge">
+                        <span id="osdFps">60 FPS</span> &bull; <span id="osdEnergy">DANCE &bull; 95%</span>
+                      </div>
+                    </div>
+
+                    <!-- Floating Reaction FX Container -->
+                    <div class="osd-particles-container" id="osdParticlesContainer"></div>
+
+                    <!-- Bottom Status Ticker -->
+                    <div class="osd-bottom-row">
+                      <div class="osd-status-pill">
+                        <span class="osd-pulse-dot"></span>
+                        <span id="osdStatusMsg">MOOD: HYPE &bull; CRUMBS: 0</span>
+                      </div>
+                      <div class="osd-cam-hint">DRAG TO ORBIT 360&deg;</div>
+                    </div>
+                  </div>
+
+                  <!-- In-Screen Loading Shutter -->
+                  <div class="crt-loading-overlay" id="shibaLoadingOverlay">
+                    <div class="crt-loading-box">
+                      <div class="crt-loading-spinner"></div>
+                      <strong>TUNING CATHODE TUBE...</strong>
+                      <span id="shibaLoadProgress">Loading Cozy Shiba Buddy 3D (0%)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TV Hardware Speaker Grille & Brand Plate -->
+                <div class="tv-bottom-grille">
+                  <div class="tv-speaker-slits" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="tv-brand-plate">
+                    <strong>BWED-O-VISION 1998</strong>
+                    <small>HI-FI STEREO CHIBI DOGGO</small>
+                  </div>
+                  <div class="tv-power-led" id="tvPowerLed" title="TV Power On"></div>
+                </div>
+              </div>
+
+              <!-- Hardware Knobs & Rotary Tuning Side Panel -->
+              <div class="tv-side-hardware-panel">
+                <div class="hw-knob-group">
+                  <span class="hw-label">CHANNEL</span>
+                  <button type="button" class="hw-rotary-dial" id="tvNextChannelBtn" title="Next Animation Channel">
+                    <div class="dial-notch"></div>
+                  </button>
+                  <small id="hwCurrentChannelText">CH 03</small>
+                </div>
+
+                <div class="hw-toggle-group">
+                  <button type="button" class="hw-switch-btn active" id="tvTurntableBtn" title="Toggle 360 Turntable Orbit">
+                    <span>360&deg; SPIN</span>
+                  </button>
+                  <button type="button" class="hw-switch-btn" id="tvResetCamBtn" title="Reset Camera View">
+                    <span>RESET</span>
+                  </button>
+                </div>
+
+                <div class="hw-zoom-group">
+                  <span class="hw-label">ZOOM</span>
+                  <div class="zoom-btns-row">
+                    <button type="button" class="hw-zoom-btn" id="tvZoomOutBtn" title="Zoom Out">&minus;</button>
+                    <button type="button" class="hw-zoom-btn" id="tvZoomFitBtn" title="Fit Camera Framing">FIT</button>
+                    <button type="button" class="hw-zoom-btn" id="tvZoomInBtn" title="Zoom In">&plus;</button>
+                  </div>
+                </div>
+
+                <div class="hw-speed-group">
+                  <span class="hw-label">SPEED</span>
+                  <div class="speed-btns-row">
+                    <button type="button" class="speed-pill" data-speed="0.5">0.5x</button>
+                    <button type="button" class="speed-pill active" data-speed="1.0">1x</button>
+                    <button type="button" class="speed-pill" data-speed="1.5">1.5x</button>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-snapshot-tv" id="tvSnapshotBtn" title="Save Snapshot Photo as PNG">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  <span>Snapshot</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Tamagotchi Dashboard & Animation Soundboard -->
+          <div class="tamagotchi-panel">
+            <!-- Tamagotchi Header / Status Display -->
+            <div class="tama-head-card">
+              <div class="tama-avatar-badge">
+                <img src="./assets/shiba/cozy-shiba-pfp.jpg" alt="Cozy Shiba Buddy" class="tama-pfp" id="tamaPfpImg" />
+                <div class="tama-online-dot" title="Shiba Online"></div>
+              </div>
+              <div class="tama-info">
+                <h3>Cozy Shiba Buddy</h3>
+                <span class="tama-breed">Canon Canine Companion &bull; 13 Motion Clips</span>
+              </div>
+            </div>
+
+            <!-- Tamagotchi Vitals Bar -->
+            <div class="tama-vitals-box">
+              <div class="vital-row">
+                <span class="vital-name">HAPPINESS</span>
+                <div class="vital-track"><div class="vital-fill vital-happy" id="vitalHappiness" style="width: 100%;"></div></div>
+                <strong class="vital-val" id="valHappiness">100%</strong>
+              </div>
+              <div class="vital-row">
+                <span class="vital-name">FULLNESS</span>
+                <div class="vital-track"><div class="vital-fill vital-hunger" id="vitalHunger" style="width: 90%;"></div></div>
+                <strong class="vital-val" id="valHunger">90%</strong>
+              </div>
+              <div class="vital-row">
+                <span class="vital-name">ENERGY</span>
+                <div class="vital-track"><div class="vital-fill vital-energy" id="vitalEnergy" style="width: 95%;"></div></div>
+                <strong class="vital-val" id="valEnergy">95%</strong>
+              </div>
+            </div>
+
+            <!-- Quick Tamagotchi Care Actions -->
+            <div class="tama-care-actions">
+              <button type="button" class="btn-care btn-care-feed" id="tamaFeedBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                <span>Feed Bwed Crumb</span>
+              </button>
+              <button type="button" class="btn-care btn-care-pet" id="tamaPetBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span>Pet Head</span>
+              </button>
+              <button type="button" class="btn-care btn-care-disco" id="tamaDiscoBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <span>Dance Party</span>
+              </button>
+            </div>
+
+            <!-- 13 Animated Channels Selector Grid -->
+            <div class="tama-channels-section">
+              <div class="channels-header">
+                <strong>13 Integrated Skeleton Animations</strong>
+                <span class="channels-count">Select Any Action</span>
+              </div>
+
+              <div class="channels-grid" id="shibaChannelsGrid">
+                <!-- Dynamically populated by shiba-tv.js -->
+              </div>
             </div>
           </div>
         </div>

@@ -15,6 +15,7 @@ export class ChatManager {
     this.remotePlayers = options.remotePlayers; // Map<id, RemotePlayer>
     this.network = options.network;
     this.onFocusChange = options.onFocusChange || null;
+    this.onMessageSent = options.onMessageSent || null;
 
     this.activeTab = 'global'; // 'global' ou 'private'
     this.selectedRecipientId = null;
@@ -241,6 +242,7 @@ export class ChatManager {
 
     // Bulle 3D au-dessus de notre avatar
     this.spawnSpeechBubble(this.localPlayer.avatar.rootGroup, text, this.localPlayer.name, false);
+    if (this.onMessageSent) this.onMessageSent(text);
   }
 
   sendPrivateMessage(text, targetId, targetName) {
@@ -262,6 +264,7 @@ export class ChatManager {
 
     // Bulle 3D discrète au-dessus de notre avatar
     this.spawnSpeechBubble(this.localPlayer.avatar.rootGroup, text, `To ${targetName}`, true);
+    if (this.onMessageSent) this.onMessageSent(text);
   }
 
   // Réception réseau d'un message d'un autre joueur

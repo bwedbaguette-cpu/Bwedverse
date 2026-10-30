@@ -62,6 +62,23 @@ export class Engine {
 
     // Dynamic resize handler
     window.addEventListener('resize', () => this.onResize());
+
+    // Pause rendering when tab is hidden to prevent thermal heat & battery drain
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.clock.stop();
+      } else {
+        this.clock.start();
+        this.lastFrameTime = performance.now();
+      }
+    });
+
+    let savedFps = 30;
+    try {
+      const stored = localStorage.getItem('bwed_target_fps');
+      if (stored) savedFps = parseInt(stored, 10) || 30;
+    } catch (e) {}
+    this.setTargetFps(savedFps);
   }
 
   setGraphicsResolution(level) {
@@ -84,6 +101,10 @@ export class Engine {
     const val = parseInt(fps, 10);
     this.targetFps = isNaN(val) ? 30 : Math.max(15, Math.min(120, val));
     this.frameInterval = 1000 / this.targetFps;
+    this.lastFrameTime = performance.now();
+    try {
+      localStorage.setItem('bwed_target_fps', this.targetFps.toString());
+    } catch (e) {}
   }
 
   setHighResolution(isHigh) {
@@ -137,12 +158,14 @@ export class Engine {
     if (!this.isRunning) return;
     requestAnimationFrame((timestamp) => this.animate(timestamp));
 
-    // FPS throttling: skip frame if not enough time has elapsed
+    if (document.hidden) return; // 0% GPU load when tab is hidden or minimized
+
+    // Strict FPS throttling to 30 FPS max (cool & silent thermal governor)
     const elapsedMs = now - this.lastFrameTime;
-    if (this.targetFps < 120 && elapsedMs < this.frameInterval) {
+    if (elapsedMs < this.frameInterval) {
       return;
     }
-    this.lastFrameTime = now - (this.targetFps < 120 ? (elapsedMs % this.frameInterval) : 0);
+    this.lastFrameTime = now - (elapsedMs % this.frameInterval);
 
     const delta = Math.min(this.clock.getDelta(), 0.05);
     const elapsed = this.clock.getElapsedTime();
