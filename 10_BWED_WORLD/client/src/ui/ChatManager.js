@@ -399,9 +399,9 @@ export class ChatManager {
         b.element.style.opacity = Math.max(0, fade).toString();
       }
 
-      // Positionnement de la bulle à 2.45m au-dessus des pieds
+      // Positionnement de la bulle à 3.15m au-dessus des pieds (au-dessus du pseudo)
       b.targetGroup.getWorldPosition(tempVec);
-      tempVec.y += 2.45;
+      tempVec.y += 3.15;
 
       tempVec.project(this.camera);
 
@@ -415,7 +415,9 @@ export class ChatManager {
       const screenX = (tempVec.x * 0.5 + 0.5) * width;
       const screenY = (-tempVec.y * 0.5 + 0.5) * height;
 
-      b.element.style.transform = `translate(-50%, -100%) translate(${screenX.toFixed(1)}px, ${screenY.toFixed(1)}px)`;
+      b.element.style.left = `${screenX.toFixed(1)}px`;
+      b.element.style.top = `${screenY.toFixed(1)}px`;
+      b.element.style.transform = 'translate(-50%, -100%)';
     }
   }
 

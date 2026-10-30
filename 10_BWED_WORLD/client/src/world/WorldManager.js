@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CONFIG } from '../config.js';
+import { TextureGenerator } from './TextureGenerator.js';
 
 /* ==========================================================================
    GESTIONNAIRE DU MONDE & DES BIOMES MULTIPLES — BWED WORLD (JALON 2)
@@ -19,6 +20,7 @@ export class WorldManager {
     this.worldGroup = new THREE.Group();
     this.scene.add(this.worldGroup);
 
+    this.textures = new TextureGenerator();
     this.gltfLoader = new GLTFLoader();
     this.gltfCache = new Map();
 
@@ -85,6 +87,47 @@ export class WorldManager {
     this.buildZone1VillageCenter();
     this.buildTransitionPassage();
     this.buildZone2CacaoForest();
+    this.buildSweetPollenParticles();
+  }
+
+  buildSweetPollenParticles() {
+    const count = 160;
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const speeds = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 80;
+      positions[i * 3 + 1] = 0.5 + Math.random() * 6.0;
+      positions[i * 3 + 2] = -25 + Math.random() * 140;
+      speeds[i] = 0.4 + Math.random() * 0.8;
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const mat = new THREE.PointsMaterial({
+      color: 0xffe8b0,
+      size: 1.4,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false
+    });
+
+    const particles = new THREE.Points(geo, mat);
+    this.worldGroup.add(particles);
+
+    this.animatedProps.push({
+      mesh: particles,
+      update: (delta, elapsed) => {
+        const pos = geo.attributes.position.array;
+        for (let i = 0; i < count; i++) {
+          pos[i * 3 + 1] += Math.sin(elapsed * speeds[i] + i) * 0.008;
+          pos[i * 3] += Math.cos(elapsed * 0.5 + i) * 0.006;
+          if (pos[i * 3 + 1] > 8.0) pos[i * 3 + 1] = 0.5;
+        }
+        geo.attributes.position.needsUpdate = true;
+      }
+    });
   }
 
   getNearestInteraction(playerPos) {
@@ -201,7 +244,7 @@ export class WorldManager {
     // 1. Terrain en herbe douce (Zone 1 : Z de -50 à 30, X de -50 à 50)
     const groundGeo = new THREE.PlaneGeometry(90, 80, 24, 24);
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x6e8f48, // Vert matcha doux
+      map: this.textures.getMatchaGrassTexture(),
       roughness: 0.85,
       metalness: 0.05
     });
@@ -215,7 +258,7 @@ export class WorldManager {
     // 2. Grand pavage circulaire de la place
     const plazaGeo = new THREE.CircleGeometry(16, 32);
     const plazaMat = new THREE.MeshStandardMaterial({
-      color: 0xe6cfb8,
+      map: this.textures.getCobblestoneTexture(),
       roughness: 0.7,
       metalness: 0.08
     });
@@ -235,7 +278,10 @@ export class WorldManager {
     z1Group.add(curb);
 
     // 3. Allées pavées
-    const roadMat = new THREE.MeshStandardMaterial({ color: 0xd9be9b, roughness: 0.75 });
+    const roadMat = new THREE.MeshStandardMaterial({
+      map: this.textures.getCobblestoneTexture(),
+      roughness: 0.75
+    });
 
     // Allée Sud vers le pont (Z de 15 à 30)
     const roadSouth = new THREE.Mesh(new THREE.PlaneGeometry(8, 20), roadMat);
@@ -336,128 +382,34 @@ export class WorldManager {
 
     parent.add(group);
     this.physics.addObstacle(x, z, 3.8);
+
+    // Sculpture florale dorée sur la fontaine
+    this.loadProp('./assets/props/golden-bloom.glb', x, 0.7, z, {
+      scale: 0.75,
+      radius: 0
+    });
   }
 
   buildBakeryShop(parent, x, z) {
-    const shop = new THREE.Group();
-    shop.position.set(x, 0, z);
-
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0xfff2df, roughness: 0.8 }); // Crème pâtissière
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0x96532b, roughness: 0.6 }); // Biscuit cuit
-    const woodMat = new THREE.MeshStandardMaterial({ color: 0x5a341b, roughness: 0.7 });
-    const awningMat1 = new THREE.MeshStandardMaterial({ color: 0xe59b24, roughness: 0.5 });
-    const awningMat2 = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
-
-    // Corps du bâtiment (X: 10, Y: 5.5, Z: 8)
-    const walls = new THREE.Mesh(new THREE.BoxGeometry(10, 5.5, 8), wallMat);
-    walls.position.y = 2.75;
-    walls.castShadow = true;
-    walls.receiveShadow = true;
-    shop.add(walls);
-
-    // Toiture à deux pans
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(7.2, 3.2, 4), roofMat);
-    roof.position.y = 6.6;
-    roof.rotation.y = Math.PI / 4;
-    roof.scale.set(1.15, 1.0, 0.9);
-    roof.castShadow = true;
-    shop.add(roof);
-
-    // Vitrine de boulangerie sur la façade Est (+X)
-    const windowMat = new THREE.MeshStandardMaterial({
-      color: 0xffeaa7,
-      emissive: 0xffbe53,
-      emissiveIntensity: 0.6,
-      roughness: 0.2
+    this.loadProp('./assets/props/bakery-house.glb', x, 0, z, {
+      scale: 1.15,
+      rotY: Math.PI / 2,
+      radius: 5.5,
+      fallbackType: 'box'
     });
-    const shopWindow = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2.2, 4.0), windowMat);
-    shopWindow.position.set(5.05, 2.2, 0);
-    shop.add(shopWindow);
-
-    // Porte d'entrée avec encadrement bois
-    const door = new THREE.Mesh(new THREE.BoxGeometry(0.35, 2.6, 1.6), woodMat);
-    door.position.set(5.05, 1.3, -2.4);
-    shop.add(door);
-
-    // Auvent rayé gourmand au-dessus de la vitrine
-    for (let i = 0; i < 6; i++) {
-      const stripe = new THREE.Mesh(
-        new THREE.BoxGeometry(1.6, 0.25, 0.75),
-        i % 2 === 0 ? awningMat1 : awningMat2
-      );
-      stripe.position.set(5.6, 3.6, -1.875 + i * 0.75);
-      stripe.rotation.z = 0.25;
-      stripe.castShadow = true;
-      shop.add(stripe);
-    }
-
-    // Cheminée avec petit panache
-    const chimney = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.4, 1.0), roofMat);
-    chimney.position.set(-2.5, 7.0, -1.8);
-    chimney.castShadow = true;
-    shop.add(chimney);
-
-    parent.add(shop);
-    // Collision pour la boulangerie
-    this.physics.addObstacle(x, z, 5.8);
   }
 
   buildCafeTerrace(parent, x, z) {
-    const terrace = new THREE.Group();
-    terrace.position.set(x, 0, z);
-
-    // Plancher en bois surélevé
-    const deckMat = new THREE.MeshStandardMaterial({ color: 0x8a552e, roughness: 0.75 });
-    const deck = new THREE.Mesh(new THREE.BoxGeometry(12, 0.25, 10), deckMat);
-    deck.position.set(0, 0.12, 0);
-    deck.receiveShadow = true;
-    terrace.add(deck);
-
-    // Façade arrière du café
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0xf5ebe1, roughness: 0.8 });
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 10), wallMat);
-    wall.position.set(4.5, 2.5, 0);
-    wall.castShadow = true;
-    terrace.add(wall);
-
-    // Toit auvent du café
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0x3d6b38, roughness: 0.6 });
-    const roof = new THREE.Mesh(new THREE.BoxGeometry(9, 0.35, 10.4), roofMat);
-    roof.position.set(1.5, 5.1, 0);
-    roof.rotation.z = 0.08;
-    roof.castShadow = true;
-    terrace.add(roof);
-
-    // Tables rondes sur la terrasse
-    const tableMat = new THREE.MeshStandardMaterial({ color: 0xd4ba9e, roughness: 0.5 });
-    const tablePositions = [
-      { x: -3.2, z: -2.8 },
-      { x: -3.2, z: 2.8 }
-    ];
-
-    tablePositions.forEach((tp) => {
-      const table = new THREE.Group();
-      table.position.set(tp.x, 0.25, tp.z);
-
-      const top = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.1, 16), tableMat);
-      top.position.y = 1.0;
-      top.castShadow = true;
-      table.add(top);
-
-      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 1.0, 8), tableMat);
-      leg.position.y = 0.5;
-      table.add(leg);
-
-      terrace.add(table);
-      this.physics.addObstacle(x + tp.x, z + tp.z, 1.4);
+    this.loadProp('./assets/props/honey-cafe.glb', x, 0, z, {
+      scale: 1.2,
+      rotY: -Math.PI / 2,
+      radius: 5.5,
+      fallbackType: 'box'
     });
 
-    parent.add(terrace);
-    this.physics.addObstacle(x + 4.5, z, 3.5);
-
-    // Chargement du prop 3D hazelnut-cup.glb posé sur la table du café !
-    this.loadProp('./assets/props/hazelnut-cup.glb', x - 3.2, 1.35, z - 2.8, {
-      scale: 0.45,
+    // Chargement du prop 3D hazelnut-cup.glb posé sur la terrasse du café
+    this.loadProp('./assets/props/hazelnut-cup.glb', x - 4.5, 0.3, z - 2.5, {
+      scale: 0.5,
       rotY: 0.3,
       radius: 0.5,
       fallbackType: 'cup'
@@ -626,6 +578,13 @@ export class WorldManager {
       radius: 1.4,
       fallbackType: 'tree'
     });
+
+    // Monument du Croissant Doré sur le parvis
+    this.loadProp('./assets/props/golden-croissant.glb', -12, 0, -10, {
+      scale: 0.9,
+      rotY: 0.6,
+      radius: 1.6
+    });
   }
 
   /* --------------------------------------------------------------------------
@@ -638,11 +597,11 @@ export class WorldManager {
     // 1. Lit du Canal Chocolaté (Z de 30 à 52, X de -60 à 60, en creux à Y = -0.9)
     const canalBedGeo = new THREE.PlaneGeometry(120, 22);
     const chocolateMat = new THREE.MeshStandardMaterial({
-      color: 0x331a0c, // Chocolat noir liquide chaud
-      roughness: 0.18,
-      metalness: 0.45,
+      map: this.textures.getChocolateWaterTexture(),
+      roughness: 0.22,
+      metalness: 0.38,
       emissive: 0x140803,
-      emissiveIntensity: 0.2
+      emissiveIntensity: 0.25
     });
     const canalWater = new THREE.Mesh(canalBedGeo, chocolateMat);
     canalWater.rotation.x = -Math.PI / 2;
@@ -670,7 +629,10 @@ export class WorldManager {
     this.physics.addObstacle(24, 51.5, 18);
 
     // 2. Le Pont en bois doré (Largeur 9m : X de -4.5 à +4.5, Longueur 24m : Z de 29 à 53)
-    const bridgeDeckMat = new THREE.MeshStandardMaterial({ color: 0xaa703f, roughness: 0.65 });
+    const bridgeDeckMat = new THREE.MeshStandardMaterial({
+      map: this.textures.getWafflePlanksTexture(),
+      roughness: 0.6
+    });
     const deck = new THREE.Mesh(new THREE.BoxGeometry(9.0, 0.4, 24), bridgeDeckMat);
     deck.position.set(0, 0.18, 41);
     deck.castShadow = true;
@@ -748,7 +710,7 @@ export class WorldManager {
     // 1. Terrain en terre chocolatée & mousse matcha (Z de 52 à 135, X de -50 à 50)
     const groundGeo = new THREE.PlaneGeometry(90, 84, 24, 24);
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x2e1b12, // Terre cacao riche
+      map: this.textures.getCocoaSoilTexture(),
       roughness: 0.92,
       metalness: 0.04
     });
@@ -981,6 +943,22 @@ export class WorldManager {
         fallbackType: 'lantern'
       });
     });
+
+    // Kiosque de thé / Gazebo dans la forêt
+    this.loadProp('./assets/props/teacup-gazebo.glb', -22, 0, 96, {
+      scale: 1.15,
+      rotY: 0.4,
+      radius: 3.2,
+      fallbackType: 'box'
+    });
+
+    // Tour de gaufres gourmande
+    this.loadProp('./assets/props/waffle-tower.glb', 22, 0, 108, {
+      scale: 1.1,
+      rotY: -0.2,
+      radius: 2.5,
+      fallbackType: 'box'
+    });
   }
 
   buildMiniGamePortalGate(parent, x, z) {
@@ -1042,6 +1020,22 @@ export class WorldManager {
     parent.add(portal);
     this.physics.addObstacle(x - 4, z, 1.0);
     this.physics.addObstacle(x + 4, z, 1.0);
+
+    // Borne Arcade 3D près du portail
+    this.loadProp('./assets/props/arcade-duel.glb', x - 4.8, 0, z + 1.6, {
+      scale: 1.15,
+      rotY: 0.4,
+      radius: 1.5,
+      fallbackType: 'box'
+    });
+
+    // Dé Bwed porte-bonheur géant près du portail
+    this.loadProp('./assets/props/bwed-dice.glb', x + 4.8, 0.35, z + 1.6, {
+      scale: 1.8,
+      rotY: 0.6,
+      radius: 1.2,
+      fallbackType: 'box'
+    });
   }
 
   /* --------------------------------------------------------------------------

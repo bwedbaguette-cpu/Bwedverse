@@ -208,7 +208,7 @@ export class EmoteManager {
       }
 
       b.targetGroup.getWorldPosition(tempVec);
-      tempVec.y += 2.8 + (age / b.duration) * 0.4; // Float slowly upward
+      tempVec.y += 3.25 + (age / b.duration) * 0.45; // Float slowly upward above nameplate
 
       tempVec.project(this.camera);
 
@@ -221,7 +221,9 @@ export class EmoteManager {
       const screenX = (tempVec.x * 0.5 + 0.5) * width;
       const screenY = (-tempVec.y * 0.5 + 0.5) * height;
 
-      b.element.style.transform = `translate(-50%, -100%) translate(${screenX.toFixed(1)}px, ${screenY.toFixed(1)}px)`;
+      b.element.style.left = `${screenX.toFixed(1)}px`;
+      b.element.style.top = `${screenY.toFixed(1)}px`;
+      b.element.style.transform = 'translate(-50%, -100%)';
     }
   }
 }

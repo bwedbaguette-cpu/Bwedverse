@@ -140,55 +140,84 @@
       </footer>
     </div>
 
-    <!-- World Editor Toolbar & Inspector (Docked Top-Center) -->
-    <div class="world-editor-bar" id="worldEditorBar" hidden>
-      <div class="editor-tools-group">
-        <span class="editor-kicker">3D EDITOR</span>
-        <button class="editor-tool-btn active" id="toolSelectBtn" type="button">Select &amp; Move</button>
-        <button class="editor-tool-btn" id="toolPlaceBtn" type="button">Place Prop</button>
-        <button class="editor-tool-btn danger" id="toolDeleteBtn" type="button">Delete</button>
-      </div>
-
-      <div class="editor-palette-group">
-        <span>Prop:</span>
-        <select class="editor-prop-select" id="editorPropSelect">
-          <option value="pistachio-tree">Pistachio Tree (GLB)</option>
-          <option value="pretzel-bench">Pretzel Bench (GLB)</option>
-          <option value="honey-lantern">Honey Lantern (GLB)</option>
-          <option value="marshmallow-campfire">Campfire (GLB)</option>
-          <option value="hazelnut-cup">Hazelnut Cup (GLB)</option>
-          <option value="pastry-tree">Matcha Pine Tree</option>
-          <option value="chocolate-boulder">Cocoa Boulder</option>
-        </select>
-      </div>
-
-      <div class="editor-actions-group">
-        <button class="modal-btn tiny primary" id="exportLayoutBtn" type="button">Export JSON</button>
-        <button class="modal-btn tiny" id="saveLayoutBtn" type="button">Save Layout</button>
-        <button class="modal-btn tiny" id="resetLayoutBtn" type="button">Reset</button>
-      </div>
-
-      <!-- Selected Prop Inspector -->
-      <div class="editor-inspector" id="editorInspector" hidden>
-        <div class="inspector-header">
-          <strong id="inspectorPropTitle">Prop</strong>
-          <span id="inspectorCoords">X: 0 | Z: 0</span>
+    <!-- 3D World Builder Dock -->
+    <div class="world-editor-dock" id="worldEditorBar" hidden>
+      <!-- Top Control Header -->
+      <div class="editor-dock-header">
+        <div class="editor-modes-pill">
+          <button class="editor-mode-btn active" id="toolSelectBtn" type="button" title="Select, move, rotate, and scale props (Key: V)">
+            <span class="mode-key">V</span>
+            <span class="mode-label">Select</span>
+          </button>
+          <button class="editor-mode-btn" id="toolPlaceBtn" type="button" title="Place selected prop on terrain (Key: B)">
+            <span class="mode-key">B</span>
+            <span class="mode-label">Place</span>
+          </button>
+          <button class="editor-mode-btn danger" id="toolDeleteBtn" type="button" title="Delete clicked prop (Key: X)">
+            <span class="mode-key">X</span>
+            <span class="mode-label">Erase</span>
+          </button>
         </div>
-        <div class="inspector-controls">
-          <div class="inspector-btn-row">
-            <span>Move:</span>
-            <button class="insp-btn" id="inspBtnMoveLeft" type="button">&larr;</button>
-            <button class="insp-btn" id="inspBtnMoveRight" type="button">&rarr;</button>
-            <button class="insp-btn" id="inspBtnMoveUp" type="button">&uarr;</button>
-            <button class="insp-btn" id="inspBtnMoveDown" type="button">&darr;</button>
+
+        <div class="editor-category-tabs">
+          <button class="editor-cat-btn active" data-cat="all" type="button">All</button>
+          <button class="editor-cat-btn" data-cat="buildings" type="button">Buildings</button>
+          <button class="editor-cat-btn" data-cat="nature" type="button">Nature</button>
+          <button class="editor-cat-btn" data-cat="props" type="button">Furniture</button>
+        </div>
+
+        <div class="editor-dock-actions">
+          <button class="editor-action-btn primary" id="saveLayoutBtn" type="button" title="Save custom layout to browser storage">Save</button>
+          <button class="editor-action-btn" id="exportLayoutBtn" type="button" title="Download layout as JSON">Export</button>
+          <button class="editor-action-btn danger-text" id="resetLayoutBtn" type="button" title="Reset custom layout">Reset</button>
+          <button class="editor-close-btn" id="closeEditorBtn" type="button" title="Exit Editor">&times;</button>
+        </div>
+      </div>
+
+      <!-- Visual Prop Selection Carousel / Tray -->
+      <div class="editor-prop-tray" id="editorPropTray"></div>
+
+      <!-- Selected Prop Inspector Drawer -->
+      <div class="editor-inspector-card" id="editorInspector" hidden>
+        <div class="inspector-card-header">
+          <div class="inspector-title-wrap">
+            <span class="inspector-tag">SELECTED PROP</span>
+            <strong class="inspector-prop-title" id="inspectorPropTitle">Pistachio Tree</strong>
           </div>
-          <div class="inspector-btn-row">
-            <span id="inspectorRot">Rot: 0°</span>
-            <button class="insp-btn" id="inspBtnRotate" type="button">+45°</button>
-            <span id="inspectorScale">Scale: 1x</span>
-            <button class="insp-btn" id="inspBtnScaleDown" type="button">-</button>
-            <button class="insp-btn" id="inspBtnScaleUp" type="button">+</button>
-            <button class="insp-btn danger" id="inspBtnDelete" type="button">Remove</button>
+          <span class="inspector-coords" id="inspectorCoords">X: 0 &middot; Z: 0</span>
+        </div>
+
+        <div class="inspector-card-body">
+          <div class="inspector-control-group">
+            <span class="insp-group-label">Nudge:</span>
+            <div class="insp-btn-row">
+              <button class="insp-nudge-btn" id="inspBtnMoveLeft" type="button" title="Move Left (X -0.5m)">&larr;</button>
+              <button class="insp-nudge-btn" id="inspBtnMoveRight" type="button" title="Move Right (X +0.5m)">&rarr;</button>
+              <button class="insp-nudge-btn" id="inspBtnMoveUp" type="button" title="Move Forward (Z -0.5m)">&uarr;</button>
+              <button class="insp-nudge-btn" id="inspBtnMoveDown" type="button" title="Move Backward (Z +0.5m)">&darr;</button>
+            </div>
+          </div>
+
+          <div class="inspector-control-group">
+            <span class="insp-group-label" id="inspectorRot">Rot: 0°</span>
+            <div class="insp-btn-row">
+              <button class="insp-step-btn" id="inspBtnRotate" type="button">+45°</button>
+              <button class="insp-step-btn" id="inspBtnRotate90" type="button">+90°</button>
+            </div>
+          </div>
+
+          <div class="inspector-control-group">
+            <span class="insp-group-label" id="inspectorScale">Scale: 1.0x</span>
+            <div class="insp-btn-row">
+              <button class="insp-step-btn" id="inspBtnScaleDown" type="button">&minus;</button>
+              <button class="insp-step-btn" id="inspBtnScaleReset" type="button">1x</button>
+              <button class="insp-step-btn" id="inspBtnScaleUp" type="button">+</button>
+            </div>
+          </div>
+
+          <div class="inspector-action-row">
+            <button class="insp-action-btn" id="inspBtnClone" type="button" title="Duplicate selected prop">Duplicate</button>
+            <button class="insp-action-btn danger" id="inspBtnDelete" type="button" title="Delete selected prop">Remove</button>
           </div>
         </div>
       </div>
