@@ -26,6 +26,7 @@ export class HUD {
     this.onToggleShadows = options.onToggleShadows || null;
     this.onToggleResolution = options.onToggleResolution || null;
     this.onCameraDistance = options.onCameraDistance || null;
+    this.onTimeOfDayChange = options.onTimeOfDayChange || null;
 
     // Interaction courante
     this.currentInteractionTrigger = null;
@@ -38,6 +39,7 @@ export class HUD {
     this.dom = {
       districtKicker: document.getElementById('districtKicker'),
       districtName: document.getElementById('districtName'),
+      districtTime: document.getElementById('districtTime'),
       playerCountBadge: document.getElementById('playerCountBadge'),
       playerNameInput: document.getElementById('playerNameInput'),
       changeNameBtn: document.getElementById('changeNameBtn'),
@@ -45,6 +47,13 @@ export class HUD {
       saveNameBtn: document.getElementById('saveNameBtn'),
       cancelNameBtn: document.getElementById('cancelNameBtn'),
       currentPlayerName: document.getElementById('currentPlayerName'),
+
+      // Dialogue PNJ
+      dialogueModal: document.getElementById('dialogueModal'),
+      dialogueSpeakerRole: document.getElementById('dialogueSpeakerRole'),
+      dialogueSpeakerName: document.getElementById('dialogueSpeakerName'),
+      dialogueContent: document.getElementById('dialogueContent'),
+      closeDialogueBtn: document.getElementById('closeDialogueBtn'),
 
       // Garde-robe
       changeAvatarBtn: document.getElementById('changeAvatarBtn'),
@@ -62,6 +71,7 @@ export class HUD {
       // Paramètres
       openSettingsBtn: document.getElementById('openSettingsBtn'),
       settingsModal: document.getElementById('settingsModal'),
+      timeOfDaySelect: document.getElementById('timeOfDaySelect'),
       shadowsSettingSelect: document.getElementById('shadowsSettingSelect'),
       resolutionSettingSelect: document.getElementById('resolutionSettingSelect'),
       camDistanceSlider: document.getElementById('camDistanceSlider'),
@@ -164,6 +174,30 @@ export class HUD {
     if (this.dom.districtName && name) {
       this.dom.districtName.textContent = name;
     }
+  }
+
+  setDistrictTime(timeStr) {
+    if (this.dom.districtTime && timeStr) {
+      this.dom.districtTime.textContent = timeStr;
+    }
+  }
+
+  showDialogue(npc) {
+    if (!npc) return;
+    if (this.dom.dialogueSpeakerRole) {
+      this.dom.dialogueSpeakerRole.textContent = `[NPC] ${npc.role}`;
+    }
+    if (this.dom.dialogueSpeakerName) {
+      this.dom.dialogueSpeakerName.textContent = npc.name;
+    }
+    if (this.dom.dialogueContent) {
+      this.dom.dialogueContent.textContent = npc.dialogue;
+    }
+    this.openModal('dialogueModal');
+  }
+
+  closeDialogue() {
+    this.closeModal('dialogueModal');
   }
 
   updatePlayerCount(count) {
@@ -397,6 +431,12 @@ export class HUD {
       this.closeModal('settingsModal');
     });
 
+    this.dom.timeOfDaySelect?.addEventListener('change', (e) => {
+      if (this.onTimeOfDayChange) {
+        this.onTimeOfDayChange(e.target.value);
+      }
+    });
+
     this.dom.shadowsSettingSelect?.addEventListener('change', (e) => {
       const enabled = e.target.value === 'true';
       if (this.onToggleShadows) {
@@ -433,6 +473,10 @@ export class HUD {
 
     this.dom.zoomOutBtn?.addEventListener('click', () => {
       if (this.onZoomOut) this.onZoomOut();
+    });
+
+    this.dom.closeDialogueBtn?.addEventListener('click', () => {
+      this.closeDialogue();
     });
 
     // 7. Fermeture automatique des modales avec data-close-modal

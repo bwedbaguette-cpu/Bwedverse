@@ -45,6 +45,25 @@
   gap: 2px;
 }
 
+.district-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.district-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold-main);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 209, 90, 0.25);
+  border-radius: 6px;
+  padding: 1px 6px;
+  letter-spacing: 0.08em;
+}
+
 .district-kicker {
   font-family: 'DM Mono', monospace;
   font-size: 9.5px;
@@ -1375,6 +1394,317 @@
   cursor: pointer;
 }
 
+/* ==========================================================================
+   10. IN-BROWSER 3D WORLD EDITOR
+   ========================================================================== */
+.world-editor-bar {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(22, 10, 5, 0.94);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border-gold);
+  border-radius: 16px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
+  z-index: 50;
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+.editor-tools-group,
+.editor-palette-group,
+.editor-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--gold-main);
+  letter-spacing: 0.12em;
+  margin-right: 4px;
+}
+
+.editor-tool-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 209, 90, 0.3);
+  border-radius: 8px;
+  color: var(--cream);
+  font-family: 'Fredoka', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.editor-tool-btn:hover {
+  border-color: var(--gold-main);
+  color: var(--gold-main);
+  background: rgba(255, 209, 90, 0.12);
+}
+
+.editor-tool-btn.active {
+  background: var(--gold-main);
+  color: #1a0802;
+  border-color: var(--gold-main);
+  font-weight: 700;
+}
+
+.editor-tool-btn.danger {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.editor-tool-btn.danger.active {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.editor-prop-select {
+  background: #140804;
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  color: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  padding: 5px 8px;
+  outline: none;
+}
+
+.editor-inspector {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: rgba(22, 10, 5, 0.96);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border-gold);
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 209, 90, 0.2);
+  padding-bottom: 6px;
+}
+
+.inspector-header strong {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13px;
+  color: var(--gold-main);
+}
+
+.inspector-header span {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--cream-soft);
+}
+
+.inspector-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspector-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  color: var(--cream-soft);
+}
+
+.insp-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 209, 90, 0.3);
+  border-radius: 6px;
+  color: var(--cream);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.insp-btn:hover {
+  border-color: var(--gold-main);
+  color: var(--gold-main);
+  background: rgba(255, 209, 90, 0.15);
+}
+
+.insp-btn.danger {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.insp-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fff;
+}
+
+/* ==========================================================================
+   11. COZY NPC DIALOGUE MODAL
+   ========================================================================== */
+.dialogue-card {
+  max-width: 520px;
+  width: 92%;
+  background: linear-gradient(175deg, rgba(38, 18, 9, 0.96) 0%, rgba(20, 9, 4, 0.98) 100%);
+  border: 2px solid var(--border-gold);
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+
+.dialogue-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255, 209, 90, 0.2);
+  padding-bottom: 10px;
+}
+
+.dialogue-role-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--gold-main);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dialogue-speaker-name {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--cream);
+  margin: 0;
+}
+
+.dialogue-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #fffaf0;
+  margin: 0;
+  min-height: 48px;
+}
+
+.dialogue-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   12. EMOTE WHEEL MODAL & 3D FLOATING REACTION BADGES
+   ========================================================================== */
+.emote-modal-card {
+  max-width: 480px;
+  width: 90%;
+  background: linear-gradient(175deg, rgba(32, 15, 8, 0.96) 0%, rgba(18, 8, 4, 0.98) 100%);
+  border: 2px solid var(--border-gold);
+  border-radius: 20px;
+  padding: 20px 24px;
+}
+
+.emote-wheel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.emote-card-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 209, 90, 0.25);
+  border-radius: 14px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.emote-card-btn:hover {
+  background: rgba(255, 209, 90, 0.12);
+  border-color: var(--gold-main);
+  transform: translateY(-2px);
+}
+
+.emote-badge-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.emote-label {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.emote-floating-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(18, 8, 4, 0.94);
+  border: 2px solid var(--gold-main);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--gold-main);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  animation: emoteBadgePop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: bottom center;
+  z-index: 15;
+}
+
+@keyframes emoteBadgePop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
 @media (max-width: 600px) {
   .hud-layer {
     padding: 12px;
@@ -1432,5 +1762,23 @@
   .hud-zoom-controls {
     right: 12px;
     bottom: 65px;
+  }
+  .world-editor-bar {
+    top: auto;
+    bottom: 60px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    padding: 6px 10px;
+    gap: 6px;
+    justify-content: center;
+  }
+  .dialogue-card,
+  .emote-modal-card {
+    padding: 16px;
+  }
+  .emote-wheel-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 }

@@ -3,11 +3,15 @@ import { CameraController } from './core/CameraController.js';
 import { InputManager } from './core/InputManager.js';
 import { PhysicsWorld } from './core/PhysicsWorld.js';
 import { WorldManager } from './world/WorldManager.js';
+import { DayNightCycle } from './world/DayNightCycle.js';
+import { NPCManager } from './world/NPCManager.js';
 import { LocalPlayer } from './entities/LocalPlayer.js';
 import { RemotePlayer } from './entities/RemotePlayer.js';
 import { NetworkAdapter } from './net/NetworkAdapter.js';
 import { HUD } from './ui/HUD.js';
 import { ChatManager } from './ui/ChatManager.js';
+import { EmoteManager } from './ui/EmoteManager.js';
+import { WorldEditor } from './editor/WorldEditor.js';
 import { VirtualJoystick } from './ui/VirtualJoystick.js';
 import { NETWORK } from '../../shared/constants.js';
 
@@ -25,10 +29,14 @@ class BwedWorldApp {
     this.engine = null;
     this.physics = null;
     this.world = null;
+    this.dayNight = null;
+    this.npcs = null;
     this.cameraController = null;
     this.input = null;
     this.hud = null;
     this.chat = null;
+    this.emotes = null;
+    this.editor = null;
 
     this.localPlayer = null;
     this.remotePlayers = new Map();
@@ -59,6 +67,12 @@ class BwedWorldApp {
     this.world = new WorldManager(this.engine.scene, this.physics, ({ kicker, name }) => {
       this.hud?.setDistrict(kicker, name);
     });
+
+    // 3b. Day / Night cycle & atmospheric sky
+    this.dayNight = new DayNightCycle(this.engine.scene, this.world.sunLight, this.world.ambientLight);
+
+    // 3c. Cozy Village NPCs
+    this.npcs = new NPCManager(this.engine.scene, this.physics);
 
     // 4. Panoramic isometric camera
     this.cameraController = new CameraController(this.engine.camera);
@@ -113,6 +127,9 @@ class BwedWorldApp {
       },
       onCameraDistance: (dist) => {
         this.cameraController.setDistance(dist);
+      },
+      onTimeOfDayChange: (mode) => {
+        this.dayNight?.setMode(mode);
       }
     });
 
@@ -136,6 +153,26 @@ class BwedWorldApp {
     this.network.onChatMessage = (data) => {
       this.chat.handleIncomingMessage(data);
     };
+
+    // 10b. Emote wheel & 3D overhead reactions
+    this.emotes = new EmoteManager({
+      camera: this.engine.camera,
+      localPlayer: this.localPlayer,
+      remotePlayers: this.remotePlayers,
+      network: this.network
+    });
+
+    this.network.onEmote = (data) => {
+      this.emotes?.handleRemoteEmote(data);
+    };
+
+    // 10c. In-browser 3D World Editor
+    this.editor = new WorldEditor({
+      scene: this.engine.scene,
+      camera: this.engine.camera,
+      world: this.world,
+      physics: this.physics
+    });
 
     // 11. Render loop
     this.engine.onUpdate((delta, elapsed) => this.update(delta, elapsed));
@@ -209,18 +246,36 @@ class BwedWorldApp {
     this.world.update(delta, elapsed);
     this.world.updateAtmosphere(this.localPlayer.position);
 
+    // 2b. Day / Night cycle & atmospheric sky
+    if (this.dayNight) {
+      this.dayNight.update(delta);
+      this.hud?.setDistrictTime(this.dayNight.getTimeFormatted());
+    }
+
+    // 2c. Cozy NPCs idle breathing
+    if (this.npcs) {
+      this.npcs.update(delta);
+    }
+
     // 3. Smooth camera tracking
     this.cameraController.setTarget(this.localPlayer.position);
     this.cameraController.update(delta);
 
-    // 4. Discreet contextual interaction prompt
-    const activeZone = this.world.getNearestInteraction(this.localPlayer.position);
-    if (activeZone) {
-      this.hud.showInteractionPrompt(activeZone.actionLabel, () => {
-        this.hud.openModal(activeZone.targetOverlay);
+    // 4. Discreet contextual interaction prompt (NPCs prioritized, then shops/portals)
+    const activeNpc = this.npcs ? this.npcs.getNearestNPC(this.localPlayer.position, 3.2) : null;
+    if (activeNpc) {
+      this.hud.showInteractionPrompt(`Talk to ${activeNpc.name}`, () => {
+        this.hud.showDialogue(activeNpc);
       });
     } else {
-      this.hud.hideInteractionPrompt();
+      const activeZone = this.world.getNearestInteraction(this.localPlayer.position);
+      if (activeZone) {
+        this.hud.showInteractionPrompt(activeZone.actionLabel, () => {
+          this.hud.openModal(activeZone.targetOverlay);
+        });
+      } else {
+        this.hud.hideInteractionPrompt();
+      }
     }
 
     // 5. Rotating compass radar update
@@ -231,9 +286,12 @@ class BwedWorldApp {
       Array.from(this.remotePlayers.values())
     );
 
-    // 6. 3D speech bubbles positioning
+    // 6. 3D speech bubbles & emote reactions positioning
     if (this.chat) {
       this.chat.update(delta);
+    }
+    if (this.emotes) {
+      this.emotes.update(delta);
     }
 
     // 7. Interpolate remote players

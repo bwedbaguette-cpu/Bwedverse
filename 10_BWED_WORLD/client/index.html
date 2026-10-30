@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/world.css?v=2.2.0" />
-    <link rel="stylesheet" href="./css/hud.css?v=2.2.0" />
+    <link rel="stylesheet" href="./css/world.css?v=2.3.0" />
+    <link rel="stylesheet" href="./css/hud.css?v=2.3.0" />
     <script type="importmap">
       {
         "imports": {
@@ -32,7 +32,7 @@
     <!-- 3D Canvas Viewport -->
     <div id="canvasContainer"></div>
 
-    <!-- 3D Overhead Speech Bubbles Layer -->
+    <!-- 3D Overhead Speech Bubbles & Badges Layer -->
     <div class="chat-bubbles-layer" id="chatBubblesLayer"></div>
 
     <!-- 2D HUD Layer -->
@@ -40,7 +40,10 @@
       <!-- Top Bar -->
       <header class="hud-top-bar">
         <div class="district-badge">
-          <span class="district-kicker" id="districtKicker">CENTRAL VILLAGE &middot; HUB</span>
+          <div class="district-header-row">
+            <span class="district-kicker" id="districtKicker">CENTRAL VILLAGE &middot; HUB</span>
+            <span class="district-time" id="districtTime">12:00</span>
+          </div>
           <h1 class="district-name" id="districtName">The Golden Butter Square</h1>
         </div>
 
@@ -55,12 +58,20 @@
             <strong id="currentAvatarName">Chef Emile</strong>
           </button>
 
+          <button class="hud-pill" id="openEmotesBtn" type="button" title="Open Emote Wheel (or press E)">
+            <span>Emotes [E]</span>
+          </button>
+
           <button class="hud-pill" id="openWorldMapBtn" type="button" title="World Map & Fast Travel">
             <span>Map &amp; TP</span>
           </button>
 
           <button class="hud-pill" id="openSettingsBtn" type="button" title="Settings & Options">
             <span>Settings</span>
+          </button>
+
+          <button class="hud-pill editor-toggle-pill" id="toggleEditorBtn" type="button" title="Toggle In-Browser 3D World Editor">
+            <span>World Editor</span>
           </button>
 
           <a class="hud-pill back-link" href="../../index.html" title="Return to Bwedverse Hub">&larr; Bwedverse Hub</a>
@@ -124,9 +135,88 @@
           <kbd>&larr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd>
           <span>/</span>
           <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
-          <span>&middot; Run: <kbd>Shift</kbd> &middot; Chat: <kbd>Enter</kbd> &middot; Menu: <kbd>Esc</kbd></span>
+          <span>&middot; Run: <kbd>Shift</kbd> &middot; Chat: <kbd>Enter</kbd> &middot; Emotes: <kbd>E</kbd> &middot; Menu: <kbd>Esc</kbd></span>
         </div>
       </footer>
+    </div>
+
+    <!-- World Editor Toolbar & Inspector (Docked Top-Center) -->
+    <div class="world-editor-bar" id="worldEditorBar" hidden>
+      <div class="editor-tools-group">
+        <span class="editor-kicker">3D EDITOR</span>
+        <button class="editor-tool-btn active" id="toolSelectBtn" type="button">Select &amp; Move</button>
+        <button class="editor-tool-btn" id="toolPlaceBtn" type="button">Place Prop</button>
+        <button class="editor-tool-btn danger" id="toolDeleteBtn" type="button">Delete</button>
+      </div>
+
+      <div class="editor-palette-group">
+        <span>Prop:</span>
+        <select class="editor-prop-select" id="editorPropSelect">
+          <option value="pistachio-tree">Pistachio Tree (GLB)</option>
+          <option value="pretzel-bench">Pretzel Bench (GLB)</option>
+          <option value="honey-lantern">Honey Lantern (GLB)</option>
+          <option value="marshmallow-campfire">Campfire (GLB)</option>
+          <option value="hazelnut-cup">Hazelnut Cup (GLB)</option>
+          <option value="pastry-tree">Matcha Pine Tree</option>
+          <option value="chocolate-boulder">Cocoa Boulder</option>
+        </select>
+      </div>
+
+      <div class="editor-actions-group">
+        <button class="modal-btn tiny primary" id="exportLayoutBtn" type="button">Export JSON</button>
+        <button class="modal-btn tiny" id="saveLayoutBtn" type="button">Save Layout</button>
+        <button class="modal-btn tiny" id="resetLayoutBtn" type="button">Reset</button>
+      </div>
+
+      <!-- Selected Prop Inspector -->
+      <div class="editor-inspector" id="editorInspector" hidden>
+        <div class="inspector-header">
+          <strong id="inspectorPropTitle">Prop</strong>
+          <span id="inspectorCoords">X: 0 | Z: 0</span>
+        </div>
+        <div class="inspector-controls">
+          <div class="inspector-btn-row">
+            <span>Move:</span>
+            <button class="insp-btn" id="inspBtnMoveLeft" type="button">&larr;</button>
+            <button class="insp-btn" id="inspBtnMoveRight" type="button">&rarr;</button>
+            <button class="insp-btn" id="inspBtnMoveUp" type="button">&uarr;</button>
+            <button class="insp-btn" id="inspBtnMoveDown" type="button">&darr;</button>
+          </div>
+          <div class="inspector-btn-row">
+            <span id="inspectorRot">Rot: 0°</span>
+            <button class="insp-btn" id="inspBtnRotate" type="button">+45°</button>
+            <span id="inspectorScale">Scale: 1x</span>
+            <button class="insp-btn" id="inspBtnScaleDown" type="button">-</button>
+            <button class="insp-btn" id="inspBtnScaleUp" type="button">+</button>
+            <button class="insp-btn danger" id="inspBtnDelete" type="button">Remove</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NPC Dialogue Modal -->
+    <div class="modal-overlay" id="dialogueModal" hidden>
+      <div class="modal-card dialogue-card">
+        <div class="dialogue-header">
+          <span class="dialogue-role-badge" id="dialogueSpeakerRole">[NPC] Role</span>
+          <h3 class="dialogue-speaker-name" id="dialogueSpeakerName">Speaker</h3>
+        </div>
+        <p class="dialogue-text" id="dialogueContent">Dialogue message...</p>
+        <div class="dialogue-actions">
+          <button class="modal-btn primary" id="closeDialogueBtn" type="button">Continue &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emote Wheel Modal (Press E) -->
+    <div class="modal-overlay" id="emoteModal" hidden>
+      <div class="modal-card emote-modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Emotes &amp; Reactions (Press E)</h2>
+          <button class="modal-close-btn" data-close-modal="emoteModal" type="button" title="Close">&times;</button>
+        </div>
+        <div class="emote-wheel-grid" id="emoteWheelGrid"></div>
+      </div>
     </div>
 
     <!-- Nickname Modal -->
@@ -237,13 +327,28 @@
           </div>
           <button class="modal-close-btn" data-close-modal="settingsModal" type="button" title="Close">&times;</button>
         </div>
-        <p class="modal-subtitle">Adjust your graphics, camera and gameplay preferences:</p>
+        <p class="modal-subtitle">Adjust your graphics, camera, time of day and gameplay preferences:</p>
 
         <div class="settings-sections">
           <!-- Graphics Group -->
           <div class="settings-group">
             <h3 class="settings-group-title">Graphics &amp; Rendering</h3>
             
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Time of Day &amp; Atmosphere</strong>
+                <span>Day/night cycle speed or fixed hour</span>
+              </div>
+              <div class="settings-control">
+                <select class="settings-select" id="timeOfDaySelect">
+                  <option value="auto" selected>Continuous Cycle (4 min)</option>
+                  <option value="day">Sunny Noon (Day)</option>
+                  <option value="sunset">Golden Hour (Sunset)</option>
+                  <option value="night">Starry Night &amp; Lanterns</option>
+                </select>
+              </div>
+            </div>
+
             <div class="settings-row">
               <div class="settings-label">
                 <strong>Dynamic Shadows</strong>
@@ -427,15 +532,15 @@
           <div class="roadmap-step current">
             <div class="roadmap-bullet">&rarr;</div>
             <div class="roadmap-content">
-              <strong>Milestone 4 &middot; Compass Mini-Map, Chat &amp; Teleport</strong>
-              <span>Rotating compass radar, in-game chat with overhead speech bubbles, private whispers and fast travel.</span>
+              <strong>Milestone 4 &middot; World Editor, Day/Night &amp; Cozy NPCs</strong>
+              <span>In-browser 3D prop editor, JSON export, rotating day/night cycle, NPCs with dialogues and emote wheel.</span>
             </div>
           </div>
           <div class="roadmap-step future">
             <div class="roadmap-bullet">&bull;</div>
             <div class="roadmap-content">
-              <strong>Milestone 5 &middot; Living World: Day/Night &amp; Cozy NPCs</strong>
-              <span>Server-synchronized clock, interactive village NPCs with dialogue trees and cute emote reactions.</span>
+              <strong>Milestone 5 &middot; Living World: Quests &amp; Guild Economy</strong>
+              <span>Baking quests, recipe inventory, trade stalls and community land claiming.</span>
             </div>
           </div>
         </div>
@@ -553,6 +658,6 @@
     </div>
 
     <!-- Main Client Engine -->
-    <script type="module" src="./src/main.js?v=2.2.0"></script>
+    <script type="module" src="./src/main.js?v=2.3.0"></script>
   </body>
 </html>

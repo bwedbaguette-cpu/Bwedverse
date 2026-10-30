@@ -20,6 +20,7 @@ export class NetworkAdapter {
     this.onPlayerUpdated = null;
     this.onPlayerLeft = null;
     this.onChatMessage = null;
+    this.onEmote = null;
 
     // Timbres des joueurs distants pour détecter les déconnexions
     this.remoteHeartbeats = new Map();
@@ -144,6 +145,12 @@ export class NetworkAdapter {
           if (this.onChatMessage) {
             this.onChatMessage(data);
           }
+        }
+        break;
+
+      case 'EMOTE':
+        if (this.onEmote) {
+          this.onEmote(data);
         }
         break;
     }
