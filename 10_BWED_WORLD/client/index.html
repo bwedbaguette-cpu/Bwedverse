@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800;900&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/world.css?v=2.4.0" />
-    <link rel="stylesheet" href="./css/hud.css?v=2.4.0" />
+    <link rel="stylesheet" href="./css/world.css?v=2.5.0" />
+    <link rel="stylesheet" href="./css/hud.css?v=2.5.0" />
     <script type="importmap">
       {
         "imports": {
@@ -126,8 +126,9 @@
         </button>
       </div>
 
-      <!-- Panoramic Zoom Controls -->
+      <!-- Panoramic Zoom & Camera Controls -->
       <div class="hud-zoom-controls">
+        <button class="zoom-btn cam-toggle" id="toggleCamStyleBtn" type="button" title="Toggle Camera: Isometric Diorama / Perspective">Iso</button>
         <button class="zoom-btn" id="zoomInBtn" type="button" title="Zoom In">+</button>
         <button class="zoom-btn" id="zoomOutBtn" type="button" title="Zoom Out">&minus;</button>
       </div>
@@ -161,6 +162,13 @@
             <span class="mode-key">X</span>
             <span class="mode-label">Erase</span>
           </button>
+        </div>
+
+        <div class="editor-snap-pill">
+          <span class="snap-label">Snap:</span>
+          <button class="editor-snap-btn active" data-snap="1.0" type="button" title="1-meter tile grid">1m</button>
+          <button class="editor-snap-btn" data-snap="2.0" type="button" title="2-meter large tile grid">2m</button>
+          <button class="editor-snap-btn" data-snap="0" type="button" title="Free placement (no snap)">Free</button>
         </div>
 
         <div class="editor-category-tabs">
@@ -289,61 +297,61 @@
         <p class="modal-subtitle">Click on any landmark to instantly fast-travel there:</p>
         <div class="teleport-grid">
           <!-- Zone 1 -->
-          <div class="teleport-card" data-tp-x="0" data-tp-z="4">
+          <div class="teleport-card" data-tp-x="0" data-tp-z="3">
             <span class="teleport-zone-tag">Central District</span>
             <h4 class="teleport-title">Golden Butter Fountain</h4>
             <span class="teleport-coords">Coords: X: 0 &middot; Z: 0</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
-          <div class="teleport-card" data-tp-x="-22" data-tp-z="-2.4">
+          <div class="teleport-card" data-tp-x="-10.5" data-tp-z="-1.5">
             <span class="teleport-zone-tag">Central District</span>
             <h4 class="teleport-title">Golden Crust Bakery</h4>
-            <span class="teleport-coords">Coords: X: -27 &middot; Z: -2</span>
+            <span class="teleport-coords">Coords: X: -13 &middot; Z: -1.5</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
-          <div class="teleport-card" data-tp-x="22" data-tp-z="-2">
+          <div class="teleport-card" data-tp-x="10.5" data-tp-z="-1.5">
             <span class="teleport-zone-tag">Central District</span>
             <h4 class="teleport-title">The Happy Toast Cafe</h4>
-            <span class="teleport-coords">Coords: X: 27 &middot; Z: -2</span>
+            <span class="teleport-coords">Coords: X: 13 &middot; Z: -1.5</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
-          <div class="teleport-card" data-tp-x="20" data-tp-z="-20">
+          <div class="teleport-card" data-tp-x="9.5" data-tp-z="-11">
             <span class="teleport-zone-tag">Central District</span>
             <h4 class="teleport-title">The Sourdough Windmill</h4>
-            <span class="teleport-coords">Coords: X: 24 &middot; Z: -24</span>
+            <span class="teleport-coords">Coords: X: 11 &middot; Z: -12.5</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <!-- Transition -->
-          <div class="teleport-card highlight" data-tp-x="0" data-tp-z="41">
+          <div class="teleport-card highlight" data-tp-x="0" data-tp-z="31">
             <span class="teleport-zone-tag">Canal Crossing</span>
             <h4 class="teleport-title">Almond Butter Bridge</h4>
-            <span class="teleport-coords">Coords: X: 0 &middot; Z: 41</span>
+            <span class="teleport-coords">Coords: X: 0 &middot; Z: 31</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
           <!-- Zone 2 -->
-          <div class="teleport-card" data-tp-x="-14" data-tp-z="84">
+          <div class="teleport-card" data-tp-x="-7.5" data-tp-z="54">
             <span class="teleport-zone-tag">Cocoa District</span>
             <h4 class="teleport-title">Chocolate Train Station</h4>
-            <span class="teleport-coords">Coords: X: -18 &middot; Z: 84</span>
+            <span class="teleport-coords">Coords: X: -10 &middot; Z: 54</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
-          <div class="teleport-card" data-tp-x="14" data-tp-z="92">
+          <div class="teleport-card" data-tp-x="8.5" data-tp-z="56">
             <span class="teleport-zone-tag">Cocoa District</span>
             <h4 class="teleport-title">Marshmallow Campfire</h4>
-            <span class="teleport-coords">Coords: X: 18 &middot; Z: 92</span>
+            <span class="teleport-coords">Coords: X: 10 &middot; Z: 56</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
 
-          <div class="teleport-card highlight" data-tp-x="0" data-tp-z="112">
+          <div class="teleport-card highlight" data-tp-x="0" data-tp-z="80">
             <span class="teleport-zone-tag">Cocoa District</span>
             <h4 class="teleport-title">Mini-Game Arcade Portal</h4>
-            <span class="teleport-coords">Coords: X: 0 &middot; Z: 118</span>
+            <span class="teleport-coords">Coords: X: 0 &middot; Z: 82</span>
             <button class="modal-btn primary tiny" type="button">Teleport &rarr;</button>
           </div>
         </div>
@@ -366,6 +374,19 @@
           <!-- Graphics Group -->
           <div class="settings-group">
             <h3 class="settings-group-title">Graphics &amp; Rendering</h3>
+
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Camera Angle &amp; Style</strong>
+                <span>Switch between 2.5D Isometric Diorama and 3/4 Perspective</span>
+              </div>
+              <div class="settings-control">
+                <select class="settings-select" id="cameraStyleSelect">
+                  <option value="isometric" selected>Isometric Diorama (Dofus / Nifty Island)</option>
+                  <option value="perspective">3/4 Perspective (Animal Crossing)</option>
+                </select>
+              </div>
+            </div>
             
             <div class="settings-row">
               <div class="settings-label">
@@ -717,6 +738,6 @@
     </div>
 
     <!-- Main Client Engine -->
-    <script type="module" src="./src/main.js?v=2.4.0"></script>
+    <script type="module" src="./src/main.js?v=2.5.0"></script>
   </body>
 </html>

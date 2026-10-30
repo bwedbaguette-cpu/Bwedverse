@@ -24,6 +24,7 @@ export class WorldEditor {
     this.currentTool = 'select'; // 'select', 'place', 'delete'
     this.selectedPropId = 'pistachio-tree';
     this.activeCategory = 'all';
+    this.snapGrid = 1.0; // 1m, 2m, or 0 (freeform)
 
     // Throttled pointermove variables
     this.pointerMoveEvent = null;
@@ -113,6 +114,7 @@ export class WorldEditor {
     this.initEvents();
     this.buildPropTray();
     this.loadSavedLayout();
+    this.updateSnapUI();
   }
 
   buildSelectionRing() {
@@ -167,6 +169,14 @@ export class WorldEditor {
         btn.classList.add('active');
         this.activeCategory = btn.getAttribute('data-cat') || 'all';
         this.buildPropTray();
+      });
+    });
+
+    // Grid snapping controls (1m, 2m, Free)
+    document.querySelectorAll('.editor-snap-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const val = parseFloat(btn.dataset.snap) || 0;
+        this.setSnapGrid(val);
       });
     });
 
@@ -346,8 +356,13 @@ export class WorldEditor {
 
     const intersects = this.raycaster.intersectObject(groundMesh, false);
     if (intersects.length > 0) {
-      const pt = intersects[0].point;
-      this.ghostCursor.position.set(pt.x, 0.06, pt.z);
+      let gx = intersects[0].point.x;
+      let gz = intersects[0].point.z;
+      if (this.snapGrid > 0) {
+        gx = Math.round(gx / this.snapGrid) * this.snapGrid;
+        gz = Math.round(gz / this.snapGrid) * this.snapGrid;
+      }
+      this.ghostCursor.position.set(gx, 0.06, gz);
       this.ghostCursor.visible = true;
     } else {
       this.ghostCursor.visible = false;
@@ -365,10 +380,15 @@ export class WorldEditor {
 
       const intersects = this.raycaster.intersectObject(groundMesh, false);
       if (intersects.length > 0) {
-        const pt = intersects[0].point;
+        let px = intersects[0].point.x;
+        let pz = intersects[0].point.z;
+        if (this.snapGrid > 0) {
+          px = Math.round(px / this.snapGrid) * this.snapGrid;
+          pz = Math.round(pz / this.snapGrid) * this.snapGrid;
+        }
         const propDef = this.catalog.find((p) => p.id === this.selectedPropId);
         const scale = propDef?.scale || 1.0;
-        this.spawnProp(this.selectedPropId, pt.x, pt.z, 0, scale);
+        this.spawnProp(this.selectedPropId, px, pz, 0, scale);
       }
       return;
     }
@@ -446,10 +466,33 @@ export class WorldEditor {
     }
   }
 
+  setSnapGrid(grid) {
+    this.snapGrid = grid;
+    this.updateSnapUI();
+  }
+
+  updateSnapUI() {
+    document.querySelectorAll('.editor-snap-btn').forEach((btn) => {
+      const val = parseFloat(btn.dataset.snap) || 0;
+      if ((val === 0 && this.snapGrid === 0) || (val > 0 && Math.abs(val - this.snapGrid) < 0.01)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
   nudgeSelected(dx, dz) {
     if (!this.selectedObject) return;
-    this.selectedObject.x = Number((this.selectedObject.x + dx).toFixed(2));
-    this.selectedObject.z = Number((this.selectedObject.z + dz).toFixed(2));
+    const step = this.snapGrid > 0 ? this.snapGrid : 0.5;
+    let newX = this.selectedObject.x + dx * (step / (Math.abs(dx) || 1));
+    let newZ = this.selectedObject.z + dz * (step / (Math.abs(dz) || 1));
+    if (this.snapGrid > 0) {
+      newX = Math.round(newX / this.snapGrid) * this.snapGrid;
+      newZ = Math.round(newZ / this.snapGrid) * this.snapGrid;
+    }
+    this.selectedObject.x = Number(newX.toFixed(2));
+    this.selectedObject.z = Number(newZ.toFixed(2));
     this.selectedObject.group.position.set(this.selectedObject.x, 0, this.selectedObject.z);
     this.selectionRing.position.set(this.selectedObject.x, 0.08, this.selectedObject.z);
     this.updateInspectorUI();

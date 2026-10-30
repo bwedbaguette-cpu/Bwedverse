@@ -17,13 +17,13 @@ export class MiniMap {
     // World landmarks
     this.landmarks = [
       { id: 'fountain', name: 'Fountain', x: 0, z: 0, color: '#ffd15a', symbol: 'F' },
-      { id: 'bakery', name: 'Bakery', x: -27, z: -2, color: '#e59b24', symbol: 'B' },
-      { id: 'cafe', name: 'Cafe', x: 27, z: -2, color: '#ffb84d', symbol: 'C' },
-      { id: 'mill', name: 'Windmill', x: 24, z: -24, color: '#d4a373', symbol: 'M' },
-      { id: 'bridge', name: 'Bridge', x: 0, z: 41, color: '#a86738', symbol: 'P' },
-      { id: 'station', name: 'Station', x: -18, z: 84, color: '#3d1c06', symbol: 'G' },
-      { id: 'campfire', name: 'Campfire', x: 18, z: 92, color: '#ff5533', symbol: 'C' },
-      { id: 'portal', name: 'Portal', x: 0, z: 118, color: '#22c55e', symbol: 'O' }
+      { id: 'bakery', name: 'Bakery', x: -13, z: -1.5, color: '#e59b24', symbol: 'B' },
+      { id: 'cafe', name: 'Cafe', x: 13, z: -1.5, color: '#ffb84d', symbol: 'C' },
+      { id: 'mill', name: 'Windmill', x: 11, z: -12.5, color: '#d4a373', symbol: 'M' },
+      { id: 'bridge', name: 'Bridge', x: 0, z: 30, color: '#a86738', symbol: 'P' },
+      { id: 'station', name: 'Station', x: -10, z: 54, color: '#3d1c06', symbol: 'G' },
+      { id: 'campfire', name: 'Campfire', x: 10, z: 56, color: '#ff5533', symbol: 'C' },
+      { id: 'portal', name: 'Portal', x: 0, z: 82, color: '#22c55e', symbol: 'O' }
     ];
 
     this.initEvents();
@@ -66,32 +66,32 @@ export class MiniMap {
       const px = playerPos.x;
       const pz = playerPos.z;
 
-      // Zone 1 (Herbe matcha) : Z de -50 à 30
+      // Zone 1 (Matcha grass) : Z from -32 to 20
       ctx.fillStyle = 'rgba(110, 143, 72, 0.45)';
-      ctx.fillRect((-45 - px) * scale, (-50 - pz) * scale, 90 * scale, 80 * scale);
+      ctx.fillRect((-36 - px) * scale, (-32 - pz) * scale, 72 * scale, 52 * scale);
 
-      // Grand-place pavée
+      // Cobblestone plaza
       ctx.fillStyle = 'rgba(230, 207, 184, 0.5)';
       ctx.beginPath();
-      ctx.arc((0 - px) * scale, (0 - pz) * scale, 16 * scale, 0, Math.PI * 2);
+      ctx.arc((0 - px) * scale, (0 - pz) * scale, 11 * scale, 0, Math.PI * 2);
       ctx.fill();
 
-      // Canal Chocolaté : Z de 30 à 52
+      // Chocolate Canal : Z from 20 to 40
       ctx.fillStyle = 'rgba(60, 30, 15, 0.85)';
-      ctx.fillRect((-50 - px) * scale, (30 - pz) * scale, 100 * scale, 22 * scale);
+      ctx.fillRect((-40 - px) * scale, (20 - pz) * scale, 80 * scale, 20 * scale);
 
-      // Le Pont : X de -4.5 à 4.5, Z de 29 à 53
+      // Bridge : X from -3.5 to 3.5, Z from 19 to 41
       ctx.fillStyle = 'rgba(170, 112, 63, 0.9)';
-      ctx.fillRect((-4.5 - px) * scale, (29 - pz) * scale, 9 * scale, 24 * scale);
+      ctx.fillRect((-3.5 - px) * scale, (19 - pz) * scale, 7 * scale, 22 * scale);
 
-      // Zone 2 (Terre cacao) : Z de 52 à 135
+      // Zone 2 (Cocoa soil) : Z from 40 to 92
       ctx.fillStyle = 'rgba(46, 27, 18, 0.65)';
-      ctx.fillRect((-45 - px) * scale, (52 - pz) * scale, 90 * scale, 83 * scale);
+      ctx.fillRect((-36 - px) * scale, (40 - pz) * scale, 72 * scale, 52 * scale);
 
-      // Clairière matcha
+      // Campfire clearing
       ctx.fillStyle = 'rgba(61, 84, 39, 0.55)';
       ctx.beginPath();
-      ctx.arc((18 - px) * scale, (92 - pz) * scale, 12 * scale, 0, Math.PI * 2);
+      ctx.arc((10 - px) * scale, (56 - pz) * scale, 8 * scale, 0, Math.PI * 2);
       ctx.fill();
 
       // 2. Repères des Landmarks

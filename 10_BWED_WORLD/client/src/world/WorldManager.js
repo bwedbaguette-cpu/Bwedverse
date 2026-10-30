@@ -69,36 +69,36 @@ export class WorldManager {
         id: 'bakery',
         title: 'Golden Crust Bakery',
         actionLabel: 'Enter Bakery',
-        x: -22,
-        z: -2.4,
-        radius: 3.6,
+        x: -10.5,
+        z: -1.5,
+        radius: 3.2,
         targetOverlay: 'bakeryModal'
       },
       {
         id: 'cafe',
         title: 'The Happy Toast Cafe',
         actionLabel: 'Visit Community Cafe',
-        x: 22,
-        z: -2,
-        radius: 3.6,
+        x: 10.5,
+        z: -1.5,
+        radius: 3.2,
         targetOverlay: 'cafeModal'
       },
       {
         id: 'mill',
         title: 'The Sourdough Windmill',
         actionLabel: 'View Lore & Roadmap',
-        x: 24,
-        z: -20,
-        radius: 3.6,
+        x: 9.5,
+        z: -11.0,
+        radius: 3.2,
         targetOverlay: 'millModal'
       },
       {
         id: 'train_station',
         title: 'Chocolate Train Station',
         actionLabel: 'Check Train Routes',
-        x: -14,
-        z: 84,
-        radius: 3.8,
+        x: -7.5,
+        z: 54.0,
+        radius: 3.5,
         targetOverlay: 'trainModal'
       },
       {
@@ -106,8 +106,8 @@ export class WorldManager {
         title: 'Mini-Game Arcade Portal',
         actionLabel: 'Enter Mini-Game Portal',
         x: 0,
-        z: 118,
-        radius: 3.8,
+        z: 80.0,
+        radius: 3.5,
         targetOverlay: 'minigameModal'
       }
     ];
@@ -125,9 +125,9 @@ export class WorldManager {
     const positions = new Float32Array(count * 3);
 
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 80;
+      positions[i * 3] = (Math.random() - 0.5) * 60;
       positions[i * 3 + 1] = 0.5 + Math.random() * 6.0;
-      positions[i * 3 + 2] = -25 + Math.random() * 140;
+      positions[i * 3 + 2] = -25 + Math.random() * 115;
     }
 
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -221,8 +221,8 @@ export class WorldManager {
     const z1 = CONFIG.biomes['village-center'];
     const z2 = CONFIG.biomes['cacao-forest'];
 
-    // Linear transition along bridge (Z = 28 -> Z = 54)
-    const rawRatio = THREE.MathUtils.clamp((playerPos.z - 28) / 26, 0, 1);
+    // Linear transition along bridge (Z = 20 -> Z = 40)
+    const rawRatio = THREE.MathUtils.clamp((playerPos.z - 20) / 20, 0, 1);
     const t = rawRatio * rawRatio * (3 - 2 * rawRatio);
 
     // Color blending
@@ -248,11 +248,11 @@ export class WorldManager {
     let kicker = 'CENTRAL VILLAGE &middot; HUB';
     let name = 'The Golden Butter Square';
 
-    if (playerPos.z >= 31 && playerPos.z <= 51) {
+    if (playerPos.z >= 20 && playerPos.z <= 40) {
       newDistrictKey = 'bridge-passage';
       kicker = 'CROSSING &middot; CHOCOLATE CANAL';
       name = 'Almond Butter Bridge';
-    } else if (playerPos.z > 51) {
+    } else if (playerPos.z > 40) {
       newDistrictKey = 'cacao-forest';
       kicker = 'COCOA DISTRICT &middot; NATURE';
       name = 'Cocoa Woods & Matcha Clearing';
@@ -273,8 +273,8 @@ export class WorldManager {
     const z1Group = new THREE.Group();
     this.worldGroup.add(z1Group);
 
-    // 1. Terrain en herbe douce (Zone 1 : Z de -50 à 30, X de -50 à 50)
-    const groundGeo = new THREE.PlaneGeometry(90, 80, 24, 24);
+    // 1. Soft Matcha grass ground (Zone 1: Z from -32 to 22, X from -36 to 36)
+    const groundGeo = new THREE.PlaneGeometry(72, 54, 20, 20);
     const groundMat = new THREE.MeshStandardMaterial({
       map: this.textures.getMatchaGrassTexture(),
       roughness: 0.85,
@@ -282,13 +282,13 @@ export class WorldManager {
     });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
-    ground.position.set(0, 0, -10);
+    ground.position.set(0, 0, -5);
     ground.receiveShadow = true;
     z1Group.add(ground);
     this.groundMesh = ground;
 
-    // 2. Grand pavage circulaire de la place
-    const plazaGeo = new THREE.CircleGeometry(16, 32);
+    // 2. Compact circular plaza cobblestone (radius 11m, diameter 22m)
+    const plazaGeo = new THREE.CircleGeometry(11, 32);
     const plazaMat = new THREE.MeshStandardMaterial({
       map: this.textures.getCobblestoneTexture(),
       roughness: 0.7,
@@ -300,8 +300,8 @@ export class WorldManager {
     plaza.receiveShadow = true;
     z1Group.add(plaza);
 
-    // Bordure en pierre caramel
-    const curbGeo = new THREE.RingGeometry(15.7, 16.5, 32);
+    // Caramel stone curb
+    const curbGeo = new THREE.RingGeometry(10.7, 11.4, 32);
     const curbMat = new THREE.MeshStandardMaterial({ color: 0x9e6a3d, roughness: 0.6 });
     const curb = new THREE.Mesh(curbGeo, curbMat);
     curb.rotation.x = -Math.PI / 2;
@@ -309,56 +309,56 @@ export class WorldManager {
     curb.receiveShadow = true;
     z1Group.add(curb);
 
-    // 3. Allées pavées
+    // 3. Cobblestone walkways connecting the plaza
     const roadMat = new THREE.MeshStandardMaterial({
       map: this.textures.getCobblestoneTexture(),
       roughness: 0.75
     });
 
-    // Allée Sud vers le pont (Z de 15 à 30)
-    const roadSouth = new THREE.Mesh(new THREE.PlaneGeometry(8, 20), roadMat);
+    // South Avenue towards the bridge (Z from 9 to 22, width 6m)
+    const roadSouth = new THREE.Mesh(new THREE.PlaneGeometry(6, 13), roadMat);
     roadSouth.rotation.x = -Math.PI / 2;
-    roadSouth.position.set(0, 0.015, 23);
+    roadSouth.position.set(0, 0.015, 15.5);
     roadSouth.receiveShadow = true;
     z1Group.add(roadSouth);
 
-    // Allée Nord (Z de -15 à -38)
-    const roadNorth = new THREE.Mesh(new THREE.PlaneGeometry(6, 26), roadMat);
+    // North Promenade towards the overlook (Z from -9 to -22, width 5m)
+    const roadNorth = new THREE.Mesh(new THREE.PlaneGeometry(5, 13), roadMat);
     roadNorth.rotation.x = -Math.PI / 2;
-    roadNorth.position.set(0, 0.015, -28);
+    roadNorth.position.set(0, 0.015, -15.5);
     roadNorth.receiveShadow = true;
     z1Group.add(roadNorth);
 
-    // Allée Ouest (vers la Boulangerie)
-    const roadWest = new THREE.Mesh(new THREE.PlaneGeometry(16, 6), roadMat);
+    // West Alley towards the Bakery entrance (X from -8 to -14, width 5m)
+    const roadWest = new THREE.Mesh(new THREE.PlaneGeometry(7, 5), roadMat);
     roadWest.rotation.x = -Math.PI / 2;
-    roadWest.position.set(-21, 0.015, 0);
+    roadWest.position.set(-10.5, 0.015, -1.5);
     roadWest.receiveShadow = true;
     z1Group.add(roadWest);
 
-    // Allée Est (vers le Café terrasse)
-    const roadEast = new THREE.Mesh(new THREE.PlaneGeometry(16, 6), roadMat);
+    // East Alley towards the Honey Cafe terrace (X from 8 to 14, width 5m)
+    const roadEast = new THREE.Mesh(new THREE.PlaneGeometry(7, 5), roadMat);
     roadEast.rotation.x = -Math.PI / 2;
-    roadEast.position.set(21, 0.015, 0);
+    roadEast.position.set(10.5, 0.015, -1.5);
     roadEast.receiveShadow = true;
     z1Group.add(roadEast);
 
-    // 4. Fontaine centrale au Beurre Fondant
+    // 4. Central Golden Fountain
     this.buildFountain(z1Group, 0, 0);
 
-    // 5. Bâtiment : La Boulangerie du Beurre Doré (Ouest, X: -27, Z: -2)
-    this.buildBakeryShop(z1Group, -27, -2);
+    // 5. West Landmark: Golden Crust Bakery (X: -13.0, Z: -1.5)
+    this.buildBakeryShop(z1Group, -13.0, -1.5);
 
-    // 6. Café Terrasse "Le Toast Joyeux" avec props 3D (Est, X: 27, Z: -2)
-    this.buildCafeTerrace(z1Group, 27, -2);
+    // 6. East Landmark: The Happy Toast Cafe (X: 13.0, Z: -1.5)
+    this.buildCafeTerrace(z1Group, 13.0, -1.5);
 
-    // 7. Boutique Pâtisserie "L'Atelier Sucré" (Nord-Ouest, X: -24, Z: -24)
-    this.buildCuteShop(z1Group, -24, -24, 'L Atelier Sucre', 0x9b5b3a, Math.PI / 4);
+    // 7. North-West Landmark: Sweet Boutique Atelier (X: -10.5, Z: -12.5)
+    this.buildCuteShop(z1Group, -10.5, -12.5, 'L Atelier Sucre', 0x9b5b3a, Math.PI / 4);
 
-    // 8. Moulin du Levain avec ailes animées (Nord-Est, X: 24, Z: -24)
-    this.buildWindmill(z1Group, 24, -24);
+    // 8. North-East Landmark: Sourdough Windmill (X: 11.0, Z: -12.5)
+    this.buildWindmill(z1Group, 11.0, -12.5);
 
-    // 9. Mobilier urbain & props 3D
+    // 9. Street furniture, lighting & botanical props
     this.placeZone1Props(z1Group);
   }
 
@@ -382,77 +382,94 @@ export class WorldManager {
       emissiveIntensity: 0.25
     });
 
-    // Bassin circulaire
-    const basin = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.8, 0.7, 28), stoneMat);
-    basin.position.y = 0.35;
+    // Circular basin
+    const basin = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 3.0, 0.6, 24), stoneMat);
+    basin.position.y = 0.3;
     basin.castShadow = true;
     basin.receiveShadow = true;
     group.add(basin);
 
-    // Miroir d'eau
-    const water = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 0.1, 28), waterMat);
-    water.position.y = 0.65;
+    // Water surface
+    const water = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 0.1, 24), waterMat);
+    water.position.y = 0.55;
     group.add(water);
 
-    // Pilier central
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.1, 2.2, 16), stoneMat);
-    pillar.position.y = 1.3;
+    // Center pedestal
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.9, 1.8, 16), stoneMat);
+    pillar.position.y = 1.1;
     pillar.castShadow = true;
     group.add(pillar);
 
-    // Vasque haute
-    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 0.7, 0.45, 16), stoneMat);
-    bowl.position.y = 2.4;
+    // Upper bowl
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 0.6, 0.38, 16), stoneMat);
+    bowl.position.y = 2.0;
     bowl.castShadow = true;
     group.add(bowl);
 
-    // Orbe brioche dorée
-    const briocheOrb = new THREE.Mesh(new THREE.SphereGeometry(0.75, 20, 20), goldMat);
-    briocheOrb.position.y = 3.15;
+    // Golden Brioche orb
+    const briocheOrb = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), goldMat);
+    briocheOrb.position.y = 2.6;
     briocheOrb.castShadow = true;
     group.add(briocheOrb);
 
     parent.add(group);
-    this.physics.addObstacle(x, z, 3.8);
+    this.physics.addObstacle(x, z, 3.0);
 
-    // Sculpture florale dorée sur la fontaine
-    this.loadProp('./assets/props/golden-bloom.glb', x, 0.7, z, {
-      scale: 0.75,
+    // Golden bloom floral sculpture on the fountain
+    this.loadProp('./assets/props/golden-bloom.glb', x, 0.6, z, {
+      scale: 0.7,
       radius: 0
     });
   }
 
   buildBakeryShop(parent, x, z) {
     this.loadProp('./assets/props/bakery-house.glb', x, 0, z, {
-      scale: 1.15,
+      scale: 1.0,
       rotY: Math.PI / 2,
-      radius: 5.5,
+      radius: 4.5,
       fallbackType: 'box'
     });
+
+    // Outside bakery decor: Bread cubes crate
+    this.loadProp('./assets/props/bread-cubes.glb', x + 2.0, 0, z - 3.2, {
+      scale: 0.85,
+      rotY: 0.2,
+      radius: 0.8
+    });
+
+    // Macaron stool near doorway
+    this.buildMacaronStool(parent, x + 2.2, z + 2.8, 0.85);
   }
 
   buildCafeTerrace(parent, x, z) {
     this.loadProp('./assets/props/honey-cafe.glb', x, 0, z, {
-      scale: 1.2,
+      scale: 1.0,
       rotY: -Math.PI / 2,
-      radius: 5.5,
+      radius: 4.5,
       fallbackType: 'box'
     });
 
-    // Chargement du prop 3D hazelnut-cup.glb posé sur la terrasse du café
-    this.loadProp('./assets/props/hazelnut-cup.glb', x - 4.5, 0.3, z - 2.5, {
+    // Hazelnut cup on cafe terrace table
+    this.loadProp('./assets/props/hazelnut-cup.glb', x - 2.5, 0.25, z - 2.0, {
       scale: 0.5,
       rotY: 0.3,
-      radius: 0.5,
+      radius: 0.4,
       fallbackType: 'cup'
     });
 
-    // Chargement de bancs bretzel (pretzel-bench.glb) autour de la terrasse
-    this.loadProp('./assets/props/pretzel-bench.glb', x - 5.5, 0.25, z, {
-      scale: 1.2,
-      rotY: Math.PI / 2,
-      radius: 1.3,
+    // Pretzel bench facing the plaza
+    this.loadProp('./assets/props/pretzel-bench.glb', x - 2.5, 0.2, z + 2.0, {
+      scale: 1.0,
+      rotY: -Math.PI / 2,
+      radius: 1.1,
       fallbackType: 'bench'
+    });
+
+    // Pastry dessert prop on terrace table
+    this.loadProp('./assets/props/pastry-dessert.glb', x - 2.5, 0.25, z - 2.8, {
+      scale: 0.8,
+      rotY: 0.1,
+      radius: 0.5
     });
   }
 
@@ -464,29 +481,36 @@ export class WorldManager {
     const wallMat = new THREE.MeshStandardMaterial({ color: 0xffeed6, roughness: 0.75 });
     const roofMat = new THREE.MeshStandardMaterial({ color: roofColor, roughness: 0.55 });
 
-    const walls = new THREE.Mesh(new THREE.BoxGeometry(7, 4.5, 7), wallMat);
-    walls.position.y = 2.25;
+    const walls = new THREE.Mesh(new THREE.BoxGeometry(5.5, 3.8, 5.5), wallMat);
+    walls.position.y = 1.9;
     walls.castShadow = true;
     shop.add(walls);
 
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(5.6, 2.8, 4), roofMat);
-    roof.position.y = 5.8;
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(4.4, 2.4, 4), roofMat);
+    roof.position.y = 4.8;
     roof.rotation.y = Math.PI / 4;
     roof.castShadow = true;
     shop.add(roof);
 
-    // Vitrine lumineuse
+    // Glowing storefront window
     const winMat = new THREE.MeshStandardMaterial({
       color: 0xffd175,
       emissive: 0xff9900,
       emissiveIntensity: 0.5
     });
-    const windowMesh = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.8, 0.2), winMat);
-    windowMesh.position.set(0, 1.8, 3.55);
+    const windowMesh = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.5, 0.2), winMat);
+    windowMesh.position.set(0, 1.6, 2.8);
     shop.add(windowMesh);
 
     parent.add(shop);
-    this.physics.addObstacle(x, z, 4.4);
+    this.physics.addObstacle(x, z, 3.5);
+
+    // Treasure chest tucked beside the boutique
+    this.loadProp('./assets/props/treasure-chest.glb', x - 2.6, 0, z + 2.0, {
+      scale: 0.85,
+      rotY: 0.4,
+      radius: 1.0
+    });
   }
 
   buildWindmill(parent, x, z) {
@@ -498,36 +522,36 @@ export class WorldManager {
     const bladeMat = new THREE.MeshStandardMaterial({ color: 0xfff9f0, roughness: 0.4 });
     const woodMat = new THREE.MeshStandardMaterial({ color: 0x4a2a16, roughness: 0.7 });
 
-    // Tour conique
-    const tower = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 3.4, 8, 16), stoneMat);
-    tower.position.y = 4.0;
+    // Conical tower
+    const tower = new THREE.Mesh(new THREE.CylinderGeometry(2.0, 2.8, 7.0, 16), stoneMat);
+    tower.position.y = 3.5;
     tower.castShadow = true;
     tower.receiveShadow = true;
     mill.add(tower);
 
-    // Dôme supérieur
-    const cap = new THREE.Mesh(new THREE.ConeGeometry(3.0, 2.2, 16), capMat);
-    cap.position.y = 9.0;
+    // Upper dome cap
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(2.5, 1.8, 16), capMat);
+    cap.position.y = 7.8;
     cap.castShadow = true;
     mill.add(cap);
 
-    // Moyeu des ailes
-    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.8, 8), woodMat);
-    hub.position.set(0, 7.5, 2.4);
+    // Blade hub
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.7, 8), woodMat);
+    hub.position.set(0, 6.5, 2.0);
     hub.rotation.x = Math.PI / 2;
     mill.add(hub);
 
-    // Ailes rotatives
+    // Rotating windmill blades
     const bladesGroup = new THREE.Group();
-    bladesGroup.position.set(0, 7.5, 2.9);
+    bladesGroup.position.set(0, 6.5, 2.4);
 
     for (let i = 0; i < 4; i++) {
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.5, 0.08), woodMat);
-      arm.position.y = 2.25;
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 3.8, 0.08), woodMat);
+      arm.position.y = 1.9;
       arm.castShadow = true;
 
-      const cloth = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 3.6), bladeMat);
-      cloth.position.set(0.45, 2.4, 0.05);
+      const cloth = new THREE.Mesh(new THREE.PlaneGeometry(0.75, 3.0), bladeMat);
+      cloth.position.set(0.38, 2.0, 0.04);
 
       const blade = new THREE.Group();
       blade.rotation.z = (i * Math.PI) / 2;
@@ -545,78 +569,81 @@ export class WorldManager {
     });
 
     parent.add(mill);
-    this.physics.addObstacle(x, z, 4.2);
+    this.physics.addObstacle(x, z, 3.4);
   }
 
   placeZone1Props(parent) {
-    // Bancs bretzel (pretzel-bench.glb) autour de la place
+    // Pretzel benches around the central plaza
     const benchConfigs = [
-      { x: -8, z: 0, rotY: Math.PI / 2 },
-      { x: 8, z: 0, rotY: -Math.PI / 2 },
-      { x: 0, z: -8, rotY: 0 },
-      { x: -6, z: 12, rotY: Math.PI * 0.8 },
-      { x: 6, z: 12, rotY: -Math.PI * 0.8 }
+      { x: -4.5, z: 4.5, rotY: Math.PI * 0.25 },
+      { x: 4.5, z: 4.5, rotY: -Math.PI * 0.25 },
+      { x: -4.5, z: -4.5, rotY: Math.PI * 0.75 },
+      { x: 4.5, z: -4.5, rotY: -Math.PI * 0.75 }
     ];
 
     benchConfigs.forEach((b) => {
       this.loadProp('./assets/props/pretzel-bench.glb', b.x, 0, b.z, {
-        scale: 1.15,
+        scale: 1.0,
         rotY: b.rotY,
-        radius: 1.2,
+        radius: 1.1,
         fallbackType: 'bench'
       });
     });
 
-    // Lanternes de miel (honey-lantern.glb)
+    // Honey lanterns around the plaza and south avenue entrance
     const lanternConfigs = [
-      { x: -11, z: -11 },
-      { x: 11, z: -11 },
-      { x: -11, z: 11 },
-      { x: 11, z: 11 },
-      { x: -4, z: 27 },
-      { x: 4, z: 27 }
+      { x: -7.5, z: -7.5 },
+      { x: 7.5, z: -7.5 },
+      { x: -7.5, z: 7.5 },
+      { x: 7.5, z: 7.5 },
+      { x: -3.2, z: 19.0 },
+      { x: 3.2, z: 19.0 }
     ];
 
     lanternConfigs.forEach((l) => {
       this.loadProp('./assets/props/honey-lantern.glb', l.x, 0, l.z, {
-        scale: 1.2,
-        radius: 0.6,
+        scale: 1.0,
+        radius: 0.5,
         fallbackType: 'lantern'
       });
     });
 
-    // Arbres matcha coniques
+    // Conical matcha pastry trees
     const treePositions = [
-      { x: -18, z: -14, scale: 1.2 },
-      { x: -28, z: 12, scale: 1.1 },
-      { x: 18, z: -16, scale: 1.0 },
-      { x: 30, z: 14, scale: 1.3 },
-      { x: -12, z: 22, scale: 0.95 },
-      { x: 14, z: 22, scale: 1.0 }
+      { x: -13.5, z: -9.0, scale: 1.05 },
+      { x: 13.5, z: -9.0, scale: 1.05 },
+      { x: -10.0, z: 15.0, scale: 0.95 },
+      { x: 10.0, z: 15.0, scale: 0.95 }
     ];
 
     treePositions.forEach((tp) => {
       this.buildPastryTree(parent, tp.x, tp.z, tp.scale);
     });
 
-    // Pistachio tree (pistachio-tree.glb)
-    this.loadProp('./assets/props/pistachio-tree.glb', -16, 0, 8, {
-      scale: 1.2,
-      radius: 1.5,
+    // Majestic Pistachio trees framing the village south entrance
+    this.loadProp('./assets/props/pistachio-tree.glb', -11.0, 0, 6.5, {
+      scale: 1.05,
+      radius: 1.4,
       fallbackType: 'tree'
     });
-    this.loadProp('./assets/props/pistachio-tree.glb', 16, 0, 8, {
-      scale: 1.1,
+    this.loadProp('./assets/props/pistachio-tree.glb', 11.0, 0, 6.5, {
+      scale: 1.05,
       radius: 1.4,
       fallbackType: 'tree'
     });
 
-    // Monument du Croissant Doré sur le parvis
-    this.loadProp('./assets/props/golden-croissant.glb', -12, 0, -10, {
-      scale: 0.9,
-      rotY: 0.6,
-      radius: 1.6
+    // Golden Croissant monument in the north promenade
+    this.loadProp('./assets/props/golden-croissant.glb', 0, 0, -8.5, {
+      scale: 0.85,
+      rotY: 0,
+      radius: 1.4
     });
+
+    // Butter bushes and sugar crystals along the walkways
+    this.buildButterBush(parent, -7.0, 2.5, 0.85);
+    this.buildButterBush(parent, 7.0, 2.5, 0.85);
+    this.buildSugarCrystal(parent, -5.5, -8.0, 0.85);
+    this.buildSugarCrystal(parent, 5.5, -8.0, 0.85);
   }
 
   /* --------------------------------------------------------------------------
@@ -626,8 +653,8 @@ export class WorldManager {
     const bridgeGroup = new THREE.Group();
     this.worldGroup.add(bridgeGroup);
 
-    // 1. Lit du Canal Chocolaté (Z de 30 à 52, X de -60 à 60, en creux à Y = -0.9)
-    const canalBedGeo = new THREE.PlaneGeometry(120, 22);
+    // 1. Chocolate Canal Bed (Z: 20 to 40, X: -50 to 50, depth at Y = -0.6)
+    const canalBedGeo = new THREE.PlaneGeometry(100, 20);
     const chocolateMat = new THREE.MeshStandardMaterial({
       map: this.textures.getChocolateWaterTexture(),
       roughness: 0.22,
@@ -637,97 +664,104 @@ export class WorldManager {
     });
     const canalWater = new THREE.Mesh(canalBedGeo, chocolateMat);
     canalWater.rotation.x = -Math.PI / 2;
-    canalWater.position.set(0, -0.6, 41);
+    canalWater.position.set(0, -0.55, 30);
     canalWater.receiveShadow = true;
     bridgeGroup.add(canalWater);
 
-    // Berges en pierre le long du canal (Nord : Z = 30, Sud : Z = 52)
+    // Stone riverbanks along the canal (North: Z = 20, South: Z = 40)
     const bankMat = new THREE.MeshStandardMaterial({ color: 0x8a5a35, roughness: 0.7 });
-    const bankNorth = new THREE.Mesh(new THREE.BoxGeometry(120, 1.0, 1.2), bankMat);
-    bankNorth.position.set(0, -0.2, 30);
+    const bankNorth = new THREE.Mesh(new THREE.BoxGeometry(100, 1.0, 1.2), bankMat);
+    bankNorth.position.set(0, -0.15, 20);
     bankNorth.receiveShadow = true;
     bridgeGroup.add(bankNorth);
 
-    const bankSouth = new THREE.Mesh(new THREE.BoxGeometry(120, 1.0, 1.2), bankMat);
-    bankSouth.position.set(0, -0.2, 52);
+    const bankSouth = new THREE.Mesh(new THREE.BoxGeometry(100, 1.0, 1.2), bankMat);
+    bankSouth.position.set(0, -0.15, 40);
     bankSouth.receiveShadow = true;
     bridgeGroup.add(bankSouth);
 
-    // Collisions le long des berges pour empêcher de tomber dans le chocolat
-    // (Laisse une ouverture de -5.5 à +5.5 pour traverser le pont)
-    this.physics.addObstacle(-24, 30.5, 18);
-    this.physics.addObstacle(24, 30.5, 18);
-    this.physics.addObstacle(-24, 51.5, 18);
-    this.physics.addObstacle(24, 51.5, 18);
+    // Physical obstacles along the canal banks to prevent walking into the canal
+    // (Leaves an opening from X: -4.0 to +4.0 for bridge crossing)
+    this.physics.addObstacle(-18, 20.5, 14);
+    this.physics.addObstacle(18, 20.5, 14);
+    this.physics.addObstacle(-18, 39.5, 14);
+    this.physics.addObstacle(18, 39.5, 14);
 
-    // 2. Le Pont en bois doré (Largeur 9m : X de -4.5 à +4.5, Longueur 24m : Z de 29 à 53)
+    // 2. The Almond Butter Bridge (Width 7.0m: X: -3.5 to +3.5, Length 22m: Z: 19 to 41)
     const bridgeDeckMat = new THREE.MeshStandardMaterial({
       map: this.textures.getWafflePlanksTexture(),
       roughness: 0.6
     });
-    const deck = new THREE.Mesh(new THREE.BoxGeometry(9.0, 0.4, 24), bridgeDeckMat);
-    deck.position.set(0, 0.18, 41);
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(7.0, 0.4, 22), bridgeDeckMat);
+    deck.position.set(0, 0.18, 30);
     deck.castShadow = true;
     deck.receiveShadow = true;
     bridgeGroup.add(deck);
 
-    // Arches de soutien en pierre caramel sous le pont
+    // Caramel stone support arches under the bridge
     const archMat = new THREE.MeshStandardMaterial({ color: 0x7c4927, roughness: 0.8 });
-    const arch1 = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, 9.2, 16, 1, false, 0, Math.PI), archMat);
+    const arch1 = new THREE.Mesh(new THREE.CylinderGeometry(3.0, 3.0, 7.2, 16, 1, false, 0, Math.PI), archMat);
     arch1.rotation.z = Math.PI / 2;
     arch1.rotation.y = Math.PI;
-    arch1.position.set(0, -0.5, 36);
+    arch1.position.set(0, -0.5, 25);
     bridgeGroup.add(arch1);
 
     const arch2 = arch1.clone();
-    arch2.position.set(0, -0.5, 46);
+    arch2.position.set(0, -0.5, 35);
     bridgeGroup.add(arch2);
 
-    // Rambardes / Garde-corps décorés
+    // Decorated bridge railings along both sides
     const railMat = new THREE.MeshStandardMaterial({ color: 0x5a2d14, roughness: 0.6 });
-    [-4.3, 4.3].forEach((railX) => {
-      // Main courante
-      const handrail = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 23.6), railMat);
-      handrail.position.set(railX, 1.1, 41);
+    [-3.3, 3.3].forEach((railX) => {
+      // Handrail
+      const handrail = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.28, 21.6), railMat);
+      handrail.position.set(railX, 1.05, 30);
       handrail.castShadow = true;
       bridgeGroup.add(handrail);
 
-      // Potelets le long de la rambarde
-      for (let pz = 30; pz <= 52; pz += 3.6) {
-        const post = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.0, 0.3), railMat);
-        post.position.set(railX, 0.65, pz);
+      // Posts along railing
+      for (let pz = 20; pz <= 40; pz += 3.3) {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.95, 0.28), railMat);
+        post.position.set(railX, 0.6, pz);
         post.castShadow = true;
         bridgeGroup.add(post);
       }
     });
 
-    // Piliers d'entrée avec lanternes de miel
+    // Four corner stone pillars with glowing honey lanterns
     const pillarMat = new THREE.MeshStandardMaterial({ color: 0x6e391b, roughness: 0.7 });
     const bridgeCorners = [
-      { x: -4.3, z: 30 },
-      { x: 4.3, z: 30 },
-      { x: -4.3, z: 52 },
-      { x: 4.3, z: 52 }
+      { x: -3.3, z: 20 },
+      { x: 3.3, z: 20 },
+      { x: -3.3, z: 40 },
+      { x: 3.3, z: 40 }
     ];
 
     bridgeCorners.forEach((c) => {
-      const stonePillar = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.8, 0.85), pillarMat);
-      stonePillar.position.set(c.x, 0.9, c.z);
+      const stonePillar = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1.7, 0.75), pillarMat);
+      stonePillar.position.set(c.x, 0.85, c.z);
       stonePillar.castShadow = true;
       bridgeGroup.add(stonePillar);
 
-      this.loadProp('./assets/props/honey-lantern.glb', c.x, 1.8, c.z, {
+      this.loadProp('./assets/props/honey-lantern.glb', c.x, 1.7, c.z, {
         scale: 0.85,
         radius: 0.4,
         fallbackType: 'lantern'
       });
     });
 
-    // Animation du miroir de chocolat (scintillement subtil)
+    // Submarine vehicle prop floating in the chocolate canal
+    this.loadProp('./assets/props/waffle-submarine.glb', 12.0, -0.4, 30.0, {
+      scale: 0.9,
+      rotY: 0.4,
+      radius: 1.8
+    });
+
+    // Subtle water shimmer animation
     this.animatedProps.push({
       mesh: canalWater,
       update: (delta, elapsed) => {
-        canalWater.position.y = -0.6 + Math.sin(elapsed * 1.5) * 0.03;
+        canalWater.position.y = -0.55 + Math.sin(elapsed * 1.5) * 0.025;
       }
     });
   }
@@ -739,8 +773,8 @@ export class WorldManager {
     const z2Group = new THREE.Group();
     this.worldGroup.add(z2Group);
 
-    // 1. Terrain en terre chocolatée & mousse matcha (Z de 52 à 135, X de -50 à 50)
-    const groundGeo = new THREE.PlaneGeometry(90, 84, 24, 24);
+    // 1. Cocoa soil terrain (Z from 40 to 92, X from -36 to 36)
+    const groundGeo = new THREE.PlaneGeometry(72, 52, 20, 20);
     const groundMat = new THREE.MeshStandardMaterial({
       map: this.textures.getCocoaSoilTexture(),
       roughness: 0.92,
@@ -748,125 +782,132 @@ export class WorldManager {
     });
     const groundZ2 = new THREE.Mesh(groundGeo, groundMat);
     groundZ2.rotation.x = -Math.PI / 2;
-    groundZ2.position.set(0, 0, 94);
+    groundZ2.position.set(0, 0, 66);
     groundZ2.receiveShadow = true;
     z2Group.add(groundZ2);
 
-    // Patchs de mousse matcha veloutée
+    // Matcha moss patches
     const mossMat = new THREE.MeshStandardMaterial({ color: 0x3d5427, roughness: 0.85 });
-    const moss1 = new THREE.Mesh(new THREE.CircleGeometry(14, 24), mossMat);
+    const moss1 = new THREE.Mesh(new THREE.CircleGeometry(9.0, 20), mossMat);
     moss1.rotation.x = -Math.PI / 2;
-    moss1.position.set(16, 0.02, 92);
+    moss1.position.set(9, 0.02, 60);
     moss1.receiveShadow = true;
     z2Group.add(moss1);
 
-    const moss2 = new THREE.Mesh(new THREE.CircleGeometry(12, 24), mossMat);
+    const moss2 = new THREE.Mesh(new THREE.CircleGeometry(8.0, 20), mossMat);
     moss2.rotation.x = -Math.PI / 2;
-    moss2.position.set(-16, 0.02, 85);
+    moss2.position.set(-9, 0.02, 56);
     moss2.receiveShadow = true;
     z2Group.add(moss2);
 
-    // Chemin sinueux en pierre chocolatée (Z de 52 vers la clairière et la gare)
+    // Main Cocoa Path from the bridge (Z from 40 to 78, width 5.5m)
     const pathMat = new THREE.MeshStandardMaterial({ color: 0x5a3e2e, roughness: 0.8 });
-    const pathMain = new THREE.Mesh(new THREE.PlaneGeometry(7.0, 36), pathMat);
+    const pathMain = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 38), pathMat);
     pathMain.rotation.x = -Math.PI / 2;
-    pathMain.position.set(0, 0.015, 70);
+    pathMain.position.set(0, 0.015, 59);
     pathMain.receiveShadow = true;
     z2Group.add(pathMain);
 
-    // Branche gauche vers la gare
-    const pathLeft = new THREE.Mesh(new THREE.PlaneGeometry(16, 5), pathMat);
+    // Left branch to Chocolate Train Station
+    const pathLeft = new THREE.Mesh(new THREE.PlaneGeometry(12, 4.5), pathMat);
     pathLeft.rotation.x = -Math.PI / 2;
-    pathLeft.position.set(-8, 0.015, 84);
+    pathLeft.position.set(-6, 0.015, 54);
     pathLeft.receiveShadow = true;
     z2Group.add(pathLeft);
 
-    // Branche droite vers le feu de camp
-    const pathRight = new THREE.Mesh(new THREE.PlaneGeometry(16, 5), pathMat);
+    // Right branch to Marshmallow Campfire Clearing
+    const pathRight = new THREE.Mesh(new THREE.PlaneGeometry(12, 4.5), pathMat);
     pathRight.rotation.x = -Math.PI / 2;
-    pathRight.position.set(8, 0.015, 92);
+    pathRight.position.set(6, 0.015, 56);
     pathRight.receiveShadow = true;
     z2Group.add(pathRight);
 
-    // 2. Landmark 1 : La Gare du Train Chocolat (X: -18, Z: 84)
-    this.buildChocolateTrainStation(z2Group, -18, 84);
+    // 2. Landmark 1: Chocolate Train Station (X: -10.0, Z: 54.0)
+    this.buildChocolateTrainStation(z2Group, -10.0, 54.0);
 
-    // 3. Landmark 2 : La Clairière des Chamallows (X: 18, Z: 92)
-    this.buildMarshmallowCampfireClearing(z2Group, 18, 92);
+    // 3. Landmark 2: Marshmallow Campfire Clearing (X: 10.0, Z: 56.0)
+    this.buildMarshmallowCampfireClearing(z2Group, 10.0, 56.0);
 
-    // 4. Forêt dense de Pistachio Trees (pistachio-tree.glb) & sapins matcha
+    // 4. Attractions, botanical props & dense forest
     this.placeZone2ForestProps(z2Group);
 
-    // 5. Portail des Mini-Jeux du Bwedverse (Prêt pour Jalon 3 au fond de la clairière, Z = 118)
-    this.buildMiniGamePortalGate(z2Group, 0, 118);
+    // 5. Arcade Portal Gate (X: 0, Z: 82.0)
+    this.buildMiniGamePortalGate(z2Group, 0, 82.0);
   }
 
   buildChocolateTrainStation(parent, x, z) {
     const station = new THREE.Group();
     station.position.set(x, 0, z);
 
-    // Voies ferrées (rails métalliques + traverses en chocolat)
+    // Railroad tracks (chocolate ties and steel rails)
     const sleeperMat = new THREE.MeshStandardMaterial({ color: 0x4a2810, roughness: 0.7 });
     const railMat = new THREE.MeshStandardMaterial({ color: 0xc8b49e, metalness: 0.7, roughness: 0.3 });
 
-    // Traverses
-    for (let tz = -14; tz <= 14; tz += 1.8) {
-      const sleeper = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.15, 0.6), sleeperMat);
-      sleeper.position.set(-2.0, 0.08, tz);
+    // Ties
+    for (let tz = -11; tz <= 11; tz += 1.6) {
+      const sleeper = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.14, 0.5), sleeperMat);
+      sleeper.position.set(-2.0, 0.07, tz);
       sleeper.receiveShadow = true;
       station.add(sleeper);
     }
 
-    // 2 rails continus
-    [-3.2, -0.8].forEach((rx) => {
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.22, 30), railMat);
-      rail.position.set(rx, 0.24, 0);
+    // 2 parallel rails
+    [-2.9, -1.1].forEach((rx) => {
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, 24), railMat);
+      rail.position.set(rx, 0.22, 0);
       rail.castShadow = true;
       station.add(rail);
     });
 
-    // Quai de gare surélevé en planches
+    // Elevated wooden platform
     const platformMat = new THREE.MeshStandardMaterial({ color: 0x7a4b27, roughness: 0.65 });
-    const platform = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.5, 24), platformMat);
-    platform.position.set(2.4, 0.25, 0);
+    const platform = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.4, 18), platformMat);
+    platform.position.set(2.2, 0.2, 0);
     platform.castShadow = true;
     platform.receiveShadow = true;
     station.add(platform);
 
-    // Abris de quai en bois
+    // Station wooden canopy shelter
     const shelter = new THREE.Group();
-    shelter.position.set(3.2, 0, 0);
+    shelter.position.set(2.8, 0, 0);
 
     const postMat = new THREE.MeshStandardMaterial({ color: 0x422410, roughness: 0.7 });
     const roofMat = new THREE.MeshStandardMaterial({ color: 0x24422b, roughness: 0.5 });
 
-    // Poteaux de l'abris
-    [-8, 0, 8].forEach((pz) => {
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 4.2, 8), postMat);
-      post.position.set(0, 2.1, pz);
+    // Shelter posts
+    [-6, 0, 6].forEach((pz) => {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 3.6, 8), postMat);
+      post.position.set(0, 1.8, pz);
       post.castShadow = true;
       shelter.add(post);
     });
 
-    // Toiture de l'abris
-    const canopy = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.25, 20), roofMat);
-    canopy.position.set(-0.8, 4.3, 0);
-    canopy.rotation.z = 0.1;
+    // Canopy roof
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.22, 16), roofMat);
+    canopy.position.set(-0.6, 3.7, 0);
+    canopy.rotation.z = 0.08;
     canopy.castShadow = true;
     shelter.add(canopy);
 
     station.add(shelter);
     parent.add(station);
 
-    // Collision pour la gare
-    this.physics.addObstacle(x + 2.5, z, 3.2);
+    // Collision for platform & shelter
+    this.physics.addObstacle(x + 2.2, z, 2.6);
 
-    // Chargement du prop 3D : chocolate-train.glb sur les rails !
+    // Chocolate train on the tracks!
     this.loadProp('./assets/props/chocolate-train.glb', x - 2.0, 0.3, z, {
-      scale: 1.6,
+      scale: 1.3,
       rotY: 0,
-      radius: 2.8,
+      radius: 2.4,
       fallbackType: 'train'
+    });
+
+    // Snack Cart on the station platform
+    this.loadProp('./assets/props/snack-cart.glb', x + 2.2, 0.4, z - 5.0, {
+      scale: 0.95,
+      rotY: Math.PI / 2,
+      radius: 1.1
     });
   }
 
@@ -874,122 +915,133 @@ export class WorldManager {
     const clearing = new THREE.Group();
     clearing.position.set(x, 0, z);
 
-    // Cercle de pierres autour du feu
+    // Ring of stones around campfire
     const ringMat = new THREE.MeshStandardMaterial({ color: 0x5a463a, roughness: 0.8 });
-    const ring = new THREE.Mesh(new THREE.RingGeometry(1.8, 2.3, 16), ringMat);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(1.5, 1.9, 16), ringMat);
     ring.rotation.x = -Math.PI / 2;
     ring.position.y = 0.03;
     ring.receiveShadow = true;
     clearing.add(ring);
 
-    // Bûches d'assise autour du feu
+    // Sitting logs around the fire
     const logMat = new THREE.MeshStandardMaterial({ color: 0x543219, roughness: 0.7 });
     for (let i = 0; i < 4; i++) {
       const angle = (i * Math.PI) / 2 + 0.3;
-      const lx = Math.cos(angle) * 4.2;
-      const lz = Math.sin(angle) * 4.2;
+      const lx = Math.cos(angle) * 3.2;
+      const lz = Math.sin(angle) * 3.2;
 
-      const log = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.45, 2.4, 12), logMat);
+      const log = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.4, 2.0, 12), logMat);
       log.rotation.z = Math.PI / 2;
       log.rotation.y = angle + Math.PI / 2;
-      log.position.set(lx, 0.35, lz);
+      log.position.set(lx, 0.3, lz);
       log.castShadow = true;
       clearing.add(log);
 
-      this.physics.addObstacle(x + lx, z + lz, 1.2);
+      this.physics.addObstacle(x + lx, z + lz, 1.0);
     }
 
-    // Lueur chaleureuse du feu de camp
-    const fireLight = new THREE.PointLight(0xff7722, 2.2, 14);
-    fireLight.position.set(0, 1.2, 0);
+    // Warm campfire light
+    const fireLight = new THREE.PointLight(0xff7722, 2.2, 12);
+    fireLight.position.set(0, 1.0, 0);
     clearing.add(fireLight);
 
-    // Scintillement du feu
     this.animatedProps.push({
       mesh: fireLight,
       update: (delta, elapsed) => {
-        fireLight.intensity = 2.0 + Math.sin(elapsed * 9) * 0.4 + Math.cos(elapsed * 15) * 0.2;
+        fireLight.intensity = 2.0 + Math.sin(elapsed * 9) * 0.35 + Math.cos(elapsed * 15) * 0.2;
       }
     });
 
     parent.add(clearing);
-    this.physics.addObstacle(x, z, 1.6);
+    this.physics.addObstacle(x, z, 1.4);
 
-    // Chargement du prop 3D : marshmallow-campfire.glb
+    // Marshmallow campfire 3D prop
     this.loadProp('./assets/props/marshmallow-campfire.glb', x, 0.05, z, {
-      scale: 1.1,
-      radius: 1.4,
+      scale: 1.0,
+      radius: 1.2,
       fallbackType: 'campfire'
     });
   }
 
   placeZone2ForestProps(parent) {
-    // Pistachio trees (pistachio-tree.glb) majestueux
+    // Churro Coaster ride attraction (West of path)
+    this.loadProp('./assets/props/churro-coaster.glb', -11.0, 0, 69.0, {
+      scale: 0.85,
+      rotY: 0.3,
+      radius: 3.6
+    });
+
+    // Waffle Tower landmark (East of path)
+    this.loadProp('./assets/props/waffle-tower.glb', 11.0, 0, 69.0, {
+      scale: 0.95,
+      rotY: -0.2,
+      radius: 2.2,
+      fallbackType: 'box'
+    });
+
+    // Teacup Gazebo in the woods
+    this.loadProp('./assets/props/teacup-gazebo.glb', -10.5, 0, 44.0, {
+      scale: 0.95,
+      rotY: 0.3,
+      radius: 2.6,
+      fallbackType: 'box'
+    });
+
+    // Crimson Tree landmark
+    this.loadProp('./assets/props/crimson-tree.glb', 10.5, 0, 44.0, {
+      scale: 1.05,
+      radius: 1.4
+    });
+
+    // Glowing Pistachio tree and Cosmic Blocks along the woods trail
+    this.loadProp('./assets/props/pistachio-glow.glb', -6.5, 0, 62.0, {
+      scale: 0.9,
+      radius: 1.1
+    });
+
+    this.loadProp('./assets/props/cosmic-blocks.glb', 6.5, 0, 64.0, {
+      scale: 0.9,
+      radius: 1.2
+    });
+
+    // Pistachio trees in the Cocoa Forest
     const pistachioPositions = [
-      { x: -14, z: 62, scale: 1.25 },
-      { x: 16, z: 64, scale: 1.2 },
-      { x: -28, z: 88, scale: 1.4 },
-      { x: 30, z: 84, scale: 1.35 },
-      { x: 26, z: 106, scale: 1.2 },
-      { x: -22, z: 110, scale: 1.3 }
+      { x: -14.0, z: 48.0, scale: 1.15 },
+      { x: 14.0, z: 48.0, scale: 1.15 },
+      { x: -15.0, z: 62.0, scale: 1.25 },
+      { x: 15.0, z: 62.0, scale: 1.25 },
+      { x: -13.0, z: 76.0, scale: 1.2 },
+      { x: 13.0, z: 76.0, scale: 1.2 }
     ];
 
     pistachioPositions.forEach((pt) => {
       this.loadProp('./assets/props/pistachio-tree.glb', pt.x, 0, pt.z, {
         scale: pt.scale,
-        radius: 1.6 * pt.scale,
+        radius: 1.5 * pt.scale,
         fallbackType: 'tree'
       });
     });
 
-    // Sapins matcha et rochers chocolat
-    const forestProps = [
-      { x: -8, z: 66, type: 'tree', scale: 1.0 },
-      { x: 8, z: 68, type: 'tree', scale: 1.1 },
-      { x: -6, z: 96, type: 'tree', scale: 0.9 },
-      { x: 6, z: 104, type: 'tree', scale: 1.15 },
-      { x: -12, z: 108, type: 'boulder', scale: 1.5 },
-      { x: 14, z: 112, type: 'boulder', scale: 1.3 }
-    ];
+    // Dark matcha pines and cocoa boulders
+    this.buildPastryTree(parent, -6.5, 47.0, 0.95, 0x3d5a2b);
+    this.buildPastryTree(parent, 6.5, 49.0, 1.0, 0x3d5a2b);
+    this.buildChocolateBoulder(parent, -7.5, 74.0, 1.1);
+    this.buildChocolateBoulder(parent, 7.5, 74.0, 1.1);
 
-    forestProps.forEach((p) => {
-      if (p.type === 'tree') {
-        this.buildPastryTree(parent, p.x, p.z, p.scale, 0x3d5a2b);
-      } else {
-        this.buildChocolateBoulder(parent, p.x, p.z, p.scale);
-      }
-    });
-
-    // Lanternes de miel le long du chemin de forêt
+    // Honey lanterns guiding the cocoa forest trail
     const forestLanterns = [
-      { x: -4, z: 68 },
-      { x: 4, z: 78 },
-      { x: -4, z: 90 },
-      { x: 4, z: 102 }
+      { x: -3.2, z: 46.0 },
+      { x: 3.2, z: 54.0 },
+      { x: -3.2, z: 64.0 },
+      { x: 3.2, z: 74.0 }
     ];
 
     forestLanterns.forEach((fl) => {
       this.loadProp('./assets/props/honey-lantern.glb', fl.x, 0, fl.z, {
-        scale: 1.1,
+        scale: 1.0,
         radius: 0.5,
         fallbackType: 'lantern'
       });
-    });
-
-    // Kiosque de thé / Gazebo dans la forêt
-    this.loadProp('./assets/props/teacup-gazebo.glb', -22, 0, 96, {
-      scale: 1.15,
-      rotY: 0.4,
-      radius: 3.2,
-      fallbackType: 'box'
-    });
-
-    // Tour de gaufres gourmande
-    this.loadProp('./assets/props/waffle-tower.glb', 22, 0, 108, {
-      scale: 1.1,
-      rotY: -0.2,
-      radius: 2.5,
-      fallbackType: 'box'
     });
   }
 
@@ -1006,29 +1058,29 @@ export class WorldManager {
       emissiveIntensity: 0.35
     });
 
-    // Piliers de l'arche
-    const pillarL = new THREE.Mesh(new THREE.BoxGeometry(1.0, 6.0, 1.0), woodMat);
-    pillarL.position.set(-4.0, 3.0, 0);
+    // Arch pillars
+    const pillarL = new THREE.Mesh(new THREE.BoxGeometry(0.9, 5.2, 0.9), woodMat);
+    pillarL.position.set(-3.2, 2.6, 0);
     pillarL.castShadow = true;
     portal.add(pillarL);
 
-    const pillarR = new THREE.Mesh(new THREE.BoxGeometry(1.0, 6.0, 1.0), woodMat);
-    pillarR.position.set(4.0, 3.0, 0);
+    const pillarR = new THREE.Mesh(new THREE.BoxGeometry(0.9, 5.2, 0.9), woodMat);
+    pillarR.position.set(3.2, 2.6, 0);
     pillarR.castShadow = true;
     portal.add(pillarR);
 
-    // Poutre supérieure
-    const beam = new THREE.Mesh(new THREE.BoxGeometry(10.0, 1.1, 1.2), woodMat);
-    beam.position.set(0, 6.2, 0);
+    // Top beam
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(8.2, 1.0, 1.1), woodMat);
+    beam.position.set(0, 5.4, 0);
     beam.castShadow = true;
     portal.add(beam);
 
-    // Panneau doré du portail
-    const sign = new THREE.Mesh(new THREE.BoxGeometry(6.4, 1.0, 0.2), goldMat);
-    sign.position.set(0, 5.0, 0);
+    // Golden portal sign
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.9, 0.2), goldMat);
+    sign.position.set(0, 4.4, 0);
     portal.add(sign);
 
-    // Disque vortex scintillant (inactif pour l'instant)
+    // Sparkling emerald vortex disc
     const portalDiscMat = new THREE.MeshStandardMaterial({
       color: 0x22c55e,
       emissive: 0x16a34a,
@@ -1037,8 +1089,8 @@ export class WorldManager {
       opacity: 0.75,
       roughness: 0.2
     });
-    const portalDisc = new THREE.Mesh(new THREE.CircleGeometry(3.0, 24), portalDiscMat);
-    portalDisc.position.set(0, 3.0, 0);
+    const portalDisc = new THREE.Mesh(new THREE.CircleGeometry(2.4, 24), portalDiscMat);
+    portalDisc.position.set(0, 2.6, 0);
     portal.add(portalDisc);
 
     this.animatedProps.push({
@@ -1050,22 +1102,22 @@ export class WorldManager {
     });
 
     parent.add(portal);
-    this.physics.addObstacle(x - 4, z, 1.0);
-    this.physics.addObstacle(x + 4, z, 1.0);
+    this.physics.addObstacle(x - 3.2, z, 0.9);
+    this.physics.addObstacle(x + 3.2, z, 0.9);
 
-    // Borne Arcade 3D près du portail
-    this.loadProp('./assets/props/arcade-duel.glb', x - 4.8, 0, z + 1.6, {
-      scale: 1.15,
-      rotY: 0.4,
-      radius: 1.5,
+    // 3D Arcade Duel cabinet near portal
+    this.loadProp('./assets/props/arcade-duel.glb', x - 3.8, 0, z + 1.2, {
+      scale: 1.0,
+      rotY: 0.3,
+      radius: 1.3,
       fallbackType: 'box'
     });
 
-    // Dé Bwed porte-bonheur géant près du portail
-    this.loadProp('./assets/props/bwed-dice.glb', x + 4.8, 0.35, z + 1.6, {
-      scale: 1.8,
-      rotY: 0.6,
-      radius: 1.2,
+    // Lucky Bwed giant 3D dice monument near portal
+    this.loadProp('./assets/props/bwed-dice.glb', x + 3.8, 0.3, z + 1.2, {
+      scale: 1.4,
+      rotY: 0.5,
+      radius: 1.1,
       fallbackType: 'box'
     });
   }

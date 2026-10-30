@@ -133,6 +133,9 @@ class BwedWorldApp {
       onCameraDistance: (dist) => {
         this.cameraController.setDistance(dist);
       },
+      onCameraStyleChange: (style) => {
+        this.cameraController.setCameraStyle(style);
+      },
       onTimeOfDayChange: (mode) => {
         this.dayNight?.setMode(mode);
       },

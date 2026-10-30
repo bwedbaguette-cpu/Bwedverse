@@ -27,6 +27,7 @@ export class HUD {
     this.onToggleResolution = options.onToggleResolution || null;
     this.onToggleFps = options.onToggleFps || null;
     this.onCameraDistance = options.onCameraDistance || null;
+    this.onCameraStyleChange = options.onCameraStyleChange || null;
     this.onTimeOfDayChange = options.onTimeOfDayChange || null;
     this.onToggleAudio = options.onToggleAudio || null;
     this.onAudioVolume = options.onAudioVolume || null;
@@ -74,6 +75,7 @@ export class HUD {
       // Paramètres
       openSettingsBtn: document.getElementById('openSettingsBtn'),
       settingsModal: document.getElementById('settingsModal'),
+      cameraStyleSelect: document.getElementById('cameraStyleSelect'),
       timeOfDaySelect: document.getElementById('timeOfDaySelect'),
       fpsSettingSelect: document.getElementById('fpsSettingSelect'),
       shadowsSettingSelect: document.getElementById('shadowsSettingSelect'),
@@ -92,7 +94,8 @@ export class HUD {
       interactionPrompt: document.getElementById('interactionPrompt'),
       interactText: document.getElementById('interactText'),
 
-      // Contrôles de zoom
+      // Contrôles de zoom & caméra
+      toggleCamStyleBtn: document.getElementById('toggleCamStyleBtn'),
       zoomInBtn: document.getElementById('zoomInBtn'),
       zoomOutBtn: document.getElementById('zoomOutBtn'),
 
@@ -448,6 +451,30 @@ export class HUD {
         this.onTeleport({ x: 0, z: 4 });
       }
       this.closeModal('settingsModal');
+    });
+
+    this.dom.cameraStyleSelect?.addEventListener('change', (e) => {
+      const style = e.target.value;
+      if (this.onCameraStyleChange) {
+        this.onCameraStyleChange(style);
+      }
+      if (this.dom.toggleCamStyleBtn) {
+        this.dom.toggleCamStyleBtn.textContent = style === 'isometric' ? 'Iso' : '3D';
+      }
+    });
+
+    this.dom.toggleCamStyleBtn?.addEventListener('click', () => {
+      const current = this.dom.cameraStyleSelect?.value || 'isometric';
+      const next = current === 'isometric' ? 'perspective' : 'isometric';
+      if (this.dom.cameraStyleSelect) {
+        this.dom.cameraStyleSelect.value = next;
+      }
+      if (this.dom.toggleCamStyleBtn) {
+        this.dom.toggleCamStyleBtn.textContent = next === 'isometric' ? 'Iso' : '3D';
+      }
+      if (this.onCameraStyleChange) {
+        this.onCameraStyleChange(next);
+      }
     });
 
     this.dom.timeOfDaySelect?.addEventListener('change', (e) => {
