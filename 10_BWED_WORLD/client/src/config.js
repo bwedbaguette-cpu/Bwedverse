@@ -176,6 +176,14 @@ export const CONFIG = {
       file: './assets/avatars/honey-knight.glb',
       thumb: './assets/avatars/thumbs/honey-knight.png',
       scale: 1.15
+    },
+    'reggae-toast': {
+      id: 'reggae-toast',
+      name: 'Reggae Toast',
+      role: 'Vibes of the Golden Sun',
+      file: './assets/avatars/reggae-toast.glb',
+      thumb: './assets/avatars/thumbs/tiny-baker.png',
+      scale: 1.15
     }
   },
 

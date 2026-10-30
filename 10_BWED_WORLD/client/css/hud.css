@@ -116,6 +116,13 @@
   box-shadow: 0 6px 20px rgba(255, 209, 90, 0.3);
 }
 
+.hud-pill.active {
+  background: rgba(229, 155, 36, 0.28);
+  border-color: var(--gold-main);
+  color: var(--gold-main);
+  box-shadow: 0 0 14px rgba(255, 209, 90, 0.35);
+}
+
 .player-count-pill {
   font-family: 'DM Mono', monospace;
   font-size: 11px;

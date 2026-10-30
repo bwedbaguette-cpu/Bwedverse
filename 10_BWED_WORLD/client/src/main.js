@@ -13,6 +13,7 @@ import { ChatManager } from './ui/ChatManager.js';
 import { EmoteManager } from './ui/EmoteManager.js';
 import { WorldEditor } from './editor/WorldEditor.js';
 import { VirtualJoystick } from './ui/VirtualJoystick.js';
+import { AudioManager } from './core/AudioManager.js';
 import { NETWORK } from '../../shared/constants.js';
 
 /* ==========================================================================
@@ -37,6 +38,7 @@ class BwedWorldApp {
     this.chat = null;
     this.emotes = null;
     this.editor = null;
+    this.audio = null;
 
     this.localPlayer = null;
     this.remotePlayers = new Map();
@@ -130,8 +132,21 @@ class BwedWorldApp {
       },
       onTimeOfDayChange: (mode) => {
         this.dayNight?.setMode(mode);
+      },
+      onToggleAudio: () => {
+        this.audio?.togglePlay();
+      },
+      onAudioVolume: (vol) => {
+        this.audio?.setVolume(vol);
       }
     });
+
+    // 8b. Ambient audio manager
+    this.audio = new AudioManager();
+    this.audio.onTrackChange = (info) => {
+      this.hud?.setAudioTrackInfo(info);
+    };
+    this.hud?.setAudioTrackInfo(this.audio.getCurrentTrackInfo());
 
     // 9. Multiplayer network adapter
     this.initNetwork(playerId, playerName, avatarId);

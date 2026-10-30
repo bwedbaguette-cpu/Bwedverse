@@ -1130,7 +1130,30 @@ export class WorldManager {
     model.position.y = -bbox.min.y * scale;
     model.scale.setScalar(scale);
 
+    // Automated Blender collision proxies (COL_, COLLIDER_, UCX_)
     model.traverse((child) => {
+      const isColliderProxy = child.name && (
+        child.name.startsWith('COL_') ||
+        child.name.startsWith('COLLIDER_') ||
+        child.name.startsWith('UCX_')
+      );
+
+      if (isColliderProxy) {
+        child.visible = false;
+        if (child.isMesh) {
+          child.castShadow = false;
+          child.receiveShadow = false;
+          const colBox = new THREE.Box3().setFromObject(child);
+          const center = new THREE.Vector3();
+          const size = new THREE.Vector3();
+          colBox.getCenter(center);
+          colBox.getSize(size);
+          const colRadius = Math.max(size.x, size.z) * 0.5 * scale;
+          this.physics.addObstacle(container.position.x + center.x, container.position.z + center.z, colRadius);
+        }
+        return;
+      }
+
       if (child.isMesh) {
         child.castShadow = true;
         child.receiveShadow = true;

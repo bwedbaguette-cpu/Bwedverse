@@ -27,6 +27,8 @@ export class HUD {
     this.onToggleResolution = options.onToggleResolution || null;
     this.onCameraDistance = options.onCameraDistance || null;
     this.onTimeOfDayChange = options.onTimeOfDayChange || null;
+    this.onToggleAudio = options.onToggleAudio || null;
+    this.onAudioVolume = options.onAudioVolume || null;
 
     // Interaction courante
     this.currentInteractionTrigger = null;
@@ -76,6 +78,10 @@ export class HUD {
       resolutionSettingSelect: document.getElementById('resolutionSettingSelect'),
       camDistanceSlider: document.getElementById('camDistanceSlider'),
       camDistanceDisplay: document.getElementById('camDistanceDisplay'),
+      musicVolumeSlider: document.getElementById('musicVolumeSlider'),
+      musicVolumeDisplay: document.getElementById('musicVolumeDisplay'),
+      toggleAudioBtn: document.getElementById('toggleAudioBtn'),
+      audioPillText: document.getElementById('audioPillText'),
       settingsCurrentPseudo: document.getElementById('settingsCurrentPseudo'),
       settingsChangePseudoBtn: document.getElementById('settingsChangePseudoBtn'),
       settingsRespawnBtn: document.getElementById('settingsRespawnBtn'),
@@ -179,6 +185,17 @@ export class HUD {
   setDistrictTime(timeStr) {
     if (this.dom.districtTime && timeStr) {
       this.dom.districtTime.textContent = timeStr;
+    }
+  }
+
+  setAudioTrackInfo(info) {
+    if (!this.dom.audioPillText || !info) return;
+    if (info.isPlaying && !info.isMuted) {
+      this.dom.audioPillText.textContent = `Music: ${info.title}`;
+      this.dom.toggleAudioBtn?.classList.add('active');
+    } else {
+      this.dom.audioPillText.textContent = 'Music: Off';
+      this.dom.toggleAudioBtn?.classList.remove('active');
     }
   }
 
@@ -458,6 +475,22 @@ export class HUD {
       }
       if (this.onCameraDistance) {
         this.onCameraDistance(val);
+      }
+    });
+
+    this.dom.toggleAudioBtn?.addEventListener('click', () => {
+      if (this.onToggleAudio) {
+        this.onToggleAudio();
+      }
+    });
+
+    this.dom.musicVolumeSlider?.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (this.dom.musicVolumeDisplay) {
+        this.dom.musicVolumeDisplay.textContent = `Volume: ${val}%`;
+      }
+      if (this.onAudioVolume) {
+        this.onAudioVolume(val / 100);
       }
     });
 

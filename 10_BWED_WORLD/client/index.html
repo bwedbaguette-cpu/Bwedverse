@@ -70,6 +70,10 @@
             <span>Settings</span>
           </button>
 
+          <button class="hud-pill" id="toggleAudioBtn" type="button" title="Toggle Cozy Village Music">
+            <span id="audioPillText">Music: Off</span>
+          </button>
+
           <button class="hud-pill editor-toggle-pill" id="toggleEditorBtn" type="button" title="Toggle In-Browser 3D World Editor">
             <span>World Editor</span>
           </button>
@@ -413,6 +417,16 @@
               </div>
               <div class="settings-control">
                 <input class="settings-slider" id="camDistanceSlider" type="range" min="18" max="85" value="46" step="1" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-label">
+                <strong>Village Ambience &amp; Music</strong>
+                <span id="musicVolumeDisplay">Volume: 22%</span>
+              </div>
+              <div class="settings-control">
+                <input class="settings-slider" id="musicVolumeSlider" type="range" min="0" max="100" value="22" step="1" />
               </div>
             </div>
           </div>
