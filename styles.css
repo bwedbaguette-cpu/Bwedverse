@@ -4390,3 +4390,204 @@ button {
   font-size: 11px;
   color: var(--cream-muted);
 }
+
+/* ==========================================================================
+   CONTEXTUAL TELEGRAM STICKERS SYSTEM
+   ========================================================================== */
+
+/* Parent Anchor Enhancements */
+.hero-content,
+.hero-stage-wrap,
+.buildings-head,
+.depot-stats-banner,
+.depot-toolbar,
+.vault-address-box,
+.vault-details-card,
+.vault-visual-card {
+  position: relative;
+}
+
+/* Base Sticker */
+.contextual-sticker {
+  position: absolute;
+  user-select: none;
+  pointer-events: auto;
+  z-index: 10;
+  cursor: pointer;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s ease;
+  will-change: transform;
+}
+
+.contextual-sticker:hover {
+  filter: drop-shadow(0 12px 24px rgba(255, 209, 90, 0.4)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65));
+  z-index: 25;
+}
+
+.contextual-sticker.bouncing {
+  animation: stickerSquishBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes stickerSquishBounce {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.24, 0.82); }
+  50% { transform: scale(0.9, 1.18); }
+  75% { transform: scale(1.08, 0.94); }
+  100% { transform: scale(1); }
+}
+
+/* Sizing Modifiers */
+.sticker-xs {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.sticker-sm {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.sticker-md {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+}
+
+.sticker-lg {
+  width: 86px;
+  height: 86px;
+  object-fit: contain;
+}
+
+.sticker-xl {
+  width: 106px;
+  height: 106px;
+  object-fit: contain;
+}
+
+/* Inline Sticker (inside headings, badges, pills) */
+.sticker-inline {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  margin: -4px 6px 0 6px;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.sticker-inline:hover {
+  transform: scale(1.22) rotate(-6deg);
+}
+
+/* Rotations & Tilts */
+.tilt-left {
+  transform: rotate(-7deg);
+}
+
+.tilt-left:hover {
+  transform: scale(1.15) rotate(-3deg) translateY(-4px);
+}
+
+.tilt-right {
+  transform: rotate(8deg);
+}
+
+.tilt-right:hover {
+  transform: scale(1.15) rotate(4deg) translateY(-4px);
+}
+
+.tilt-strong-left {
+  transform: rotate(-14deg);
+}
+
+.tilt-strong-left:hover {
+  transform: scale(1.18) rotate(-7deg) translateY(-6px);
+}
+
+.tilt-strong-right {
+  transform: rotate(14deg);
+}
+
+.tilt-strong-right:hover {
+  transform: scale(1.18) rotate(7deg) translateY(-6px);
+}
+
+/* Gentle Floating Animations */
+.sticker-float {
+  animation: stickerFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes stickerFloat {
+  0% { transform: translateY(0px) rotate(-6deg); }
+  100% { transform: translateY(-7px) rotate(-3deg); }
+}
+
+.sticker-float-right {
+  animation: stickerFloatRight 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes stickerFloatRight {
+  0% { transform: translateY(0px) rotate(6deg); }
+  100% { transform: translateY(-8px) rotate(10deg); }
+}
+
+/* Tooltip Badge for Stickers */
+.sticker-with-tooltip {
+  position: relative;
+}
+
+.sticker-with-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: rgba(18, 10, 6, 0.95);
+  border: 1px solid rgba(255, 209, 90, 0.4);
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 4px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  z-index: 30;
+}
+
+.sticker-with-tooltip:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .sticker-lg {
+    width: 68px;
+    height: 68px;
+  }
+  .sticker-xl {
+    width: 82px;
+    height: 82px;
+  }
+}
+
+@media (max-width: 768px) {
+  .contextual-sticker {
+    transform: scale(0.85);
+  }
+  .mobile-hide-sticker {
+    display: none !important;
+  }
+}
+

@@ -1824,6 +1824,18 @@ function initGlobalControls() {
   document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 }
 
+// Contextual Telegram Stickers Interaction
+function initContextualStickers() {
+  document.addEventListener('click', (e) => {
+    const sticker = e.target.closest('.contextual-sticker, .sticker-inline');
+    if (!sticker) return;
+    audio.click();
+    sticker.classList.remove('bouncing');
+    void sticker.offsetWidth;
+    sticker.classList.add('bouncing');
+  });
+}
+
 // Start on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   initMosaicWallpaper();
@@ -1837,4 +1849,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initBwedLiveWidget();
   initCommunityVault();
   initGlobalControls();
+  initContextualStickers();
 });
