@@ -4667,7 +4667,7 @@ button {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
 }
 
@@ -4693,6 +4693,12 @@ button {
   border-color: var(--gold-main);
   background: linear-gradient(165deg, rgba(42, 19, 10, 0.8), rgba(20, 9, 4, 0.85));
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), inset 0 1px 2px rgba(255, 235, 170, 0.25);
+}
+
+.roadmap-phase-card.roadmap-ip-highlight {
+  border-color: rgba(255, 107, 53, 0.42);
+  background: linear-gradient(165deg, rgba(48, 18, 8, 0.84), rgba(22, 9, 4, 0.88));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(255, 107, 53, 0.15);
 }
 
 .phase-head {
@@ -4731,6 +4737,12 @@ button {
   background: rgba(255, 255, 255, 0.06);
   color: var(--cream-muted);
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.phase-tag.tag-ip {
+  background: rgba(255, 107, 53, 0.2);
+  color: #ff9f43;
+  border: 1px solid rgba(255, 159, 67, 0.4);
 }
 
 .phase-title {
@@ -4805,6 +4817,25 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.badge-unlocked {
+  background: rgba(255, 107, 53, 0.22);
+  color: #ff9f43;
+  border: 1px solid rgba(255, 159, 67, 0.4);
+}
+
+.badge-ath {
+  background: rgba(255, 209, 90, 0.25);
+  color: #fff2a8;
+  border: 1px solid rgba(255, 209, 90, 0.5);
+  box-shadow: 0 0 10px rgba(255, 209, 90, 0.25);
+}
+
+.badge-global {
+  background: rgba(147, 51, 234, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+}
+
 .item-desc {
   font-size: 11px;
   color: var(--cream-muted);
@@ -4828,13 +4859,63 @@ button {
   box-shadow: 0 0 8px rgba(255, 209, 90, 0.6);
 }
 
-@media (max-width: 1024px) {
+/* Vertical Ladder System for MC & Holders */
+.roadmap-ladder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ladder-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(14, 6, 3, 0.55);
+  border: 1px solid rgba(255, 209, 90, 0.12);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.ladder-step:hover {
+  background: rgba(26, 12, 6, 0.75);
+  border-color: rgba(255, 209, 90, 0.3);
+  transform: translateX(3px);
+}
+
+.ladder-step.step-reached {
+  border-color: rgba(80, 200, 120, 0.35);
+  background: rgba(15, 30, 18, 0.45);
+}
+
+.ladder-step.step-unlocked {
+  border-color: rgba(255, 159, 67, 0.45);
+  background: rgba(38, 18, 8, 0.65);
+  box-shadow: 0 0 12px rgba(255, 107, 53, 0.15);
+}
+
+.ladder-target {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ladder-note {
+  font-size: 11px;
+  color: var(--cream-muted);
+}
+
+@media (max-width: 960px) {
   .roadmap-grid {
     grid-template-columns: 1fr;
     gap: 18px;
   }
   .vault-roadmap-wrap {
-    padding: 28px 22px;
+    padding: 28px 20px;
   }
 }
 
