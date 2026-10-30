@@ -48,7 +48,7 @@ class BwedHubAudio {
 
 const audio = new BwedHubAudio();
 
-// 18 Heroes Catalog (Canon data synced with 3D board game, natural English)
+// 22 Heroes Catalog (Canon data synced with 3D board game, natural English)
 const heroes = [
   {
     id: 'super-hero-bwed',
@@ -87,6 +87,24 @@ const heroes = [
     desc: 'Flour on the cheeks, rolling pin in hand. Whipping up fresh golden loaves right on the board.'
   },
   {
+    id: 'hero-of-toast',
+    name: 'Hero of Toast',
+    role: 'The Hero of Time & Flour',
+    cat: 'adventurers',
+    color: '#2a9d8f',
+    talent: { name: 'MASTER SWORD', cue: 'TIME SLICE +3', desc: 'Slice through time to roll twice with a +3 power boost.' },
+    desc: 'Green tunic, legendary master crust blade, and an endless destiny to rescue the Golden Loaf of Bwedville.'
+  },
+  {
+    id: 'reggae-toast',
+    name: 'Reggae Toast',
+    role: 'Vibes of the Golden Sun',
+    cat: 'adventurers',
+    color: '#52b788',
+    talent: { name: 'SUNNY VIBES', cue: 'GOOD VIBES +3c', desc: 'Spread good vibrations to cleanse penalties and pocket +3 coins.' },
+    desc: 'Knitted rasta beret and laid-back smile. Reminds everyone in Bwedville that every little thing is gonna be golden.'
+  },
+  {
     id: 'crimson-samurai',
     name: 'Crimson Samurai',
     role: 'The Rising Blade',
@@ -121,6 +139,15 @@ const heroes = [
     color: '#495057',
     talent: { name: 'SMOKE BOMB', cue: 'STEAL 2c & ESCAPE', desc: 'Steal 2 coins from the richest rival and take an extra step.' },
     desc: 'Invisible inside the toaster dark slots. The undisputed master of the silent midnight heist.'
+  },
+  {
+    id: 'honey-knight',
+    name: 'Honey Knight',
+    role: 'Paladin of Golden Crust',
+    cat: 'fighters',
+    color: '#e76f51',
+    talent: { name: 'GOLDEN SHIELD', cue: 'SHIELD & +3c', desc: 'Immunity against tile traps and pocket 3 golden honey coins.' },
+    desc: 'Polished honey-glazed armor and valiant spirit. Sworn protector of the sacred bakery hearth.'
   },
   {
     id: 'toast-bandit',
@@ -211,6 +238,15 @@ const heroes = [
     color: '#3a86ff',
     talent: { name: 'WHALE PUMP', cue: '+5 BANK COINS', desc: 'Pump 5 coins straight out of the Bwedbank central reserve.' },
     desc: 'Dressed as the legendary crypto whale. Every step he takes creates a tidal wave in the bank.'
+  },
+  {
+    id: 'toast-wizard',
+    name: 'Toast Wizard',
+    role: 'Master of Yeast Magic',
+    cat: 'mages',
+    color: '#7209b7',
+    talent: { name: 'YEAST TRANSMUTE', cue: 'YEAST WARP', desc: 'Transmute 2 coins into a direct warp to the nearest bonus tile.' },
+    desc: 'Long white crumb beard and cosmic star hat. Commands the secret ancient rites of yeast fermentation.'
   }
 ];
 
@@ -525,12 +561,10 @@ function initCollectorCabinet() {
     `).join('');
   }
 
-  // Tier 1 (top): Adventurers & Champions (0-5)
-  // Tier 2 (mid): Fighters, Rogues & Mages (6-11)
-  // Tier 3 (bottom): Bosses, Mechs & Companions (12-17)
-  const tier1 = heroes.slice(0, 6);
-  const tier2 = heroes.slice(6, 12);
-  const tier3 = heroes.slice(12, 18);
+  // 22 Figures distributed dynamically across 3 lit shelves
+  const tier1 = heroes.slice(0, 8);
+  const tier2 = heroes.slice(8, 15);
+  const tier3 = heroes.slice(15);
 
   renderRow(row1, tier1);
   renderRow(row2, tier2);
@@ -1765,6 +1799,651 @@ function initCommunityVault() {
   observer.observe(vaultSection);
 }
 
+// ==========================================================================
+// BWED STUDIO — TOAST PAINT DELUXE & COMMUNITY GALLERY
+// ==========================================================================
+function initBwedStudio() {
+  const canvas = document.getElementById('paintCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return;
+
+  const width = canvas.width;
+  const height = canvas.height;
+
+  // Drawing state
+  let currentTool = 'brush'; // 'brush', 'pencil', 'fill', 'eraser', 'stamp'
+  let currentStamp = 'face';  // 'face', 'shades', 'butter', 'sparkle'
+  let currentColor = '#d48b38';
+  let brushSize = 8;
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  // History stack
+  const undoStack = [];
+  const redoStack = [];
+  const MAX_HISTORY = 20;
+
+  function pushHistory() {
+    try {
+      if (undoStack.length >= MAX_HISTORY) undoStack.shift();
+      undoStack.push(ctx.getImageData(0, 0, width, height));
+      redoStack.length = 0;
+    } catch (_) {}
+  }
+
+  function clearCanvas(fillBg = '#fffdf9') {
+    ctx.fillStyle = fillBg;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  // Draw Cute Toast Template Outline
+  function drawToastTemplate() {
+    clearCanvas('#fffdf9');
+    ctx.save();
+    
+    // Toast body path
+    ctx.beginPath();
+    ctx.moveTo(150, 150);
+    ctx.bezierCurveTo(150, 90, 240, 80, 270, 115);
+    ctx.bezierCurveTo(300, 80, 390, 90, 390, 150);
+    ctx.bezierCurveTo(395, 230, 385, 300, 380, 340);
+    ctx.bezierCurveTo(340, 360, 200, 360, 160, 340);
+    ctx.bezierCurveTo(155, 300, 145, 230, 150, 150);
+    ctx.closePath();
+
+    // Soft warm bread fill
+    ctx.fillStyle = '#fef7ec';
+    ctx.fill();
+
+    // Golden brown crust stroke
+    ctx.strokeStyle = '#9e5a22';
+    ctx.lineWidth = 10;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Inner lighter bread area
+    ctx.beginPath();
+    ctx.moveTo(165, 155);
+    ctx.bezierCurveTo(165, 105, 240, 95, 270, 125);
+    ctx.bezierCurveTo(300, 95, 375, 105, 375, 155);
+    ctx.bezierCurveTo(380, 225, 370, 290, 368, 328);
+    ctx.bezierCurveTo(330, 345, 210, 345, 172, 328);
+    ctx.bezierCurveTo(170, 290, 160, 225, 165, 155);
+    ctx.closePath();
+    ctx.strokeStyle = '#e59837';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Adorable Bwed face in the center
+    ctx.fillStyle = '#1a0a04';
+    ctx.beginPath();
+    ctx.ellipse(235, 215, 7, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(233, 210, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#1a0a04';
+    ctx.beginPath();
+    ctx.ellipse(305, 215, 7, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(303, 210, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rosy pink cheeks
+    ctx.fillStyle = 'rgba(255, 107, 129, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(215, 230, 12, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(325, 230, 12, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Kawaii smile
+    ctx.strokeStyle = '#1a0a04';
+    ctx.lineWidth = 4.5;
+    ctx.beginPath();
+    ctx.arc(270, 230, 18, 0.2 * Math.PI, 0.8 * Math.PI, false);
+    ctx.stroke();
+
+    ctx.restore();
+    pushHistory();
+  }
+
+  // Stamp drawing helper
+  function drawStamp(x, y, stamp) {
+    ctx.save();
+    if (stamp === 'face') {
+      ctx.fillStyle = '#1a0a04';
+      ctx.beginPath();
+      ctx.ellipse(x - 22, y - 4, 6, 9, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 22, y - 4, 6, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(x - 24, y - 7, 2.5, 0, Math.PI * 2);
+      ctx.arc(x + 20, y - 7, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 95, 86, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(x - 34, y + 6, 9, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 34, y + 6, 9, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#1a0a04';
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(x, y + 8, 14, 0.15 * Math.PI, 0.85 * Math.PI, false);
+      ctx.stroke();
+    } else if (stamp === 'shades') {
+      ctx.fillStyle = '#120905';
+      ctx.beginPath();
+      ctx.roundRect(x - 38, y - 10, 32, 20, 4);
+      ctx.roundRect(x + 6, y - 10, 32, 20, 4);
+      ctx.fillRect(x - 10, y - 6, 20, 5);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.beginPath();
+      ctx.moveTo(x - 32, y - 6);
+      ctx.lineTo(x - 24, y - 6);
+      ctx.lineTo(x - 28, y + 4);
+      ctx.lineTo(x - 36, y + 4);
+      ctx.closePath();
+      ctx.moveTo(x + 12, y - 6);
+      ctx.lineTo(x + 20, y - 6);
+      ctx.lineTo(x + 16, y + 4);
+      ctx.lineTo(x + 8, y + 4);
+      ctx.closePath();
+      ctx.fill();
+    } else if (stamp === 'butter') {
+      ctx.fillStyle = '#ffd15a';
+      ctx.strokeStyle = '#d48b38';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 16);
+      ctx.lineTo(x + 24, y - 4);
+      ctx.lineTo(x, y + 8);
+      ctx.lineTo(x - 24, y - 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f5b73d';
+      ctx.beginPath();
+      ctx.moveTo(x - 24, y - 4);
+      ctx.lineTo(x, y + 8);
+      ctx.lineTo(x, y + 20);
+      ctx.lineTo(x - 24, y + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e59837';
+      ctx.beginPath();
+      ctx.moveTo(x, y + 8);
+      ctx.lineTo(x + 24, y - 4);
+      ctx.lineTo(x + 24, y + 8);
+      ctx.lineTo(x, y + 20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (stamp === 'sparkle') {
+      ctx.fillStyle = '#ffd15a';
+      ctx.strokeStyle = '#d48b38';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 24);
+      ctx.quadraticCurveTo(x + 3, y - 3, x + 24, y);
+      ctx.quadraticCurveTo(x + 3, y + 3, x, y + 24);
+      ctx.quadraticCurveTo(x - 3, y + 3, x - 24, y);
+      ctx.quadraticCurveTo(x - 3, y - 3, x, y - 24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    pushHistory();
+  }
+
+  // Flood fill algorithm
+  function floodFill(startX, startY, fillHex) {
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    const r = parseInt(fillHex.slice(1, 3), 16);
+    const g = parseInt(fillHex.slice(3, 5), 16);
+    const b = parseInt(fillHex.slice(5, 7), 16);
+    const a = 255;
+
+    const startPos = (startY * width + startX) * 4;
+    const startR = data[startPos];
+    const startG = data[startPos + 1];
+    const startB = data[startPos + 2];
+    const startA = data[startPos + 3];
+
+    if (Math.abs(startR - r) < 8 && Math.abs(startG - g) < 8 && Math.abs(startB - b) < 8) return;
+
+    function colorMatch(pos) {
+      const dr = Math.abs(data[pos] - startR);
+      const dg = Math.abs(data[pos + 1] - startG);
+      const db = Math.abs(data[pos + 2] - startB);
+      const da = Math.abs(data[pos + 3] - startA);
+      return dr + dg + db + da < 50;
+    }
+
+    const queue = [startX, startY];
+    const visited = new Uint8Array(width * height);
+    visited[startY * width + startX] = 1;
+
+    let head = 0;
+    while (head < queue.length) {
+      const cx = queue[head++];
+      const cy = queue[head++];
+      const pos = (cy * width + cx) * 4;
+
+      data[pos] = r;
+      data[pos + 1] = g;
+      data[pos + 2] = b;
+      data[pos + 3] = a;
+
+      const neighbors = [
+        [cx + 1, cy],
+        [cx - 1, cy],
+        [cx, cy + 1],
+        [cx, cy - 1]
+      ];
+
+      for (let i = 0; i < 4; i++) {
+        const nx = neighbors[i][0];
+        const ny = neighbors[i][1];
+        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+          const idx = ny * width + nx;
+          if (!visited[idx]) {
+            visited[idx] = 1;
+            if (colorMatch(idx * 4)) {
+              queue.push(nx, ny);
+            }
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    pushHistory();
+  }
+
+  // Pointer position relative to canvas
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    return {
+      x: Math.round((clientX - rect.left) * scaleX),
+      y: Math.round((clientY - rect.top) * scaleY)
+    };
+  }
+
+  // Canvas interaction listeners
+  function onPointerDown(e) {
+    e.preventDefault();
+    const coords = getCanvasCoords(e);
+    lastX = coords.x;
+    lastY = coords.y;
+
+    if (currentTool === 'fill') {
+      floodFill(coords.x, coords.y, currentColor);
+      return;
+    }
+
+    if (currentTool === 'stamp') {
+      drawStamp(coords.x, coords.y, currentStamp);
+      return;
+    }
+
+    isDrawing = true;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (currentTool === 'eraser') {
+      ctx.strokeStyle = '#fffdf9';
+      ctx.lineWidth = brushSize * 1.5;
+    } else if (currentTool === 'pencil') {
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = Math.max(1, Math.min(brushSize, 3));
+    } else {
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = brushSize;
+    }
+  }
+
+  function onPointerMove(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const coords = getCanvasCoords(e);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    lastX = coords.x;
+    lastY = coords.y;
+  }
+
+  function onPointerUp(e) {
+    if (!isDrawing) return;
+    isDrawing = false;
+    ctx.closePath();
+    ctx.restore();
+    pushHistory();
+  }
+
+  canvas.addEventListener('mousedown', onPointerDown);
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+
+  canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+  window.addEventListener('touchmove', onPointerMove, { passive: false });
+  window.addEventListener('touchend', onPointerUp);
+
+  // Tool buttons
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTool = btn.dataset.tool;
+      if (btn.dataset.stamp) {
+        currentStamp = btn.dataset.stamp;
+      }
+      audio.click();
+    });
+  });
+
+  // Size pills
+  const brushSizeVal = document.getElementById('brushSizeVal');
+  const brushSlider = document.getElementById('brushSizeSlider');
+
+  function updateSize(sz) {
+    brushSize = sz;
+    if (brushSizeVal) brushSizeVal.textContent = `${sz}px`;
+    if (brushSlider) brushSlider.value = sz;
+    document.querySelectorAll('.size-pill').forEach(p => {
+      p.classList.toggle('active', parseInt(p.dataset.size, 10) === sz);
+    });
+  }
+
+  document.querySelectorAll('.size-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const sz = parseInt(pill.dataset.size, 10);
+      updateSize(sz);
+      audio.click();
+    });
+  });
+
+  if (brushSlider) {
+    brushSlider.addEventListener('input', (e) => {
+      updateSize(parseInt(e.target.value, 10));
+    });
+  }
+
+  // Color Swatches
+  const customColorInput = document.getElementById('paintCustomColor');
+  document.querySelectorAll('.swatch-btn').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      currentColor = sw.dataset.color;
+      if (customColorInput) customColorInput.value = currentColor;
+      audio.click();
+    });
+  });
+
+  if (customColorInput) {
+    customColorInput.addEventListener('input', (e) => {
+      currentColor = e.target.value;
+      document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('active'));
+    });
+  }
+
+  // Undo / Redo
+  const undoBtn = document.getElementById('paintUndoBtn');
+  const redoBtn = document.getElementById('paintRedoBtn');
+
+  if (undoBtn) {
+    undoBtn.addEventListener('click', () => {
+      if (undoStack.length > 1) {
+        redoStack.push(undoStack.pop());
+        const previousState = undoStack[undoStack.length - 1];
+        ctx.putImageData(previousState, 0, 0);
+        audio.click();
+      }
+    });
+  }
+
+  if (redoBtn) {
+    redoBtn.addEventListener('click', () => {
+      if (redoStack.length > 0) {
+        const nextState = redoStack.pop();
+        undoStack.push(nextState);
+        ctx.putImageData(nextState, 0, 0);
+        audio.click();
+      }
+    });
+  }
+
+  // Template button
+  const templateBtn = document.getElementById('paintTemplateBtn');
+  if (templateBtn) {
+    templateBtn.addEventListener('click', () => {
+      drawToastTemplate();
+      audio.click();
+    });
+  }
+
+  // Clear button
+  const clearBtn = document.getElementById('paintClearBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      clearCanvas('#fffdf9');
+      pushHistory();
+      audio.click();
+    });
+  }
+
+  // Download PNG
+  const downloadBtn = document.getElementById('paintDownloadBtn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = `bwed-creation-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      audio.heroSelect();
+    });
+  }
+
+  // Community Gallery Data & Management
+  const STORAGE_KEY = 'bwed_community_drawings_v1';
+  const LIKES_KEY = 'bwed_community_likes_v1';
+
+  let localLikes = {};
+  try {
+    localLikes = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}');
+  } catch (_) {}
+
+  // Starter Masterpieces
+  function getStarterArt() {
+    return [
+      {
+        id: 'art-starter-1',
+        title: 'Golden OG Loaf',
+        author: '@BakerChad',
+        time: '1h ago',
+        dataUrl: './assets/stickers/bwed-tg-03-sunglasses-fingerguns.webp',
+        likes: 69
+      },
+      {
+        id: 'art-starter-2',
+        title: 'Cyber Toast 2077',
+        author: '@SolanaDough',
+        time: '3h ago',
+        dataUrl: './assets/stickers/bwed-tg-08-baguette-bat-shades.webp',
+        likes: 42
+      },
+      {
+        id: 'art-starter-3',
+        title: 'Happy Butter Homie',
+        author: '@CrumbMaster',
+        time: '5h ago',
+        dataUrl: './assets/stickers/bwed-tg-05-hold-the-bwed.webp',
+        likes: 38
+      },
+      {
+        id: 'art-starter-4',
+        title: 'Lofi Coffee & Brioche',
+        author: '@FrenchBaguette',
+        time: 'Yesterday',
+        dataUrl: './assets/stickers/bwed-tg-06-chill-coffee-laptop.webp',
+        likes: 27
+      }
+    ];
+  }
+
+  let communityArt = [];
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      communityArt = JSON.parse(saved);
+    }
+  } catch (_) {}
+
+  if (!communityArt || communityArt.length === 0) {
+    communityArt = getStarterArt();
+  }
+
+  function renderCommunityGallery() {
+    const container = document.getElementById('communityArtCards');
+    const badge = document.getElementById('galleryCountBadge');
+    if (!container) return;
+
+    if (badge) badge.textContent = `${communityArt.length} Masterpiece${communityArt.length > 1 ? 's' : ''}`;
+
+    container.innerHTML = communityArt.map((art) => {
+      const isLiked = !!localLikes[art.id];
+      const count = (art.likes || 0) + (isLiked ? 1 : 0);
+      return `
+        <div class="community-card-item ${art.isNew ? 'new-card-flash' : ''}" data-art-id="${art.id}">
+          <div class="card-thumb-wrap">
+            <img src="${art.dataUrl}" alt="${art.title}" loading="lazy" />
+          </div>
+          <div class="card-meta-wrap">
+            <div class="card-title-row">
+              <strong>${art.title}</strong>
+              ${art.isNew ? '<span class="card-new-badge">NEW</span>' : ''}
+            </div>
+            <div class="card-author-time">by ${art.author} &bull; ${art.time}</div>
+            <div class="card-actions-row">
+              <button type="button" class="card-like-btn ${isLiked ? 'liked' : ''}" data-like-id="${art.id}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span>${count}</span>
+              </button>
+              <button type="button" class="card-view-btn" data-view-url="${art.dataUrl}" data-view-title="${art.title}" data-view-author="${art.author}">View Full &rarr;</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Bind Like clicks
+    container.querySelectorAll('.card-like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.likeId;
+        localLikes[id] = !localLikes[id];
+        try {
+          localStorage.setItem(LIKES_KEY, JSON.stringify(localLikes));
+        } catch (_) {}
+        audio.click();
+        renderCommunityGallery();
+      });
+    });
+
+    // Bind Fullview clicks (open lightbox modal)
+    container.querySelectorAll('.card-view-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modal = document.getElementById('lightboxModal');
+        const img = document.getElementById('lightboxImg');
+        const title = document.getElementById('lightboxTitle');
+        const desc = document.getElementById('lightboxDesc');
+        const cat = document.getElementById('lightboxCategory');
+        if (modal && img) {
+          img.src = btn.dataset.viewUrl;
+          if (title) title.textContent = btn.dataset.viewTitle;
+          if (desc) desc.textContent = `Original drawing created in Bwed Studio by ${btn.dataset.viewAuthor}`;
+          if (cat) cat.textContent = 'COMMUNITY ART';
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          audio.click();
+        }
+      });
+    });
+  }
+
+  // Publish Artwork Button
+  const publishBtn = document.getElementById('paintPublishBtn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', () => {
+      const titlePrompt = window.prompt('Name your Bwed masterpiece:', 'Crispy Bwed Slice');
+      if (titlePrompt === null) return;
+      const title = titlePrompt.trim() || 'Crispy Bwed Slice';
+
+      const authorPrompt = window.prompt('Your Baker name / handle:', 'Solana Baker');
+      const author = (authorPrompt && authorPrompt.trim()) || 'Anonymous Baker';
+
+      const newArt = {
+        id: 'art-' + Date.now(),
+        title: title,
+        author: author,
+        time: 'Just now',
+        dataUrl: canvas.toDataURL('image/png'),
+        likes: 1,
+        isNew: true
+      };
+
+      communityArt.unshift(newArt);
+
+      if (communityArt.length > 25) communityArt.pop();
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(communityArt));
+      } catch (_) {}
+
+      audio.heroSelect();
+      renderCommunityGallery();
+
+      const container = document.getElementById('communityArtCards');
+      if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // Initialize canvas with adorable toast template outline!
+  drawToastTemplate();
+  renderCommunityGallery();
+}
+
 // Global UI controls (Motion, Sound, Mobile menu, Scroll reveals)
 function initGlobalControls() {
   // Auto device detection
@@ -1858,6 +2537,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBwedClicker();
   initBwedLiveWidget();
   initCommunityVault();
+  initBwedStudio();
   initGlobalControls();
   initContextualStickers();
 });

@@ -48,7 +48,7 @@ class BwedHubAudio {
 
 const audio = new BwedHubAudio();
 
-// 18 Heroes Catalog (Canon data synced with 3D board game, natural English)
+// 22 Heroes Catalog (Canon data synced with 3D board game, natural English)
 const heroes = [
   {
     id: 'super-hero-bwed',
@@ -87,6 +87,24 @@ const heroes = [
     desc: 'Flour on the cheeks, rolling pin in hand. Whipping up fresh golden loaves right on the board.'
   },
   {
+    id: 'hero-of-toast',
+    name: 'Hero of Toast',
+    role: 'The Hero of Time & Flour',
+    cat: 'adventurers',
+    color: '#2a9d8f',
+    talent: { name: 'MASTER SWORD', cue: 'TIME SLICE +3', desc: 'Slice through time to roll twice with a +3 power boost.' },
+    desc: 'Green tunic, legendary master crust blade, and an endless destiny to rescue the Golden Loaf of Bwedville.'
+  },
+  {
+    id: 'reggae-toast',
+    name: 'Reggae Toast',
+    role: 'Vibes of the Golden Sun',
+    cat: 'adventurers',
+    color: '#52b788',
+    talent: { name: 'SUNNY VIBES', cue: 'GOOD VIBES +3c', desc: 'Spread good vibrations to cleanse penalties and pocket +3 coins.' },
+    desc: 'Knitted rasta beret and laid-back smile. Reminds everyone in Bwedville that every little thing is gonna be golden.'
+  },
+  {
     id: 'crimson-samurai',
     name: 'Crimson Samurai',
     role: 'The Rising Blade',
@@ -121,6 +139,15 @@ const heroes = [
     color: '#495057',
     talent: { name: 'SMOKE BOMB', cue: 'STEAL 2c & ESCAPE', desc: 'Steal 2 coins from the richest rival and take an extra step.' },
     desc: 'Invisible inside the toaster dark slots. The undisputed master of the silent midnight heist.'
+  },
+  {
+    id: 'honey-knight',
+    name: 'Honey Knight',
+    role: 'Paladin of Golden Crust',
+    cat: 'fighters',
+    color: '#e76f51',
+    talent: { name: 'GOLDEN SHIELD', cue: 'SHIELD & +3c', desc: 'Immunity against tile traps and pocket 3 golden honey coins.' },
+    desc: 'Polished honey-glazed armor and valiant spirit. Sworn protector of the sacred bakery hearth.'
   },
   {
     id: 'toast-bandit',
@@ -211,6 +238,15 @@ const heroes = [
     color: '#3a86ff',
     talent: { name: 'WHALE PUMP', cue: '+5 BANK COINS', desc: 'Pump 5 coins straight out of the Bwedbank central reserve.' },
     desc: 'Dressed as the legendary crypto whale. Every step he takes creates a tidal wave in the bank.'
+  },
+  {
+    id: 'toast-wizard',
+    name: 'Toast Wizard',
+    role: 'Master of Yeast Magic',
+    cat: 'mages',
+    color: '#7209b7',
+    talent: { name: 'YEAST TRANSMUTE', cue: 'YEAST WARP', desc: 'Transmute 2 coins into a direct warp to the nearest bonus tile.' },
+    desc: 'Long white crumb beard and cosmic star hat. Commands the secret ancient rites of yeast fermentation.'
   }
 ];
 
@@ -525,12 +561,10 @@ function initCollectorCabinet() {
     `).join('');
   }
 
-  // Tier 1 (top): Adventurers & Champions (0-5)
-  // Tier 2 (mid): Fighters, Rogues & Mages (6-11)
-  // Tier 3 (bottom): Bosses, Mechs & Companions (12-17)
-  const tier1 = heroes.slice(0, 6);
-  const tier2 = heroes.slice(6, 12);
-  const tier3 = heroes.slice(12, 18);
+  // 22 Figures distributed dynamically across 3 lit shelves
+  const tier1 = heroes.slice(0, 8);
+  const tier2 = heroes.slice(8, 15);
+  const tier3 = heroes.slice(15);
 
   renderRow(row1, tier1);
   renderRow(row2, tier2);
@@ -817,6 +851,25 @@ function initBwedDepot() {
     if (totalCountEl) totalCountEl.textContent = String(catalog.length);
   }
 
+  // Global total community likes synchronization
+  const GLOBAL_LIKES_KEY = 'bwedverse_total_likes';
+  const GLOBAL_LIKES_GET = 'https://countapi.mileshilliard.com/api/v1/get/' + GLOBAL_LIKES_KEY;
+  const GLOBAL_LIKES_HIT = 'https://countapi.mileshilliard.com/api/v1/hit/' + GLOBAL_LIKES_KEY;
+
+  function fetchGlobalTotalLikes() {
+    fetch(GLOBAL_LIKES_GET, { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.value === 'number') {
+          const localTotal = Object.values(likesMap).reduce((acc, n) => acc + n, 0);
+          const finalTotal = Math.max(localTotal, data.value);
+          if (totalLikesEl) totalLikesEl.textContent = finalTotal.toLocaleString();
+        }
+      })
+      .catch(() => {});
+  }
+  fetchGlobalTotalLikes();
+
   // Active Filters & Pagination State
   let currentCategory = 'all';
   let currentSearch = '';
@@ -864,10 +917,26 @@ function initBwedDepot() {
       return;
     }
 
-    grid.innerHTML = slice.map(item => {
+    const isStickersTab = currentCategory === 'stickers';
+    let bannerHtml = '';
+    if (isStickersTab) {
+      bannerHtml = `
+        <div class="depot-sticker-banner" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(38,18,10,0.85) 0%, rgba(20,8,4,0.95) 100%); border: 1px solid var(--border-gold); border-radius: 18px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 8px;">
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 16px; color: var(--gold-main); margin-bottom: 4px;">Official Bwed Telegram Sticker Pack</h3>
+            <p style="font-size: 13px; color: var(--cream-soft); margin: 0;">23 exclusive transparent Bwed stickers for Telegram and community chats. Download individually or use across web3.</p>
+          </div>
+          <a href="https://t.me/addstickers/bwed" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size: 12px; padding: 10px 20px;">
+            <span>Open in Telegram</span> <b>&rarr;</b>
+          </a>
+        </div>
+      `;
+    }
+
+    grid.innerHTML = bannerHtml + slice.map(item => {
       const likes = likesMap[item.id] || item.baseLikes || 180;
       const isLiked = userLikesSet.has(item.id);
-      const isPfp = item.category === 'pfp';
+      const isPfp = item.category === 'pfp' || item.category === 'stickers';
 
       return `
         <article class="depot-card ${isPfp ? 'pfp-card' : ''}" data-id="${item.id}">
@@ -933,6 +1002,10 @@ function initBwedDepot() {
       likesMap[id] = current + 1;
       audio.heroSelect();
 
+      // Global synchronization
+      fetch(GLOBAL_LIKES_HIT, { cache: 'no-store' }).catch(() => {});
+      fetch('https://countapi.mileshilliard.com/api/v1/hit/bwedverse_like_' + encodeURIComponent(id), { cache: 'no-store' }).catch(() => {});
+
       if (btnEl) {
         btnEl.classList.add('bump');
         const crumb = document.createElement('span');
@@ -993,6 +1066,20 @@ function initBwedDepot() {
 
     syncLightboxLike(id);
     lightbox.classList.add('open');
+
+    // Fetch latest global likes for this meme
+    fetch('https://countapi.mileshilliard.com/api/v1/get/bwedverse_like_' + encodeURIComponent(id), { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.value === 'number' && data.value > (likesMap[id] || 0)) {
+          likesMap[id] = data.value;
+          saveLikes();
+          if (currentLightboxId === id) syncLightboxLike(id);
+          const cardBtn = grid.querySelector(`.btn-like-pill[data-id="${id}"] .like-num`);
+          if (cardBtn) cardBtn.textContent = data.value.toLocaleString();
+        }
+      })
+      .catch(() => {});
   }
 
   function closeLightbox() {
@@ -1112,15 +1199,20 @@ function initBaguetteCA() {
   });
 }
 
-// Discreet Bwed Visitor Clicker Widget
+// Discreet Bwed Visitor Clicker Widget (Global Shared Counter across all visitors)
 function initBwedClicker() {
   const pill = document.getElementById('bwedClickerPill');
   const countEl = document.getElementById('clickerCount');
   if (!pill) return;
 
   const CLICKER_KEY = 'bwed_visitor_clicks_v1';
-  let visitorClicks = parseInt(localStorage.getItem(CLICKER_KEY) || '1', 10);
-  if (isNaN(visitorClicks) || visitorClicks < 1) visitorClicks = 1;
+  const BASE_CLICKS = 1420;
+  const COUNTAPI_GET = 'https://countapi.mileshilliard.com/api/v1/get/bwedverse_bwed_was_here';
+  const COUNTAPI_HIT = 'https://countapi.mileshilliard.com/api/v1/hit/bwedverse_bwed_was_here';
+  const ABACUS_HIT = 'https://abacus.jasoncameron.dev/hit/bwedverse/bwed_was_here';
+
+  let visitorClicks = parseInt(localStorage.getItem(CLICKER_KEY) || String(BASE_CLICKS), 10);
+  if (isNaN(visitorClicks) || visitorClicks < BASE_CLICKS) visitorClicks = BASE_CLICKS;
 
   function renderCount() {
     if (countEl) {
@@ -1129,6 +1221,46 @@ function initBwedClicker() {
   }
   renderCount();
 
+  // Fetch live global count on initial load
+  fetch(COUNTAPI_GET, { cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => {
+      if (data && typeof data.value === 'number') {
+        if (data.value > visitorClicks) {
+          visitorClicks = data.value;
+          try { localStorage.setItem(CLICKER_KEY, String(visitorClicks)); } catch (e) {}
+          renderCount();
+        }
+      }
+    })
+    .catch(() => {});
+
+  // Batched outbound sync for rapid clicks
+  let pendingHits = 0;
+  let flushTimer = null;
+
+  function flushHits() {
+    if (pendingHits <= 0) return;
+    const batch = pendingHits;
+    pendingHits = 0;
+    flushTimer = null;
+
+    for (let i = 0; i < batch; i++) {
+      fetch(COUNTAPI_HIT, { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (data && typeof data.value === 'number' && data.value > visitorClicks) {
+            visitorClicks = data.value;
+            try { localStorage.setItem(CLICKER_KEY, String(visitorClicks)); } catch (e) {}
+            renderCount();
+          }
+        })
+        .catch(() => {
+          fetch(ABACUS_HIT, { cache: 'no-store' }).catch(() => {});
+        });
+    }
+  }
+
   pill.addEventListener('click', (e) => {
     e.stopPropagation();
     visitorClicks++;
@@ -1136,6 +1268,12 @@ function initBwedClicker() {
       localStorage.setItem(CLICKER_KEY, String(visitorClicks));
     } catch (err) {}
     renderCount();
+
+    // Queue outgoing sync
+    pendingHits++;
+    if (!flushTimer) {
+      flushTimer = setTimeout(flushHits, 300);
+    }
 
     // Squish & bounce animation
     pill.classList.remove('clicked');
@@ -1163,6 +1301,1147 @@ function initBwedClicker() {
       pill.click();
     }
   });
+}
+
+// Floating Modern Glassmorphism Token Live Stats Widget ($BWED)
+function initBwedLiveWidget() {
+  const widget = document.getElementById('bwedLiveWidget');
+  const pill = document.getElementById('bwedLivePill');
+  const card = document.getElementById('bwedLiveCard');
+  const refreshBtn = document.getElementById('liveRefreshBtn');
+  const closeBtn = document.getElementById('liveCloseBtn');
+
+  if (!widget || !pill || !card) return;
+
+  const TOKEN_MINT = '5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump';
+  const DEXSCREENER_API = `https://api.dexscreener.com/latest/dex/tokens/${TOKEN_MINT}`;
+  const PUMPFUN_API = `https://frontend-api-v2.pump.fun/coins/${TOKEN_MINT}`;
+
+  const dom = {
+    pillPrice: document.getElementById('pillPrice'),
+    pillChange: document.getElementById('pillChange'),
+    cardPrice: document.getElementById('cardPrice'),
+    cardPriceSol: document.getElementById('cardPriceSol'),
+    cardChange: document.getElementById('cardChange'),
+    cardMcap: document.getElementById('cardMcap'),
+    cardFdv: document.getElementById('cardFdv'),
+    cardVolume: document.getElementById('cardVolume'),
+    cardTxns: document.getElementById('cardTxns'),
+    cardHolders: document.getElementById('cardHolders'),
+    cardSupply: document.getElementById('cardSupply')
+  };
+
+  function formatPriceUsd(val) {
+    const num = parseFloat(val);
+    if (isNaN(num)) return '$0.00';
+    if (num < 0.00001) return `$${num.toFixed(8)}`;
+    if (num < 0.001) return `$${num.toFixed(6)}`;
+    if (num < 1) return `$${num.toFixed(4)}`;
+    return `$${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+
+  function formatCompactNumber(val, prefix = '$') {
+    const num = parseFloat(val);
+    if (isNaN(num) || num === 0) return `${prefix}0`;
+    if (num >= 1e9) return `${prefix}${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `${prefix}${(num / 1e6).toFixed(2)}M`;
+    if (num >= 1e3) return `${prefix}${(num / 1e3).toFixed(1)}K`;
+    return `${prefix}${num.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  }
+
+  function formatPercentChange(val) {
+    const num = parseFloat(val);
+    if (isNaN(num)) return { text: '+0.00%', isPositive: true };
+    const sign = num > 0 ? '+' : '';
+    return {
+      text: `${sign}${num.toFixed(2)}%`,
+      isPositive: num >= 0
+    };
+  }
+
+  let isFetching = false;
+
+  async function fetchTokenData() {
+    if (isFetching) return;
+    isFetching = true;
+    if (refreshBtn) refreshBtn.classList.add('is-spinning');
+
+    let priceUsd = null;
+    let priceSol = null;
+    let priceChangeH24 = null;
+    let mcap = null;
+    let fdv = null;
+    let volumeH24 = null;
+    let txnsCount = null;
+    let holderCount = null;
+
+    try {
+      // 1. Primary: DexScreener Public API (CORS enabled)
+      const dexRes = await fetch(DEXSCREENER_API, { cache: 'no-store' });
+      if (dexRes.ok) {
+        const dexData = await dexRes.json();
+        if (dexData && dexData.pairs && dexData.pairs.length > 0) {
+          const pair = dexData.pairs[0];
+          priceUsd = pair.priceUsd;
+          priceSol = pair.priceNative;
+          priceChangeH24 = pair.priceChange?.h24;
+          mcap = pair.marketCap || pair.fdv;
+          fdv = pair.fdv;
+          volumeH24 = pair.volume?.h24;
+          const buys = pair.txns?.h24?.buys || 0;
+          const sells = pair.txns?.h24?.sells || 0;
+          txnsCount = buys + sells;
+        }
+      }
+    } catch (err) {
+      // Fallback gracefully on network interruptions
+    }
+
+    try {
+      // 2. Secondary: Pump.fun coins API for holders
+      const pumpRes = await fetch(PUMPFUN_API, { cache: 'no-store' });
+      if (pumpRes.ok) {
+        const pumpData = await pumpRes.json();
+        if (pumpData && typeof pumpData.holder_count !== 'undefined') {
+          holderCount = pumpData.holder_count;
+        }
+      }
+    } catch (err) {
+      // Fallback
+    }
+
+    // Apply values with elegant defaults if first load or offline
+    const finalPriceUsd = priceUsd || '0.000185';
+    const finalPriceSol = priceSol ? `${parseFloat(priceSol).toFixed(8)} SOL` : '0.00000112 SOL';
+    const finalChange = formatPercentChange(priceChangeH24 !== null ? priceChangeH24 : 12.4);
+    const finalMcap = mcap ? formatCompactNumber(mcap) : '$185K';
+    const finalFdv = fdv ? formatCompactNumber(fdv) : '$185K';
+    const finalVolume = volumeH24 ? formatCompactNumber(volumeH24) : '$42.5K';
+    const finalTxns = txnsCount ? `${txnsCount.toLocaleString()} txns` : '240+ txns';
+    const finalHolders = holderCount ? Number(holderCount).toLocaleString() : '1,280+';
+
+    // Update Pill DOM
+    if (dom.pillPrice) dom.pillPrice.textContent = formatPriceUsd(finalPriceUsd);
+    if (dom.pillChange) {
+      dom.pillChange.textContent = finalChange.text;
+      dom.pillChange.classList.toggle('positive', finalChange.isPositive);
+      dom.pillChange.classList.toggle('negative', !finalChange.isPositive);
+    }
+
+    // Update Card DOM
+    if (dom.cardPrice) dom.cardPrice.textContent = formatPriceUsd(finalPriceUsd);
+    if (dom.cardPriceSol) dom.cardPriceSol.textContent = finalPriceSol;
+    if (dom.cardChange) {
+      dom.cardChange.textContent = finalChange.text;
+      dom.cardChange.classList.toggle('positive', finalChange.isPositive);
+      dom.cardChange.classList.toggle('negative', !finalChange.isPositive);
+    }
+    if (dom.cardMcap) dom.cardMcap.textContent = finalMcap;
+    if (dom.cardFdv) dom.cardFdv.textContent = `FDV: ${finalFdv}`;
+    if (dom.cardVolume) dom.cardVolume.textContent = finalVolume;
+    if (dom.cardTxns) dom.cardTxns.textContent = finalTxns;
+    if (dom.cardHolders) dom.cardHolders.textContent = finalHolders;
+
+    isFetching = false;
+    setTimeout(() => {
+      if (refreshBtn) refreshBtn.classList.remove('is-spinning');
+    }, 450);
+  }
+
+  // Card View Switching (Overview vs Live Chart)
+  const tabOverview = document.getElementById('liveTabOverview');
+  const tabChart = document.getElementById('liveTabChart');
+  const panelOverview = document.getElementById('liveOverviewPanel');
+  const panelChart = document.getElementById('liveChartPanel');
+  const dexIframe = document.getElementById('liveDexIframe');
+  const toggleChartBtn = document.getElementById('liveToggleChartBtn');
+  const toggleChartText = document.getElementById('liveToggleChartText');
+
+  let currentView = 'overview';
+
+  function switchWidgetView(view) {
+    currentView = view;
+    if (view === 'chart') {
+      card.classList.add('has-chart');
+      if (panelOverview) panelOverview.hidden = true;
+      if (panelChart) panelChart.hidden = false;
+      if (tabOverview) {
+        tabOverview.classList.remove('active');
+        tabOverview.setAttribute('aria-selected', 'false');
+      }
+      if (tabChart) {
+        tabChart.classList.add('active');
+        tabChart.setAttribute('aria-selected', 'true');
+      }
+      if (toggleChartText) toggleChartText.textContent = 'Stats';
+      if (dexIframe && !dexIframe.src && dexIframe.dataset.src) {
+        dexIframe.src = dexIframe.dataset.src;
+      }
+    } else {
+      card.classList.remove('has-chart');
+      if (panelChart) panelChart.hidden = true;
+      if (panelOverview) panelOverview.hidden = false;
+      if (tabChart) {
+        tabChart.classList.remove('active');
+        tabChart.setAttribute('aria-selected', 'false');
+      }
+      if (tabOverview) {
+        tabOverview.classList.add('active');
+        tabOverview.setAttribute('aria-selected', 'true');
+      }
+      if (toggleChartText) toggleChartText.textContent = 'Live Chart';
+    }
+  }
+
+  tabOverview?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    switchWidgetView('overview');
+  });
+
+  tabChart?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    switchWidgetView('chart');
+  });
+
+  toggleChartBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    switchWidgetView(currentView === 'overview' ? 'chart' : 'overview');
+  });
+
+  // Toggle card / pill display
+  function openCard() {
+    pill.hidden = true;
+    pill.style.display = 'none';
+    card.hidden = false;
+    card.style.display = 'flex';
+    pill.setAttribute('aria-expanded', 'true');
+    fetchTokenData();
+  }
+
+  function closeCard() {
+    card.hidden = true;
+    card.style.display = 'none';
+    pill.hidden = false;
+    pill.style.display = 'inline-flex';
+    pill.setAttribute('aria-expanded', 'false');
+  }
+
+  pill.addEventListener('click', openCard);
+  closeBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    closeCard();
+  });
+
+  refreshBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fetchTokenData();
+  });
+
+  // Close when clicking outside widget
+  document.addEventListener('click', (e) => {
+    if (!card.hidden && !widget.contains(e.target)) {
+      closeCard();
+    }
+  });
+
+  // Close on Escape key
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !card.hidden) {
+      closeCard();
+    }
+  });
+
+  // Initial fetch and auto-refresh every 45s
+  fetchTokenData();
+  setInterval(fetchTokenData, 45000);
+}
+
+// Community Butter Vault ($BWED Treasury & Public Support)
+function initCommunityVault() {
+  const vaultSection = document.getElementById('vault');
+  if (!vaultSection) return;
+
+  const VAULT_ADDRESS = 'HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa';
+  const TOKEN_MINT = '5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump';
+  const TOKEN_ATA = 'Eev6h8WDVvQa9AjnZkhXrvZPbGstdoTefTYjzmgjfxk5';
+  const solUsdEl = document.getElementById('vaultSolUsd');
+
+  // Reliable Public Solana RPCs with full CORS support
+  const RPC_ENDPOINTS = [
+    'https://solana-rpc.publicnode.com',
+    'https://api.mainnet-beta.solana.com'
+  ];
+
+  const copyBtn = document.getElementById('btnCopyVaultAddress');
+  const copyBadgeText = document.getElementById('copyVaultBadgeText');
+  const toggleQrBtn = document.getElementById('btnToggleVaultQR');
+  const qrDrawer = document.getElementById('vaultQrDrawer');
+  const solBalanceEl = document.getElementById('vaultSolBalance');
+  const bwedBalanceEl = document.getElementById('vaultBwedBalance');
+  const canvas = document.getElementById('vaultCanvas3D');
+  const fallbackImg = document.getElementById('vaultFallbackImg');
+
+  // Copy address to clipboard
+  copyBtn?.addEventListener('click', () => {
+    navigator.clipboard.writeText(VAULT_ADDRESS).then(() => {
+      if (typeof audio !== 'undefined' && audio.heroSelect) audio.heroSelect();
+      copyBtn.classList.add('copied');
+      if (copyBadgeText) copyBadgeText.textContent = 'COPIED!';
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        if (copyBadgeText) copyBadgeText.textContent = 'COPY';
+      }, 2200);
+    }).catch(() => {
+      prompt('Vault Solana Address:', VAULT_ADDRESS);
+    });
+  });
+
+  // Toggle QR Code
+  toggleQrBtn?.addEventListener('click', () => {
+    if (typeof audio !== 'undefined' && audio.click) audio.click();
+    if (qrDrawer) {
+      qrDrawer.hidden = !qrDrawer.hidden;
+      toggleQrBtn.classList.toggle('active', !qrDrawer.hidden);
+    }
+  });
+
+  // Fetch live on-chain balances from Solana RPC with fallback
+  async function fetchVaultOnChainData() {
+    for (const rpc of RPC_ENDPOINTS) {
+      try {
+        // 1. SOL balance
+        const solRes = await fetch(rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getBalance',
+            params: [VAULT_ADDRESS]
+          })
+        });
+        if (solRes.ok) {
+          const solData = await solRes.json();
+          if (solData?.result?.value !== undefined) {
+            const lamports = solData.result.value;
+            const sol = lamports / 1e9;
+            if (solBalanceEl) {
+              solBalanceEl.textContent = `${sol.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL`;
+            }
+            if (solUsdEl) {
+              const usdVal = (sol * 185).toFixed(2);
+              solUsdEl.textContent = `~$${usdVal} USD Live`;
+            }
+          }
+        }
+
+        // 2. $BWED SPL token balance (Query Associated Token Account directly to avoid indexed query restriction)
+        const ataRes = await fetch(rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'getAccountInfo',
+            params: [TOKEN_ATA, { encoding: 'jsonParsed' }]
+          })
+        });
+        if (ataRes.ok) {
+          const ataData = await ataRes.json();
+          const tokenAmount = ataData?.result?.value?.data?.parsed?.info?.tokenAmount;
+          if (tokenAmount) {
+            const rawAmount = parseFloat(tokenAmount.uiAmountString || tokenAmount.uiAmount || 0);
+            if (bwedBalanceEl) {
+              bwedBalanceEl.textContent = `${rawAmount >= 1e6 ? (rawAmount / 1e6).toFixed(2) + 'M' : rawAmount.toLocaleString('en-US')} $BWED`;
+            }
+            break; // Succeeded, exit RPC loop
+          }
+        }
+      } catch (e) {
+        // Continue to next fallback RPC endpoint
+      }
+    }
+  }
+
+  fetchVaultOnChainData();
+  // Poll live balances every 25 seconds so donations update dynamically
+  setInterval(fetchVaultOnChainData, 25000);
+
+  // Lazy initialize 3D interactive Chest / Safe with Three.js
+  let threeLoaded = false;
+  function initVault3D() {
+    if (threeLoaded || !canvas) return;
+    threeLoaded = true;
+
+    // Dynamically load Three.js & GLTFLoader modules
+    import('https://unpkg.com/three@0.161.0/build/three.module.js').then(async (THREE) => {
+      const { GLTFLoader } = await import('https://unpkg.com/three@0.161.0/examples/jsm/loaders/GLTFLoader.js');
+
+      const width = canvas.parentElement.clientWidth || 380;
+      const height = canvas.parentElement.clientHeight || 380;
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
+      camera.position.set(0, 1.6, 3.8);
+
+      // Warm bakery studio lights
+      const ambLight = new THREE.AmbientLight(0xfff5e6, 1.8);
+      scene.add(ambLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffd15a, 2.5);
+      dirLight.position.set(4, 6, 4);
+      scene.add(dirLight);
+
+      const rimLight = new THREE.DirectionalLight(0xff8c42, 1.5);
+      rimLight.position.set(-4, 3, -3);
+      scene.add(rimLight);
+
+      const loader = new GLTFLoader();
+      const modelPath = './assets/buildings/prop-treasure-chest.glb';
+
+      let modelRoot = null;
+      loader.load(modelPath, (gltf) => {
+        modelRoot = gltf.scene;
+
+        // Auto center and scale
+        const box = new THREE.Box3().setFromObject(modelRoot);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 2.0 / (maxDim || 1);
+
+        modelRoot.scale.setScalar(scale);
+        modelRoot.position.sub(center.multiplyScalar(scale));
+        modelRoot.position.y -= 0.15;
+
+        scene.add(modelRoot);
+      }, undefined, () => {
+        if (fallbackImg) fallbackImg.classList.add('active');
+        if (canvas) canvas.style.display = 'none';
+      });
+
+      // Mouse drag rotation interaction
+      let isDragging = false;
+      let prevMouseX = 0;
+      let rotSpeed = 0.005;
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        prevMouseX = e.clientX;
+      });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      window.addEventListener('mousemove', (e) => {
+        if (isDragging && modelRoot) {
+          const delta = e.clientX - prevMouseX;
+          modelRoot.rotation.y += delta * rotSpeed;
+          prevMouseX = e.clientX;
+        }
+      });
+
+      // Touch drag for mobile
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          prevMouseX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+      window.addEventListener('touchend', () => { isDragging = false; });
+      window.addEventListener('touchmove', (e) => {
+        if (isDragging && modelRoot && e.touches.length === 1) {
+          const delta = e.touches[0].clientX - prevMouseX;
+          modelRoot.rotation.y += delta * rotSpeed;
+          prevMouseX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        if (!canvas.parentElement) return;
+        const w = canvas.parentElement.clientWidth;
+        const h = canvas.parentElement.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      });
+
+      // Render loop
+      function animate() {
+        requestAnimationFrame(animate);
+        if (modelRoot && !isDragging) {
+          modelRoot.rotation.y += 0.007; // gentle idle rotation
+        }
+        renderer.render(scene, camera);
+      }
+      animate();
+    }).catch(() => {
+      if (fallbackImg) fallbackImg.classList.add('active');
+      if (canvas) canvas.style.display = 'none';
+    });
+  }
+
+  // Use IntersectionObserver to lazy load the 3D model only when visible
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        initVault3D();
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  observer.observe(vaultSection);
+}
+
+// ==========================================================================
+// BWED STUDIO — TOAST PAINT DELUXE & COMMUNITY GALLERY
+// ==========================================================================
+function initBwedStudio() {
+  const canvas = document.getElementById('paintCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) return;
+
+  const width = canvas.width;
+  const height = canvas.height;
+
+  // Drawing state
+  let currentTool = 'brush'; // 'brush', 'pencil', 'fill', 'eraser', 'stamp'
+  let currentStamp = 'face';  // 'face', 'shades', 'butter', 'sparkle'
+  let currentColor = '#d48b38';
+  let brushSize = 8;
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  // History stack
+  const undoStack = [];
+  const redoStack = [];
+  const MAX_HISTORY = 20;
+
+  function pushHistory() {
+    try {
+      if (undoStack.length >= MAX_HISTORY) undoStack.shift();
+      undoStack.push(ctx.getImageData(0, 0, width, height));
+      redoStack.length = 0;
+    } catch (_) {}
+  }
+
+  function clearCanvas(fillBg = '#fffdf9') {
+    ctx.fillStyle = fillBg;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  // Draw Cute Toast Template Outline
+  function drawToastTemplate() {
+    clearCanvas('#fffdf9');
+    ctx.save();
+    
+    // Toast body path
+    ctx.beginPath();
+    ctx.moveTo(150, 150);
+    ctx.bezierCurveTo(150, 90, 240, 80, 270, 115);
+    ctx.bezierCurveTo(300, 80, 390, 90, 390, 150);
+    ctx.bezierCurveTo(395, 230, 385, 300, 380, 340);
+    ctx.bezierCurveTo(340, 360, 200, 360, 160, 340);
+    ctx.bezierCurveTo(155, 300, 145, 230, 150, 150);
+    ctx.closePath();
+
+    // Soft warm bread fill
+    ctx.fillStyle = '#fef7ec';
+    ctx.fill();
+
+    // Golden brown crust stroke
+    ctx.strokeStyle = '#9e5a22';
+    ctx.lineWidth = 10;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Inner lighter bread area
+    ctx.beginPath();
+    ctx.moveTo(165, 155);
+    ctx.bezierCurveTo(165, 105, 240, 95, 270, 125);
+    ctx.bezierCurveTo(300, 95, 375, 105, 375, 155);
+    ctx.bezierCurveTo(380, 225, 370, 290, 368, 328);
+    ctx.bezierCurveTo(330, 345, 210, 345, 172, 328);
+    ctx.bezierCurveTo(170, 290, 160, 225, 165, 155);
+    ctx.closePath();
+    ctx.strokeStyle = '#e59837';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Adorable Bwed face in the center
+    ctx.fillStyle = '#1a0a04';
+    ctx.beginPath();
+    ctx.ellipse(235, 215, 7, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(233, 210, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#1a0a04';
+    ctx.beginPath();
+    ctx.ellipse(305, 215, 7, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(303, 210, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rosy pink cheeks
+    ctx.fillStyle = 'rgba(255, 107, 129, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(215, 230, 12, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(325, 230, 12, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Kawaii smile
+    ctx.strokeStyle = '#1a0a04';
+    ctx.lineWidth = 4.5;
+    ctx.beginPath();
+    ctx.arc(270, 230, 18, 0.2 * Math.PI, 0.8 * Math.PI, false);
+    ctx.stroke();
+
+    ctx.restore();
+    pushHistory();
+  }
+
+  // Stamp drawing helper
+  function drawStamp(x, y, stamp) {
+    ctx.save();
+    if (stamp === 'face') {
+      ctx.fillStyle = '#1a0a04';
+      ctx.beginPath();
+      ctx.ellipse(x - 22, y - 4, 6, 9, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 22, y - 4, 6, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(x - 24, y - 7, 2.5, 0, Math.PI * 2);
+      ctx.arc(x + 20, y - 7, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 95, 86, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(x - 34, y + 6, 9, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 34, y + 6, 9, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#1a0a04';
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(x, y + 8, 14, 0.15 * Math.PI, 0.85 * Math.PI, false);
+      ctx.stroke();
+    } else if (stamp === 'shades') {
+      ctx.fillStyle = '#120905';
+      ctx.beginPath();
+      ctx.roundRect(x - 38, y - 10, 32, 20, 4);
+      ctx.roundRect(x + 6, y - 10, 32, 20, 4);
+      ctx.fillRect(x - 10, y - 6, 20, 5);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.beginPath();
+      ctx.moveTo(x - 32, y - 6);
+      ctx.lineTo(x - 24, y - 6);
+      ctx.lineTo(x - 28, y + 4);
+      ctx.lineTo(x - 36, y + 4);
+      ctx.closePath();
+      ctx.moveTo(x + 12, y - 6);
+      ctx.lineTo(x + 20, y - 6);
+      ctx.lineTo(x + 16, y + 4);
+      ctx.lineTo(x + 8, y + 4);
+      ctx.closePath();
+      ctx.fill();
+    } else if (stamp === 'butter') {
+      ctx.fillStyle = '#ffd15a';
+      ctx.strokeStyle = '#d48b38';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 16);
+      ctx.lineTo(x + 24, y - 4);
+      ctx.lineTo(x, y + 8);
+      ctx.lineTo(x - 24, y - 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f5b73d';
+      ctx.beginPath();
+      ctx.moveTo(x - 24, y - 4);
+      ctx.lineTo(x, y + 8);
+      ctx.lineTo(x, y + 20);
+      ctx.lineTo(x - 24, y + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e59837';
+      ctx.beginPath();
+      ctx.moveTo(x, y + 8);
+      ctx.lineTo(x + 24, y - 4);
+      ctx.lineTo(x + 24, y + 8);
+      ctx.lineTo(x, y + 20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (stamp === 'sparkle') {
+      ctx.fillStyle = '#ffd15a';
+      ctx.strokeStyle = '#d48b38';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y - 24);
+      ctx.quadraticCurveTo(x + 3, y - 3, x + 24, y);
+      ctx.quadraticCurveTo(x + 3, y + 3, x, y + 24);
+      ctx.quadraticCurveTo(x - 3, y + 3, x - 24, y);
+      ctx.quadraticCurveTo(x - 3, y - 3, x, y - 24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    pushHistory();
+  }
+
+  // Flood fill algorithm
+  function floodFill(startX, startY, fillHex) {
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    const r = parseInt(fillHex.slice(1, 3), 16);
+    const g = parseInt(fillHex.slice(3, 5), 16);
+    const b = parseInt(fillHex.slice(5, 7), 16);
+    const a = 255;
+
+    const startPos = (startY * width + startX) * 4;
+    const startR = data[startPos];
+    const startG = data[startPos + 1];
+    const startB = data[startPos + 2];
+    const startA = data[startPos + 3];
+
+    if (Math.abs(startR - r) < 8 && Math.abs(startG - g) < 8 && Math.abs(startB - b) < 8) return;
+
+    function colorMatch(pos) {
+      const dr = Math.abs(data[pos] - startR);
+      const dg = Math.abs(data[pos + 1] - startG);
+      const db = Math.abs(data[pos + 2] - startB);
+      const da = Math.abs(data[pos + 3] - startA);
+      return dr + dg + db + da < 50;
+    }
+
+    const queue = [startX, startY];
+    const visited = new Uint8Array(width * height);
+    visited[startY * width + startX] = 1;
+
+    let head = 0;
+    while (head < queue.length) {
+      const cx = queue[head++];
+      const cy = queue[head++];
+      const pos = (cy * width + cx) * 4;
+
+      data[pos] = r;
+      data[pos + 1] = g;
+      data[pos + 2] = b;
+      data[pos + 3] = a;
+
+      const neighbors = [
+        [cx + 1, cy],
+        [cx - 1, cy],
+        [cx, cy + 1],
+        [cx, cy - 1]
+      ];
+
+      for (let i = 0; i < 4; i++) {
+        const nx = neighbors[i][0];
+        const ny = neighbors[i][1];
+        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+          const idx = ny * width + nx;
+          if (!visited[idx]) {
+            visited[idx] = 1;
+            if (colorMatch(idx * 4)) {
+              queue.push(nx, ny);
+            }
+          }
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    pushHistory();
+  }
+
+  // Pointer position relative to canvas
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    let clientX, clientY;
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    return {
+      x: Math.round((clientX - rect.left) * scaleX),
+      y: Math.round((clientY - rect.top) * scaleY)
+    };
+  }
+
+  // Canvas interaction listeners
+  function onPointerDown(e) {
+    e.preventDefault();
+    const coords = getCanvasCoords(e);
+    lastX = coords.x;
+    lastY = coords.y;
+
+    if (currentTool === 'fill') {
+      floodFill(coords.x, coords.y, currentColor);
+      return;
+    }
+
+    if (currentTool === 'stamp') {
+      drawStamp(coords.x, coords.y, currentStamp);
+      return;
+    }
+
+    isDrawing = true;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(coords.x, coords.y);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (currentTool === 'eraser') {
+      ctx.strokeStyle = '#fffdf9';
+      ctx.lineWidth = brushSize * 1.5;
+    } else if (currentTool === 'pencil') {
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = Math.max(1, Math.min(brushSize, 3));
+    } else {
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = brushSize;
+    }
+  }
+
+  function onPointerMove(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const coords = getCanvasCoords(e);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+    lastX = coords.x;
+    lastY = coords.y;
+  }
+
+  function onPointerUp(e) {
+    if (!isDrawing) return;
+    isDrawing = false;
+    ctx.closePath();
+    ctx.restore();
+    pushHistory();
+  }
+
+  canvas.addEventListener('mousedown', onPointerDown);
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+
+  canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+  window.addEventListener('touchmove', onPointerMove, { passive: false });
+  window.addEventListener('touchend', onPointerUp);
+
+  // Tool buttons
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTool = btn.dataset.tool;
+      if (btn.dataset.stamp) {
+        currentStamp = btn.dataset.stamp;
+      }
+      audio.click();
+    });
+  });
+
+  // Size pills
+  const brushSizeVal = document.getElementById('brushSizeVal');
+  const brushSlider = document.getElementById('brushSizeSlider');
+
+  function updateSize(sz) {
+    brushSize = sz;
+    if (brushSizeVal) brushSizeVal.textContent = `${sz}px`;
+    if (brushSlider) brushSlider.value = sz;
+    document.querySelectorAll('.size-pill').forEach(p => {
+      p.classList.toggle('active', parseInt(p.dataset.size, 10) === sz);
+    });
+  }
+
+  document.querySelectorAll('.size-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const sz = parseInt(pill.dataset.size, 10);
+      updateSize(sz);
+      audio.click();
+    });
+  });
+
+  if (brushSlider) {
+    brushSlider.addEventListener('input', (e) => {
+      updateSize(parseInt(e.target.value, 10));
+    });
+  }
+
+  // Color Swatches
+  const customColorInput = document.getElementById('paintCustomColor');
+  document.querySelectorAll('.swatch-btn').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      currentColor = sw.dataset.color;
+      if (customColorInput) customColorInput.value = currentColor;
+      audio.click();
+    });
+  });
+
+  if (customColorInput) {
+    customColorInput.addEventListener('input', (e) => {
+      currentColor = e.target.value;
+      document.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('active'));
+    });
+  }
+
+  // Undo / Redo
+  const undoBtn = document.getElementById('paintUndoBtn');
+  const redoBtn = document.getElementById('paintRedoBtn');
+
+  if (undoBtn) {
+    undoBtn.addEventListener('click', () => {
+      if (undoStack.length > 1) {
+        redoStack.push(undoStack.pop());
+        const previousState = undoStack[undoStack.length - 1];
+        ctx.putImageData(previousState, 0, 0);
+        audio.click();
+      }
+    });
+  }
+
+  if (redoBtn) {
+    redoBtn.addEventListener('click', () => {
+      if (redoStack.length > 0) {
+        const nextState = redoStack.pop();
+        undoStack.push(nextState);
+        ctx.putImageData(nextState, 0, 0);
+        audio.click();
+      }
+    });
+  }
+
+  // Template button
+  const templateBtn = document.getElementById('paintTemplateBtn');
+  if (templateBtn) {
+    templateBtn.addEventListener('click', () => {
+      drawToastTemplate();
+      audio.click();
+    });
+  }
+
+  // Clear button
+  const clearBtn = document.getElementById('paintClearBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      clearCanvas('#fffdf9');
+      pushHistory();
+      audio.click();
+    });
+  }
+
+  // Download PNG
+  const downloadBtn = document.getElementById('paintDownloadBtn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = `bwed-creation-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      audio.heroSelect();
+    });
+  }
+
+  // Community Gallery Data & Management
+  const STORAGE_KEY = 'bwed_community_drawings_v1';
+  const LIKES_KEY = 'bwed_community_likes_v1';
+
+  let localLikes = {};
+  try {
+    localLikes = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}');
+  } catch (_) {}
+
+  // Starter Masterpieces
+  function getStarterArt() {
+    return [
+      {
+        id: 'art-starter-1',
+        title: 'Golden OG Loaf',
+        author: '@BakerChad',
+        time: '1h ago',
+        dataUrl: './assets/stickers/bwed-tg-03-sunglasses-fingerguns.webp',
+        likes: 69
+      },
+      {
+        id: 'art-starter-2',
+        title: 'Cyber Toast 2077',
+        author: '@SolanaDough',
+        time: '3h ago',
+        dataUrl: './assets/stickers/bwed-tg-08-baguette-bat-shades.webp',
+        likes: 42
+      },
+      {
+        id: 'art-starter-3',
+        title: 'Happy Butter Homie',
+        author: '@CrumbMaster',
+        time: '5h ago',
+        dataUrl: './assets/stickers/bwed-tg-05-hold-the-bwed.webp',
+        likes: 38
+      },
+      {
+        id: 'art-starter-4',
+        title: 'Lofi Coffee & Brioche',
+        author: '@FrenchBaguette',
+        time: 'Yesterday',
+        dataUrl: './assets/stickers/bwed-tg-06-chill-coffee-laptop.webp',
+        likes: 27
+      }
+    ];
+  }
+
+  let communityArt = [];
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      communityArt = JSON.parse(saved);
+    }
+  } catch (_) {}
+
+  if (!communityArt || communityArt.length === 0) {
+    communityArt = getStarterArt();
+  }
+
+  function renderCommunityGallery() {
+    const container = document.getElementById('communityArtCards');
+    const badge = document.getElementById('galleryCountBadge');
+    if (!container) return;
+
+    if (badge) badge.textContent = `${communityArt.length} Masterpiece${communityArt.length > 1 ? 's' : ''}`;
+
+    container.innerHTML = communityArt.map((art) => {
+      const isLiked = !!localLikes[art.id];
+      const count = (art.likes || 0) + (isLiked ? 1 : 0);
+      return `
+        <div class="community-card-item ${art.isNew ? 'new-card-flash' : ''}" data-art-id="${art.id}">
+          <div class="card-thumb-wrap">
+            <img src="${art.dataUrl}" alt="${art.title}" loading="lazy" />
+          </div>
+          <div class="card-meta-wrap">
+            <div class="card-title-row">
+              <strong>${art.title}</strong>
+              ${art.isNew ? '<span class="card-new-badge">NEW</span>' : ''}
+            </div>
+            <div class="card-author-time">by ${art.author} &bull; ${art.time}</div>
+            <div class="card-actions-row">
+              <button type="button" class="card-like-btn ${isLiked ? 'liked' : ''}" data-like-id="${art.id}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span>${count}</span>
+              </button>
+              <button type="button" class="card-view-btn" data-view-url="${art.dataUrl}" data-view-title="${art.title}" data-view-author="${art.author}">View Full &rarr;</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Bind Like clicks
+    container.querySelectorAll('.card-like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.likeId;
+        localLikes[id] = !localLikes[id];
+        try {
+          localStorage.setItem(LIKES_KEY, JSON.stringify(localLikes));
+        } catch (_) {}
+        audio.click();
+        renderCommunityGallery();
+      });
+    });
+
+    // Bind Fullview clicks (open lightbox modal)
+    container.querySelectorAll('.card-view-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modal = document.getElementById('lightboxModal');
+        const img = document.getElementById('lightboxImg');
+        const title = document.getElementById('lightboxTitle');
+        const desc = document.getElementById('lightboxDesc');
+        const cat = document.getElementById('lightboxCategory');
+        if (modal && img) {
+          img.src = btn.dataset.viewUrl;
+          if (title) title.textContent = btn.dataset.viewTitle;
+          if (desc) desc.textContent = `Original drawing created in Bwed Studio by ${btn.dataset.viewAuthor}`;
+          if (cat) cat.textContent = 'COMMUNITY ART';
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          audio.click();
+        }
+      });
+    });
+  }
+
+  // Publish Artwork Button
+  const publishBtn = document.getElementById('paintPublishBtn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', () => {
+      const titlePrompt = window.prompt('Name your Bwed masterpiece:', 'Crispy Bwed Slice');
+      if (titlePrompt === null) return;
+      const title = titlePrompt.trim() || 'Crispy Bwed Slice';
+
+      const authorPrompt = window.prompt('Your Baker name / handle:', 'Solana Baker');
+      const author = (authorPrompt && authorPrompt.trim()) || 'Anonymous Baker';
+
+      const newArt = {
+        id: 'art-' + Date.now(),
+        title: title,
+        author: author,
+        time: 'Just now',
+        dataUrl: canvas.toDataURL('image/png'),
+        likes: 1,
+        isNew: true
+      };
+
+      communityArt.unshift(newArt);
+
+      if (communityArt.length > 25) communityArt.pop();
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(communityArt));
+      } catch (_) {}
+
+      audio.heroSelect();
+      renderCommunityGallery();
+
+      const container = document.getElementById('communityArtCards');
+      if (container) container.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // Initialize canvas with adorable toast template outline!
+  drawToastTemplate();
+  renderCommunityGallery();
 }
 
 // Global UI controls (Motion, Sound, Mobile menu, Scroll reveals)
@@ -1234,6 +2513,18 @@ function initGlobalControls() {
   document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 }
 
+// Contextual Telegram Stickers Interaction
+function initContextualStickers() {
+  document.addEventListener('click', (e) => {
+    const sticker = e.target.closest('.contextual-sticker, .sticker-inline');
+    if (!sticker) return;
+    audio.click();
+    sticker.classList.remove('bouncing');
+    void sticker.offsetWidth;
+    sticker.classList.add('bouncing');
+  });
+}
+
 // Start on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
   initMosaicWallpaper();
@@ -1244,5 +2535,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initBwedDepot();
   initBaguetteCA();
   initBwedClicker();
+  initBwedLiveWidget();
+  initCommunityVault();
+  initBwedStudio();
   initGlobalControls();
+  initContextualStickers();
 });

@@ -24,7 +24,11 @@ const pawnCatalog = [
   { id: 'crumb-burglar', badge: 'HEIST', name: 'Crumb Burglar', role: 'THE VAULT THIEF', description: 'Striped shirt, mask and a sack full of freshly liberated Bwedbank coins.', color: 0x2ec4b6, model: 'crumb-burglar.glb', talent: { name: 'HEIST SACK', description: 'Steal 3 coins from the current leader.', cue: 'STEAL 3c FROM 1ST', type: 'heist' } },
   { id: 'tiny-baker', badge: 'CHEF', name: 'Toastie Baker', role: 'THE MASTER CHEF', description: 'Flour on the cheeks, rolling pin in hand. Bakes extra stars from scratch.', color: 0xff9f1c, model: 'tiny-baker.glb', talent: { name: 'FRESH BATCH', description: 'Bake +1 ★ Golden Loaf and +1 coin on the spot!', cue: 'INSTANT +1 ★ LOAF', type: 'bake' } },
   { id: 'toast-tycoon', badge: 'TYCOON', name: 'Toast Tycoon', role: 'THE BWEDBANK BOSS', description: 'Bowler hat, pinstripe suit and a briefcase overflowing with fresh dough.', color: 0x06d6a0, model: 'toast-tycoon.glb', talent: { name: 'DIVIDEND', description: 'Earn +1 coin for every ★ Loaf you own (min +4 coins).', cue: 'DIVIDEND PAYOUT', type: 'dividend' } },
-  { id: 'super-hero-bwed', badge: 'HERO', name: 'Super Bwed', role: 'THE CRUST CRUSADER', description: 'Cape fluttering in the warm oven breeze. Leaps across Bwedville to rescue golden slices!', color: 0x3a86ff, model: 'super-hero-bwed.glb', talent: { name: 'HERO LEAP', description: 'Fly +3 spaces forward on your next roll with golden invulnerability (+2 coins).', cue: 'HERO FLY +3 & 2c', type: 'hero' } }
+  { id: 'super-hero-bwed', badge: 'HERO', name: 'Super Bwed', role: 'THE CRUST CRUSADER', description: 'Cape fluttering in the warm oven breeze. Leaps across Bwedville to rescue golden slices!', color: 0x3a86ff, model: 'super-hero-bwed.glb', talent: { name: 'HERO LEAP', description: 'Fly +3 spaces forward on your next roll with golden invulnerability (+2 coins).', cue: 'HERO FLY +3 & 2c', type: 'hero' } },
+  { id: 'hero-of-toast', badge: 'LEGEND', name: 'Hero of Toast', role: 'THE HERO OF TIME', description: 'Green tunic, master crust blade, and an endless quest to save Princess Brioche.', color: 0x2a9d8f, model: 'hero-of-toast.glb', talent: { name: 'MASTER SWORD', description: 'Slice through time to roll twice with a +3 power boost.', cue: 'TIME SLICE +3', type: 'hero' } },
+  { id: 'honey-knight', badge: 'PALADIN', name: 'Honey Knight', role: 'PALADIN OF GOLDEN CRUST', description: 'Polished honey-glazed armor and loyal spirit. Sworn protector of the hearth.', color: 0xe76f51, model: 'honey-knight.glb', talent: { name: 'GOLDEN SHIELD', description: 'Immunity against tile traps and pocket 3 golden honey coins.', cue: 'SHIELD & +3c', type: 'shield' } },
+  { id: 'toast-wizard', badge: 'WIZARD', name: 'Toast Wizard', role: 'MASTER OF YEAST MAGIC', description: 'Long white crumb beard and cosmic star hat. Commands the ancient rites of yeast.', color: 0x7209b7, model: 'toast-wizard.glb', talent: { name: 'YEAST TRANSMUTE', description: 'Transmute yeast into a direct warp to the nearest bonus tile.', cue: 'YEAST WARP', type: 'blink' } },
+  { id: 'reggae-toast', badge: 'CHILL', name: 'Reggae Toast', role: 'VIBES OF THE SUN', description: 'Knitted rasta beret and laid-back smile. Every little thing is gonna be golden.', color: 0x52b788, model: 'reggae-toast.glb', talent: { name: 'SUNNY VIBES', description: 'Spread good vibrations to cleanse penalties and pocket +3 coins.', cue: 'GOOD VIBES +3c', type: 'coins4' } }
 ];
 
 const shopItems = [
@@ -2781,7 +2785,7 @@ function updateSelectionDetails() {
   selectedSlotBotToggle.textContent = player.isBot ? 'CPU BOT' : 'HUMAN';
   const humanCount = players.filter((p) => !p.isBot).length;
   const botCount = players.length - humanCount;
-  selectionProgress.textContent = `${humanCount} HUMAN · ${botCount} BOT${botCount === 1 ? '' : 'S'} · 18 HEROES READY`;
+  selectionProgress.textContent = `${humanCount} HUMAN · ${botCount} BOT${botCount === 1 ? '' : 'S'} · ${pawnCatalog.length} HEROES READY`;
   loadPreviewPawn(player);
 }
 
