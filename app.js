@@ -817,6 +817,25 @@ function initBwedDepot() {
     if (totalCountEl) totalCountEl.textContent = String(catalog.length);
   }
 
+  // Global total community likes synchronization
+  const GLOBAL_LIKES_KEY = 'bwedverse_total_likes';
+  const GLOBAL_LIKES_GET = 'https://countapi.mileshilliard.com/api/v1/get/' + GLOBAL_LIKES_KEY;
+  const GLOBAL_LIKES_HIT = 'https://countapi.mileshilliard.com/api/v1/hit/' + GLOBAL_LIKES_KEY;
+
+  function fetchGlobalTotalLikes() {
+    fetch(GLOBAL_LIKES_GET, { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.value === 'number') {
+          const localTotal = Object.values(likesMap).reduce((acc, n) => acc + n, 0);
+          const finalTotal = Math.max(localTotal, data.value);
+          if (totalLikesEl) totalLikesEl.textContent = finalTotal.toLocaleString();
+        }
+      })
+      .catch(() => {});
+  }
+  fetchGlobalTotalLikes();
+
   // Active Filters & Pagination State
   let currentCategory = 'all';
   let currentSearch = '';
@@ -933,6 +952,10 @@ function initBwedDepot() {
       likesMap[id] = current + 1;
       audio.heroSelect();
 
+      // Global synchronization
+      fetch(GLOBAL_LIKES_HIT, { cache: 'no-store' }).catch(() => {});
+      fetch('https://countapi.mileshilliard.com/api/v1/hit/bwedverse_like_' + encodeURIComponent(id), { cache: 'no-store' }).catch(() => {});
+
       if (btnEl) {
         btnEl.classList.add('bump');
         const crumb = document.createElement('span');
@@ -993,6 +1016,20 @@ function initBwedDepot() {
 
     syncLightboxLike(id);
     lightbox.classList.add('open');
+
+    // Fetch latest global likes for this meme
+    fetch('https://countapi.mileshilliard.com/api/v1/get/bwedverse_like_' + encodeURIComponent(id), { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.value === 'number' && data.value > (likesMap[id] || 0)) {
+          likesMap[id] = data.value;
+          saveLikes();
+          if (currentLightboxId === id) syncLightboxLike(id);
+          const cardBtn = grid.querySelector(`.btn-like-pill[data-id="${id}"] .like-num`);
+          if (cardBtn) cardBtn.textContent = data.value.toLocaleString();
+        }
+      })
+      .catch(() => {});
   }
 
   function closeLightbox() {
@@ -1112,15 +1149,20 @@ function initBaguetteCA() {
   });
 }
 
-// Discreet Bwed Visitor Clicker Widget
+// Discreet Bwed Visitor Clicker Widget (Global Shared Counter across all visitors)
 function initBwedClicker() {
   const pill = document.getElementById('bwedClickerPill');
   const countEl = document.getElementById('clickerCount');
   if (!pill) return;
 
   const CLICKER_KEY = 'bwed_visitor_clicks_v1';
-  let visitorClicks = parseInt(localStorage.getItem(CLICKER_KEY) || '1', 10);
-  if (isNaN(visitorClicks) || visitorClicks < 1) visitorClicks = 1;
+  const BASE_CLICKS = 1420;
+  const COUNTAPI_GET = 'https://countapi.mileshilliard.com/api/v1/get/bwedverse_bwed_was_here';
+  const COUNTAPI_HIT = 'https://countapi.mileshilliard.com/api/v1/hit/bwedverse_bwed_was_here';
+  const ABACUS_HIT = 'https://abacus.jasoncameron.dev/hit/bwedverse/bwed_was_here';
+
+  let visitorClicks = parseInt(localStorage.getItem(CLICKER_KEY) || String(BASE_CLICKS), 10);
+  if (isNaN(visitorClicks) || visitorClicks < BASE_CLICKS) visitorClicks = BASE_CLICKS;
 
   function renderCount() {
     if (countEl) {
@@ -1129,6 +1171,46 @@ function initBwedClicker() {
   }
   renderCount();
 
+  // Fetch live global count on initial load
+  fetch(COUNTAPI_GET, { cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => {
+      if (data && typeof data.value === 'number') {
+        if (data.value > visitorClicks) {
+          visitorClicks = data.value;
+          try { localStorage.setItem(CLICKER_KEY, String(visitorClicks)); } catch (e) {}
+          renderCount();
+        }
+      }
+    })
+    .catch(() => {});
+
+  // Batched outbound sync for rapid clicks
+  let pendingHits = 0;
+  let flushTimer = null;
+
+  function flushHits() {
+    if (pendingHits <= 0) return;
+    const batch = pendingHits;
+    pendingHits = 0;
+    flushTimer = null;
+
+    for (let i = 0; i < batch; i++) {
+      fetch(COUNTAPI_HIT, { cache: 'no-store' })
+        .then(res => res.json())
+        .then(data => {
+          if (data && typeof data.value === 'number' && data.value > visitorClicks) {
+            visitorClicks = data.value;
+            try { localStorage.setItem(CLICKER_KEY, String(visitorClicks)); } catch (e) {}
+            renderCount();
+          }
+        })
+        .catch(() => {
+          fetch(ABACUS_HIT, { cache: 'no-store' }).catch(() => {});
+        });
+    }
+  }
+
   pill.addEventListener('click', (e) => {
     e.stopPropagation();
     visitorClicks++;
@@ -1136,6 +1218,12 @@ function initBwedClicker() {
       localStorage.setItem(CLICKER_KEY, String(visitorClicks));
     } catch (err) {}
     renderCount();
+
+    // Queue outgoing sync
+    pendingHits++;
+    if (!flushTimer) {
+      flushTimer = setTimeout(flushHits, 300);
+    }
 
     // Squish & bounce animation
     pill.classList.remove('clicked');
@@ -1313,20 +1401,25 @@ function initBwedLiveWidget() {
   // Toggle card / pill display
   function openCard() {
     pill.hidden = true;
+    pill.style.display = 'none';
     card.hidden = false;
+    card.style.display = 'flex';
     pill.setAttribute('aria-expanded', 'true');
     fetchTokenData();
   }
 
   function closeCard() {
     card.hidden = true;
+    card.style.display = 'none';
     pill.hidden = false;
+    pill.style.display = 'inline-flex';
     pill.setAttribute('aria-expanded', 'false');
   }
 
   pill.addEventListener('click', openCard);
   closeBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
+    e.preventDefault();
     closeCard();
   });
 

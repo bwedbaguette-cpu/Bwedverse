@@ -3430,6 +3430,11 @@ button {
   user-select: none;
 }
 
+.bwed-live-pill[hidden],
+.bwed-live-card[hidden] {
+  display: none !important;
+}
+
 /* Collapsed Pill */
 .bwed-live-pill {
   display: inline-flex;
