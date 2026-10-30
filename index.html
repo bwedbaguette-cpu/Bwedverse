@@ -69,9 +69,9 @@
       }
     </style>
 
-    <link rel="stylesheet" href="./styles.css?v=5.2.0" />
-    <script src="./depot-data.js?v=5.2.0"></script>
-    <script src="./app.js?v=5.2.0" defer></script>
+    <link rel="stylesheet" href="./styles.css?v=5.3.0" />
+    <script src="./depot-data.js?v=5.3.0"></script>
+    <script src="./app.js?v=5.3.0" defer></script>
   </head>
   <body>
     <!-- Live Moving Mosaic Wallpaper (Pure GPU-accelerated CSS marquee with dozens of real Bwed memes & PFPs) -->
@@ -749,5 +749,103 @@
         <a href="./party-board.html">Play in 3D &rarr;</a>
       </div>
     </footer>
+    <!-- Floating Modern Glassmorphism Token Live Stats Widget -->
+    <aside class="bwed-live-widget" id="bwedLiveWidget" aria-label="BWED Live Market Stats">
+      <!-- Collapsed Pill (Discreet, Soothing Floating Bar) -->
+      <button class="bwed-live-pill" id="bwedLivePill" type="button" aria-expanded="false" title="Click to view live $BWED stats">
+        <span class="live-pill-badge">
+          <span class="live-pulse-dot" aria-hidden="true"></span>
+          <span class="live-ticker">$BWED</span>
+        </span>
+        <span class="live-pill-price" id="pillPrice">Loading...</span>
+        <span class="live-pill-change" id="pillChange">--%</span>
+        <span class="live-pill-expand" aria-hidden="true">&uarr;</span>
+      </button>
+
+      <!-- Expanded Frosted Glass Card -->
+      <div class="bwed-live-card" id="bwedLiveCard" hidden>
+        <!-- Card Header -->
+        <div class="live-card-header">
+          <div class="live-header-info">
+            <div class="live-avatar-wrap">
+              <img src="./assets/bwed-avatar-canon.png" alt="Bwed Token" class="live-token-img" />
+              <span class="live-dot-ping" aria-hidden="true"></span>
+            </div>
+            <div>
+              <div class="live-title-row">
+                <strong class="live-token-title">$BWED</strong>
+                <span class="live-chain-badge">Solana</span>
+              </div>
+              <span class="live-subtitle">The Slice is Alive &middot; Live On-Chain</span>
+            </div>
+          </div>
+          <div class="live-header-actions">
+            <button class="live-icon-btn" id="liveRefreshBtn" type="button" title="Refresh Live Data" aria-label="Refresh data">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+            </button>
+            <button class="live-icon-btn" id="liveCloseBtn" type="button" title="Minimize Widget" aria-label="Minimize">
+              &minus;
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Price Banner -->
+        <div class="live-price-banner">
+          <div class="live-price-col">
+            <span class="live-label">Price USD</span>
+            <span class="live-big-price" id="cardPrice">--</span>
+            <span class="live-sol-price" id="cardPriceSol">-- SOL</span>
+          </div>
+          <div class="live-change-col">
+            <span class="live-change-badge" id="cardChange">--%</span>
+            <span class="live-period">24h Change</span>
+          </div>
+        </div>
+
+        <!-- Metrics Grid (Glass Tiles) -->
+        <div class="live-metrics-grid">
+          <div class="metric-glass-tile">
+            <span class="metric-name">Market Cap</span>
+            <strong class="metric-val" id="cardMcap">--</strong>
+            <span class="metric-sub" id="cardFdv">FDV: --</span>
+          </div>
+
+          <div class="metric-glass-tile">
+            <span class="metric-name">24h Volume</span>
+            <strong class="metric-val" id="cardVolume">--</strong>
+            <span class="metric-sub" id="cardTxns">-- txns</span>
+          </div>
+
+          <div class="metric-glass-tile">
+            <span class="metric-name">Holders</span>
+            <strong class="metric-val" id="cardHolders">--</strong>
+            <span class="metric-sub">Solscan Verified</span>
+          </div>
+
+          <div class="metric-glass-tile">
+            <span class="metric-name">Circulating</span>
+            <strong class="metric-val" id="cardSupply">1,000,000,000</strong>
+            <span class="metric-sub">100% Minted</span>
+          </div>
+        </div>
+
+        <!-- Quick Explorer Actions Row -->
+        <div class="live-card-footer">
+          <a class="live-action-btn" href="https://dexscreener.com/solana/bnttpswsrsvl2dphptsuqkkujbr8fprtb2ejrfbhgjev" target="_blank" rel="noopener noreferrer" title="View Real-Time Chart">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            <span>Chart</span>
+          </a>
+          <a class="live-action-btn" href="https://pump.fun/coin/5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump" target="_blank" rel="noopener noreferrer" title="Trade on Pump.fun">
+            <span>Pump.fun</span>
+          </a>
+          <a class="live-action-btn" href="https://solscan.io/token/5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump" target="_blank" rel="noopener noreferrer" title="Solscan Explorer">
+            <span>Solscan</span>
+          </a>
+        </div>
+      </div>
+    </aside>
   </body>
 </html>

@@ -3417,3 +3417,418 @@ button {
   }
 }
 
+/* ==========================================================================
+   FLOATING GLASSMORPHISM TOKEN LIVE STATS WIDGET ($BWED)
+   Modern, soothing frosted glass with live on-chain Solana metrics
+   ========================================================================== */
+.bwed-live-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 60;
+  font-family: var(--font-display);
+  user-select: none;
+}
+
+/* Collapsed Pill */
+.bwed-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(26, 12, 7, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 209, 90, 0.28);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px 8px 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 209, 90, 0.12);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.bwed-live-pill:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 209, 90, 0.6);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 28px rgba(255, 209, 90, 0.25);
+}
+
+.live-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 209, 90, 0.12);
+  border: 1px solid rgba(255, 209, 90, 0.3);
+  border-radius: var(--radius-pill);
+  padding: 3px 8px;
+}
+
+.live-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: liveDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes liveDotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.6; }
+}
+
+.live-ticker {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--gold-main);
+  letter-spacing: 0.04em;
+}
+
+.live-pill-price {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: 0.02em;
+}
+
+.live-pill-change {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cream-soft);
+}
+
+.live-pill-change.positive {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
+.live-pill-change.negative {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}
+
+.live-pill-expand {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-main);
+  margin-left: 2px;
+  transition: transform 0.2s ease;
+}
+
+.bwed-live-pill:hover .live-pill-expand {
+  transform: translateY(-1px);
+}
+
+/* Expanded Card (Glassmorphism) */
+.bwed-live-card {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 350px;
+  max-width: calc(100vw - 32px);
+  background: rgba(22, 10, 5, 0.82);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 209, 90, 0.32);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 209, 90, 0.14);
+  animation: liveCardAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@keyframes liveCardAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.live-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.live-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-avatar-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold-main);
+  overflow: visible;
+  background: rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.live-token-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.live-dot-ping {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #140703;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.live-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-token-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--cream);
+  letter-spacing: 0.02em;
+}
+
+.live-chain-badge {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  background: rgba(154, 121, 214, 0.2);
+  border: 1px solid rgba(154, 121, 214, 0.4);
+  color: #c4b5fd;
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+  text-transform: uppercase;
+}
+
+.live-subtitle {
+  font-size: 11px;
+  color: var(--cream-muted);
+  display: block;
+}
+
+.live-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 209, 90, 0.18);
+  color: var(--cream-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.live-icon-btn:hover {
+  background: rgba(255, 209, 90, 0.16);
+  border-color: var(--gold-main);
+  color: var(--gold-main);
+  transform: scale(1.08);
+}
+
+.live-icon-btn.is-spinning svg {
+  animation: refreshSpin 0.7s linear infinite;
+}
+
+@keyframes refreshSpin {
+  100% { transform: rotate(360deg); }
+}
+
+/* Price Banner */
+.live-price-banner {
+  background: linear-gradient(135deg, rgba(255, 209, 90, 0.08) 0%, rgba(255, 107, 53, 0.04) 100%);
+  border: 1px solid rgba(255, 209, 90, 0.2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.live-price-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.live-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cream-muted);
+}
+
+.live-big-price {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gold-main);
+  letter-spacing: -0.02em;
+}
+
+.live-sol-price {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cream-soft);
+  opacity: 0.85;
+}
+
+.live-change-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.live-change-badge {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--cream);
+}
+
+.live-change-badge.positive {
+  background: rgba(16, 185, 129, 0.22);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.live-change-badge.negative {
+  background: rgba(239, 68, 68, 0.22);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.live-period {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--cream-muted);
+  text-transform: uppercase;
+}
+
+/* 2x2 Metrics Grid */
+.live-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.metric-glass-tile {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 209, 90, 0.12);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.metric-glass-tile:hover {
+  background: rgba(255, 255, 255, 0.065);
+  border-color: rgba(255, 209, 90, 0.28);
+}
+
+.metric-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cream-muted);
+}
+
+.metric-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cream);
+  letter-spacing: -0.01em;
+}
+
+.metric-sub {
+  font-size: 9px;
+  color: var(--cream-muted);
+  opacity: 0.8;
+}
+
+/* Quick Actions Footer */
+.live-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.live-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 209, 90, 0.2);
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cream-soft);
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+
+.live-action-btn:hover {
+  background: var(--gold-main);
+  border-color: var(--gold-main);
+  color: #1a0802;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .bwed-live-widget {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .bwed-live-card {
+    width: calc(100vw - 32px);
+  }
+}
+
