@@ -1,0 +1,25 @@
+# Vercel Deployment Ignore
+# Prevents large non-web development repositories and source archives from uploading to Vercel
+
+# 3D Dev, Blender sources & high-poly assets
+07_3D_MODEL/
+Meshy_AI_*
+
+# Standalone game development engines & prototypes
+10_BWED_WORLD/
+08_BWED_VILLAGE/
+09_BWED_TETRIS/
+
+# Master brand archives, lore, raw videos & social media source files
+00_DOCUMENTATION/
+01_CANON_BWED/
+02_WORLD_AND_STORIES/
+03_MEMES_AND_SOCIAL/
+04_ANIMATION_AND_VIDEO/
+05_PHYSICAL_AND_MERCH/
+99_REVIEW_TO_CANONIZE/
+
+# Source raw media in root
+*.mp4
+Gemini_Generated_Image_*
+photo_*
