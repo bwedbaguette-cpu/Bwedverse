@@ -127,6 +127,9 @@ class BwedWorldApp {
       onToggleResolution: (level) => {
         this.engine.setGraphicsResolution(level);
       },
+      onToggleFps: (fps) => {
+        this.engine.setTargetFps(fps);
+      },
       onCameraDistance: (dist) => {
         this.cameraController.setDistance(dist);
       },
@@ -325,10 +328,24 @@ class BwedWorldApp {
   }
 }
 
-// Boot application
+// Boot application with error safety boundary
 function boot() {
   if (!window.bwedWorldApp) {
-    window.bwedWorldApp = new BwedWorldApp();
+    try {
+      window.bwedWorldApp = new BwedWorldApp();
+    } catch (err) {
+      console.error('Fatal initialization error:', err);
+      const loaderEl = document.getElementById('worldLoader');
+      if (loaderEl) {
+        loaderEl.innerHTML = `
+          <div style="background:rgba(20,10,5,0.95);border:2px solid #ef4444;border-radius:16px;padding:24px;max-width:440px;margin:auto;text-align:center;color:#fff;font-family:sans-serif;">
+            <h3 style="color:#ef4444;margin-bottom:10px;">Startup Error</h3>
+            <p style="font-size:14px;color:#fca5a5;">${err.message}</p>
+            <button onclick="location.reload()" style="margin-top:14px;padding:8px 18px;border-radius:999px;background:#ef4444;color:#fff;border:none;cursor:pointer;font-weight:bold;">Reload Page</button>
+          </div>
+        `;
+      }
+    }
   }
 }
 

@@ -20,6 +20,11 @@ export class Engine {
     this.currentResolutionLevel = 'balanced';
     this.currentShadowLevel = 'soft';
 
+    // Framerate governor (default 30 FPS for silent, cool thermal performance on Mac & mobile)
+    this.targetFps = 30;
+    this.frameInterval = 1000 / this.targetFps;
+    this.lastFrameTime = performance.now();
+
     this.init();
   }
 
@@ -75,6 +80,12 @@ export class Engine {
     this.renderer.setPixelRatio(ratio);
   }
 
+  setTargetFps(fps) {
+    const val = parseInt(fps, 10);
+    this.targetFps = isNaN(val) ? 30 : Math.max(15, Math.min(120, val));
+    this.frameInterval = 1000 / this.targetFps;
+  }
+
   setHighResolution(isHigh) {
     this.setGraphicsResolution(isHigh ? 'high' : 'standard');
   }
@@ -122,9 +133,16 @@ export class Engine {
     this.isRunning = false;
   }
 
-  animate() {
+  animate(now = performance.now()) {
     if (!this.isRunning) return;
-    requestAnimationFrame(() => this.animate());
+    requestAnimationFrame((timestamp) => this.animate(timestamp));
+
+    // FPS throttling: skip frame if not enough time has elapsed
+    const elapsedMs = now - this.lastFrameTime;
+    if (this.targetFps < 120 && elapsedMs < this.frameInterval) {
+      return;
+    }
+    this.lastFrameTime = now - (this.targetFps < 120 ? (elapsedMs % this.frameInterval) : 0);
 
     const delta = Math.min(this.clock.getDelta(), 0.05);
     const elapsed = this.clock.getElapsedTime();

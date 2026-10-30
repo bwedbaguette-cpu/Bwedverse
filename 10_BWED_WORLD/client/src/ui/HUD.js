@@ -25,6 +25,7 @@ export class HUD {
     this.onTeleport = options.onTeleport || null;
     this.onToggleShadows = options.onToggleShadows || null;
     this.onToggleResolution = options.onToggleResolution || null;
+    this.onToggleFps = options.onToggleFps || null;
     this.onCameraDistance = options.onCameraDistance || null;
     this.onTimeOfDayChange = options.onTimeOfDayChange || null;
     this.onToggleAudio = options.onToggleAudio || null;
@@ -74,6 +75,7 @@ export class HUD {
       openSettingsBtn: document.getElementById('openSettingsBtn'),
       settingsModal: document.getElementById('settingsModal'),
       timeOfDaySelect: document.getElementById('timeOfDaySelect'),
+      fpsSettingSelect: document.getElementById('fpsSettingSelect'),
       shadowsSettingSelect: document.getElementById('shadowsSettingSelect'),
       resolutionSettingSelect: document.getElementById('resolutionSettingSelect'),
       camDistanceSlider: document.getElementById('camDistanceSlider'),
@@ -451,6 +453,13 @@ export class HUD {
     this.dom.timeOfDaySelect?.addEventListener('change', (e) => {
       if (this.onTimeOfDayChange) {
         this.onTimeOfDayChange(e.target.value);
+      }
+    });
+
+    this.dom.fpsSettingSelect?.addEventListener('change', (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (this.onToggleFps) {
+        this.onToggleFps(val);
       }
     });
 
