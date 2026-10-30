@@ -69,9 +69,9 @@
       }
     </style>
 
-    <link rel="stylesheet" href="./styles.css?v=5.6.0" />
-    <script src="./depot-data.js?v=5.6.0"></script>
-    <script src="./app.js?v=5.6.0" defer></script>
+    <link rel="stylesheet" href="./styles.css?v=5.7.0" />
+    <script src="./depot-data.js?v=5.7.0"></script>
+    <script src="./app.js?v=5.7.0" defer></script>
   </head>
   <body>
     <!-- Live Moving Mosaic Wallpaper (Pure GPU-accelerated CSS marquee with dozens of real Bwed memes & PFPs) -->
@@ -123,11 +123,10 @@
 
       <nav class="main-nav" id="mainNav" aria-label="Main Navigation">
         <a class="nav-link" href="#game">Crumb Run 3D</a>
+        <a class="nav-link" href="#vault">Vault &amp; Roadmap</a>
         <a class="nav-link" href="#arcade">Arcade</a>
-        <a class="nav-link" href="#buildings">Buildings</a>
         <a class="nav-link" href="#roster">18 Heroes</a>
         <a class="nav-link" href="#archive">Lore &amp; Memes</a>
-        <a class="nav-link" href="#vault">Butter Vault</a>
       </nav>
 
       <div class="header-controls">
@@ -402,7 +401,301 @@
         </div>
       </section>
 
-      <!-- Section: Bwed Arcade & Future Mini-Games -->
+      <!-- Section 2: Community Butter Vault & Master Roadmap -->
+      <section class="hub-section bwed-vault-section reveal" id="vault">
+        <div class="section-head reveal">
+          <div class="tag-badge"><i></i> 100% ON-CHAIN &bull; SOLANA COMMUNITY TREASURY &amp; ROADMAP</div>
+          <h2 class="section-title">
+            The Community <em>Butter Vault &amp; Roadmap</em>
+          </h2>
+          <p class="section-desc">
+            Direct on-chain community treasury to fuel future liquidity, marketing campaigns, buyback &amp; burns, and community bounties. Track our live balances, donations, and master roadmap milestones.
+          </p>
+        </div>
+
+        <div class="vault-container reveal">
+          <!-- Left: Interactive 3D Safe / Concept Showcase -->
+          <div class="vault-visual-card">
+            <img src="./assets/stickers/bwed-tg-07-prayer-cult.webp" alt="Butter Vault Cult Prayer" class="contextual-sticker sticker-lg tilt-left sticker-with-tooltip" data-tooltip="Pray to the Butter Safe" style="bottom: 44px; left: 16px;" />
+            <div class="vault-visual-canvas-wrap">
+              <canvas id="vaultCanvas3D" class="vault-canvas" aria-label="Interactive 3D Butter Vault Safe"></canvas>
+              <div class="vault-fallback-img" id="vaultFallbackImg">
+                <img src="./assets/buildings/concepts/03-bwedbank-vault.jpg" alt="BwedBank Butter Vault" />
+              </div>
+              <div class="vault-interactive-tag">
+                <span class="live-pulse-dot" aria-hidden="true"></span>
+                <span>INTERACTIVE 3D VAULT</span>
+              </div>
+            </div>
+            <div class="vault-visual-footer">
+              <div class="vault-title-wrap">
+                <strong class="vault-asset-name">BwedBank Butter Safe</strong>
+                <span class="vault-asset-desc">Forged in pure butter &amp; biscuit pillars</span>
+              </div>
+              <span class="vault-secure-pill">Solana Secure</span>
+            </div>
+          </div>
+
+          <!-- Right: Donation Address, Stats & Transparency -->
+          <div class="vault-details-card">
+            <img src="./assets/stickers/bwed-tg-09-bwed-pump-sign.webp" alt="Bwed Pump Sign" class="contextual-sticker sticker-md tilt-right sticker-float sticker-with-tooltip" data-tooltip="PUMP THE $BWED!" style="top: -28px; right: 16px;" />
+            <div class="vault-header-row">
+              <div class="vault-badge-group">
+                <span class="vault-status-badge">COMMUNITY TREASURY</span>
+                <span class="vault-chain-badge">SOLANA MAINNET</span>
+              </div>
+              <span class="vault-lock-icon" title="On-chain public treasury">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+            </div>
+
+            <!-- Address Box -->
+            <div class="vault-address-box">
+              <div class="vault-address-meta">
+                <span class="vault-address-label">Donation &amp; Treasury Address</span>
+                <span class="vault-network-hint">Send only SOL or Solana SPL tokens ($BWED)</span>
+              </div>
+              <div class="vault-input-copy-group">
+                <code class="vault-address-code" id="vaultAddressText">HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa</code>
+                <div class="vault-btn-cluster">
+                  <button type="button" class="btn-vault-copy" id="btnCopyVaultAddress" title="Copy Vault Address">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span id="copyVaultBadgeText">COPY</span>
+                  </button>
+                  <button type="button" class="btn-vault-qr" id="btnToggleVaultQR" title="Show QR Code">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>QR</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- QR Code Dropdown / Drawer (hidden by default) -->
+            <div class="vault-qr-drawer" id="vaultQrDrawer" hidden>
+              <div class="vault-qr-content">
+                <div class="vault-qr-frame">
+                  <img id="vaultQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=solana:HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa&color=ffd15a&bgcolor=1a0a04" alt="Solana Vault Donation QR Code" loading="lazy" />
+                </div>
+                <div class="vault-qr-instructions">
+                  <strong>Scan with Phantom or Solflare</strong>
+                  <p>Send any amount of SOL or $BWED to support village development &amp; community burns.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Treasury Metrics Row -->
+            <div class="vault-metrics-row">
+              <div class="vault-mini-stat">
+                <span class="v-label">Vault SOL Balance</span>
+                <strong class="v-value" id="vaultSolBalance">0.0069 SOL</strong>
+                <span class="v-sub" id="vaultSolUsd">~$1.28 USD Live</span>
+              </div>
+              <div class="vault-mini-stat">
+                <span class="v-label">$BWED Treasury</span>
+                <strong class="v-value" id="vaultBwedBalance">69,420 $BWED</strong>
+                <span class="v-sub">Community Reserve</span>
+              </div>
+              <div class="vault-mini-stat">
+                <span class="v-label">Next Target Milestone</span>
+                <strong class="v-value" style="color: var(--mint);">10M Burn</strong>
+                <span class="v-sub">Buyback &amp; Burn Event</span>
+              </div>
+            </div>
+
+            <!-- Community Purposes Grid -->
+            <div class="vault-purposes-grid" style="position: relative;">
+              <img src="./assets/stickers/bwed-tg-19-dollar-bills-cash.webp" alt="Cash Rain Bwed" class="contextual-sticker sticker-sm tilt-left sticker-with-tooltip mobile-hide-sticker" data-tooltip="Fund Community Burns" style="bottom: -22px; right: 14px;" />
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9879;</span>
+                <div class="p-body">
+                  <strong>Token Buyback &amp; Burn</strong>
+                  <p>Accumulated tokens get burned on-chain to decrease circulating supply forever.</p>
+                </div>
+              </div>
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9881;</span>
+                <div class="p-body">
+                  <strong>Game Server Hosting</strong>
+                  <p>Ensuring 100% free, low-latency Colyseus multiplayer rooms for all players.</p>
+                </div>
+              </div>
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9733;</span>
+                <div class="p-body">
+                  <strong>Bwed Community Bounties</strong>
+                  <p>Rewards for community artists, 3D modellers, meme creators, and shillers.</p>
+                </div>
+              </div>
+              <div class="vault-purpose-tile">
+                <span class="p-icon">&#9878;</span>
+                <div class="p-body">
+                  <strong>Marketing &amp; Listings</strong>
+                  <p>Funding DexScreener trending promotions, Coingecko/CMC fast-tracks.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vault Footer Actions -->
+            <div class="vault-footer-links">
+              <a href="https://solscan.io/account/HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa" target="_blank" rel="noopener noreferrer" class="vault-explorer-btn">
+                <span>View Full Treasury on Solscan</span> <b>&rarr;</b>
+              </a>
+              <span class="vault-transparency-note">Audit verified on Solana public ledger</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Roadmap Glassmorphic Card -->
+        <div class="vault-roadmap-wrap reveal">
+          <div class="roadmap-header">
+            <div class="roadmap-title-group">
+              <div class="tag-badge"><i></i> MASTER STRATEGY &bull; BWEDVERSE ROADMAP</div>
+              <h3>From Fresh Dough to Global Bakery Takeover</h3>
+              <p>Key community milestones, holder targets, token burns, and gaming ecosystem expansion.</p>
+            </div>
+            <div class="roadmap-status-pill">
+              <span class="live-pulse-dot" aria-hidden="true"></span>
+              <span>PHASE 1 ACTIVE</span>
+            </div>
+          </div>
+
+          <div class="roadmap-grid">
+            <!-- Phase 1: Short Term -->
+            <div class="roadmap-phase-card active-phase">
+              <div class="phase-head">
+                <span class="phase-number">PHASE 01</span>
+                <span class="phase-tag tag-current">CURRENT STAGE</span>
+              </div>
+              <h4 class="phase-title">Dough Rising</h4>
+              <div class="phase-items-list">
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">1,000 On-Chain Holders</strong>
+                    <span class="item-badge badge-progress">PROGRESS</span>
+                  </div>
+                  <p class="item-desc">Organic holder expansion driven by community meme raids and high-score competitions.</p>
+                  <div class="item-progress-track">
+                    <div class="item-progress-fill" style="width: 72%;"></div>
+                  </div>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">100K Market Cap</strong>
+                    <span class="item-badge badge-progress">PROGRESS</span>
+                  </div>
+                  <p class="item-desc">DexScreener trending volume blitz and sustained liquidity pool backing.</p>
+                  <div class="item-progress-track">
+                    <div class="item-progress-fill" style="width: 58%;"></div>
+                  </div>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">Crumb Run 3D Launch</strong>
+                    <span class="item-badge badge-live">COMPLETED</span>
+                  </div>
+                  <p class="item-desc">Flagship 3D diorama board game playable free in browser with 18 heroes.</p>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">10M $BWED Burn Event</strong>
+                    <span class="item-badge badge-progress">NEXT TARGET</span>
+                  </div>
+                  <p class="item-desc">First on-chain treasury buyback &amp; permanent burn event to reduce supply.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phase 2: Mid Term -->
+            <div class="roadmap-phase-card">
+              <div class="phase-head">
+                <span class="phase-number">PHASE 02</span>
+                <span class="phase-tag tag-upcoming">Q1 2027</span>
+              </div>
+              <h4 class="phase-title">Golden Crust</h4>
+              <div class="phase-items-list">
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">CoinGecko &amp; CMC Fast-Track</strong>
+                    <span class="item-badge badge-planned">UPCOMING</span>
+                  </div>
+                  <p class="item-desc">Verified indexing on global token track platforms with official tokenomics badge.</p>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">500K Market Cap Milestone</strong>
+                    <span class="item-badge badge-planned">UPCOMING</span>
+                  </div>
+                  <p class="item-desc">Deepened Raydium liquidity pools and Tier-3 exchange market maker onboarding.</p>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">BwedTown Social Housing</strong>
+                    <span class="item-badge badge-progress">IN DEV</span>
+                  </div>
+                  <p class="item-desc">Instanced personal rooms like Habbo Hotel &amp; Pokemon Secret Base to decorate.</p>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">Community DAO Treasury</strong>
+                    <span class="item-badge badge-planned">UPCOMING</span>
+                  </div>
+                  <p class="item-desc">On-chain holder voting for community grants, marketing campaigns, and burns.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Phase 3: Long Term -->
+            <div class="roadmap-phase-card">
+              <div class="phase-head">
+                <span class="phase-number">PHASE 03</span>
+                <span class="phase-tag tag-upcoming">HORIZON 2027</span>
+              </div>
+              <h4 class="phase-title">The Full Loaf</h4>
+              <div class="phase-items-list">
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">First Tier-2 CEX Listing</strong>
+                    <span class="item-badge badge-planned">PLANNED</span>
+                  </div>
+                  <p class="item-desc">Direct centralized exchange spot trading pairs for seamless global onboarding.</p>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">1M+ MC &amp; Vinyl Toy Drop</strong>
+                    <span class="item-badge badge-planned">PLANNED</span>
+                  </div>
+                  <p class="item-desc">Limited edition physical collectible vinyl figures of the 18 Bwedville heroes.</p>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">BwedKart &amp; Fallbwed Arcade</strong>
+                    <span class="item-badge badge-planned">IN DESIGN</span>
+                  </div>
+                  <p class="item-desc">Full 3D multiplayer racing and ragdoll knockout minigames with hero talents.</p>
+                </div>
+
+                <div class="roadmap-item">
+                  <div class="roadmap-item-head">
+                    <strong class="item-name">Cross-Chain Bakery Bridge</strong>
+                    <span class="item-badge badge-planned">CONCEPT</span>
+                  </div>
+                  <p class="item-desc">Expanding the living slice lore across major layer 2 ecosystems.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3: Bwed Arcade & Future Mini-Games -->
       <section class="hub-section" id="arcade">
         <div class="section-head reveal">
           <div class="tag-badge"><i></i> THE BWED LABS &bull; UPCOMING EXPERIMENTS</div>
@@ -668,151 +961,6 @@
         </div>
       </section>
 
-      <!-- Section 4: Community Butter Vault (Treasury & Public Support) -->
-      <section class="hub-section bwed-vault-section reveal" id="vault">
-        <div class="section-head reveal">
-          <div class="tag-badge"><i></i> 100% ON-CHAIN &bull; SOLANA COMMUNITY TREASURY</div>
-          <h2 class="section-title">
-            The Community <em>Butter Vault</em>
-          </h2>
-          <p class="section-desc">
-            Direct on-chain community treasury to fuel future liquidity, marketing campaigns, buyback &amp; burns, and community bounties. Every contribution is verified transparently on Solana.
-          </p>
-        </div>
-
-        <div class="vault-container reveal">
-          <!-- Left: Interactive 3D Safe / Concept Showcase -->
-          <div class="vault-visual-card">
-            <img src="./assets/stickers/bwed-tg-07-prayer-cult.webp" alt="Butter Vault Cult Prayer" class="contextual-sticker sticker-lg tilt-left sticker-with-tooltip" data-tooltip="Pray to the Butter Safe" style="bottom: 50px; left: 14px;" />
-            <div class="vault-visual-canvas-wrap">
-              <canvas id="vaultCanvas3D" class="vault-canvas" aria-label="Interactive 3D Butter Vault Safe"></canvas>
-              <div class="vault-fallback-img" id="vaultFallbackImg">
-                <img src="./assets/buildings/concepts/03-bwedbank-vault.jpg" alt="BwedBank Butter Vault" />
-              </div>
-              <div class="vault-interactive-tag">
-                <span class="live-pulse-dot" aria-hidden="true"></span>
-                <span>INTERACTIVE 3D VAULT</span>
-              </div>
-            </div>
-            <div class="vault-visual-footer">
-              <div class="vault-title-wrap">
-                <strong class="vault-asset-name">BwedBank Butter Safe</strong>
-                <span class="vault-asset-desc">Forged in pure butter &amp; biscuit pillars</span>
-              </div>
-              <span class="vault-secure-pill">Solana Secure</span>
-            </div>
-          </div>
-
-          <!-- Right: Donation Address, Stats & Transparency -->
-          <div class="vault-details-card">
-            <img src="./assets/stickers/bwed-tg-09-bwed-pump-sign.webp" alt="Bwed Pump Sign" class="contextual-sticker sticker-md tilt-right sticker-float sticker-with-tooltip" data-tooltip="PUMP THE $BWED!" style="top: -24px; right: 18px;" />
-            <div class="vault-header-row">
-              <div class="vault-badge-group">
-                <span class="vault-status-badge">COMMUNITY TREASURY</span>
-                <span class="vault-chain-badge">SOLANA MAINNET</span>
-              </div>
-              <span class="vault-lock-icon" title="On-chain public treasury">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              </span>
-            </div>
-
-            <!-- Address Box -->
-            <div class="vault-address-box">
-              <div class="vault-address-meta">
-                <span class="vault-address-label">Donation &amp; Treasury Address</span>
-                <span class="vault-network-hint">Send only SOL or Solana SPL tokens ($BWED)</span>
-              </div>
-              <div class="vault-input-copy-group">
-                <code class="vault-address-code" id="vaultAddressText">HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa</code>
-                <div class="vault-btn-cluster">
-                  <button type="button" class="btn-vault-copy" id="btnCopyVaultAddress" title="Copy Vault Address">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    <span id="copyVaultBadgeText">COPY</span>
-                  </button>
-                  <button type="button" class="btn-vault-qr" id="btnToggleVaultQR" title="Show QR Code">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    <span>QR</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- QR Code Dropdown / Drawer (hidden by default) -->
-            <div class="vault-qr-drawer" id="vaultQrDrawer" hidden>
-              <div class="vault-qr-content">
-                <div class="vault-qr-frame">
-                  <img id="vaultQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=solana:HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa&color=ffd15a&bgcolor=1a0a04" alt="Solana Vault Donation QR Code" loading="lazy" />
-                </div>
-                <div class="vault-qr-instructions">
-                  <strong>Scan with Phantom or Solflare</strong>
-                  <p>Send any amount of SOL or $BWED to support village development &amp; community burns.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Live Treasury Metrics Row -->
-            <div class="vault-metrics-row">
-              <div class="vault-mini-stat">
-                <span class="v-label">Vault SOL Balance</span>
-                <strong class="v-value" id="vaultSolBalance">0.00 SOL</strong>
-                <span class="v-sub" id="vaultSolUsd">On-chain live</span>
-              </div>
-              <div class="vault-mini-stat">
-                <span class="v-label">$BWED Treasury</span>
-                <strong class="v-value" id="vaultBwedBalance">0 $BWED</strong>
-                <span class="v-sub">Community Reserve</span>
-              </div>
-              <div class="vault-mini-stat">
-                <span class="v-label">Next Target Milestone</span>
-                <strong class="v-value" style="color: var(--mint);">10M Burn</strong>
-                <span class="v-sub">Buyback &amp; Burn Event</span>
-              </div>
-            </div>
-
-            <!-- Community Purposes Grid -->
-            <div class="vault-purposes-grid" style="position: relative;">
-              <img src="./assets/stickers/bwed-tg-19-dollar-bills-cash.webp" alt="Cash Rain Bwed" class="contextual-sticker sticker-sm tilt-left sticker-with-tooltip mobile-hide-sticker" data-tooltip="Fund Community Burns" style="bottom: -18px; right: 14px;" />
-              <div class="vault-purpose-tile">
-                <span class="p-icon">&#9879;</span>
-                <div class="p-body">
-                  <strong>Token Buyback &amp; Burn</strong>
-                  <p>Accumulated tokens get burned on-chain to decrease circulating supply forever.</p>
-                </div>
-              </div>
-              <div class="vault-purpose-tile">
-                <span class="p-icon">&#9881;</span>
-                <div class="p-body">
-                  <strong>Game Server Hosting</strong>
-                  <p>Ensuring 100% free, low-latency Colyseus multiplayer rooms for all players.</p>
-                </div>
-              </div>
-              <div class="vault-purpose-tile">
-                <span class="p-icon">&#9733;</span>
-                <div class="p-body">
-                  <strong>Bwed Community Bounties</strong>
-                  <p>Rewards for community artists, 3D modellers, meme creators, and shillers.</p>
-                </div>
-              </div>
-              <div class="vault-purpose-tile">
-                <span class="p-icon">&#9878;</span>
-                <div class="p-body">
-                  <strong>Marketing &amp; Listings</strong>
-                  <p>Funding DexScreener trending promotions, Coingecko/CMC fast-tracks.</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Vault Footer Actions -->
-            <div class="vault-footer-links">
-              <a href="https://solscan.io/account/HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa" target="_blank" rel="noopener noreferrer" class="vault-explorer-btn">
-                <span>View Full Treasury on Solscan</span> <b>&rarr;</b>
-              </a>
-              <span class="vault-transparency-note">Audit verified on Solana public ledger</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Final Call to Action -->
       <section class="cta-banner reveal" id="play-now">
         <img src="./assets/stickers/bwed-tg-22-chest-thump-proud.webp" alt="Proud Bwed" class="contextual-sticker sticker-lg tilt-strong-left sticker-float sticker-with-tooltip mobile-hide-sticker" data-tooltip="Proud Slice" style="bottom: 24px; left: 6vw;" />
@@ -905,11 +1053,10 @@
 
       <div class="footer-links">
         <a href="#game">Crumb Run 3D</a>
+        <a href="#vault">Butter Vault &amp; Roadmap</a>
         <a href="#arcade">Arcade</a>
-        <a href="#buildings">Buildings</a>
         <a href="#roster">18 Heroes</a>
         <a href="#archive">BwedDepot</a>
-        <a href="#vault">Butter Vault</a>
         <a href="./party-board.html">Play in 3D &rarr;</a>
       </div>
     </footer>

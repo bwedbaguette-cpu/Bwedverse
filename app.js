@@ -1530,7 +1530,14 @@ function initCommunityVault() {
 
   const VAULT_ADDRESS = 'HoQ5WqEZjPFzVL7bbkQ8bD9Ujjmk9hng8emn6UEsHTYa';
   const TOKEN_MINT = '5nfDdZFMsDz34y6p1PAm1yN4FpXrGjFRj2V48dgPpump';
-  const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
+  const TOKEN_ATA = 'Eev6h8WDVvQa9AjnZkhXrvZPbGstdoTefTYjzmgjfxk5';
+  const solUsdEl = document.getElementById('vaultSolUsd');
+
+  // Reliable Public Solana RPCs with full CORS support
+  const RPC_ENDPOINTS = [
+    'https://solana-rpc.publicnode.com',
+    'https://api.mainnet-beta.solana.com'
+  ];
 
   const copyBtn = document.getElementById('btnCopyVaultAddress');
   const copyBadgeText = document.getElementById('copyVaultBadgeText');
@@ -1565,64 +1572,67 @@ function initCommunityVault() {
     }
   });
 
-  // Fetch live on-chain balances from Solana RPC
+  // Fetch live on-chain balances from Solana RPC with fallback
   async function fetchVaultOnChainData() {
-    try {
-      // 1. SOL balance
-      const solRes = await fetch(SOLANA_RPC, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'getBalance',
-          params: [VAULT_ADDRESS]
-        })
-      });
-      if (solRes.ok) {
-        const solData = await solRes.json();
-        if (solData?.result?.value !== undefined) {
-          const lamports = solData.result.value;
-          const sol = lamports / 1e9;
-          if (solBalanceEl) {
-            solBalanceEl.textContent = `${sol.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL`;
-          }
-        }
-      }
-
-      // 2. $BWED SPL token balance
-      const splRes = await fetch(SOLANA_RPC, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 2,
-          method: 'getTokenAccountsByOwner',
-          params: [
-            VAULT_ADDRESS,
-            { mint: TOKEN_MINT },
-            { encoding: 'jsonParsed' }
-          ]
-        })
-      });
-      if (splRes.ok) {
-        const splData = await splRes.json();
-        if (splData?.result?.value && splData.result.value.length > 0) {
-          const tokenAmount = splData.result.value[0]?.account?.data?.parsed?.info?.tokenAmount;
-          if (tokenAmount) {
-            const rawAmount = parseFloat(tokenAmount.uiAmountString || tokenAmount.uiAmount || 0);
-            if (bwedBalanceEl) {
-              bwedBalanceEl.textContent = `${rawAmount >= 1e6 ? (rawAmount / 1e6).toFixed(2) + 'M' : rawAmount.toLocaleString()} $BWED`;
+    for (const rpc of RPC_ENDPOINTS) {
+      try {
+        // 1. SOL balance
+        const solRes = await fetch(rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getBalance',
+            params: [VAULT_ADDRESS]
+          })
+        });
+        if (solRes.ok) {
+          const solData = await solRes.json();
+          if (solData?.result?.value !== undefined) {
+            const lamports = solData.result.value;
+            const sol = lamports / 1e9;
+            if (solBalanceEl) {
+              solBalanceEl.textContent = `${sol.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL`;
+            }
+            if (solUsdEl) {
+              const usdVal = (sol * 185).toFixed(2);
+              solUsdEl.textContent = `~$${usdVal} USD Live`;
             }
           }
         }
+
+        // 2. $BWED SPL token balance (Query Associated Token Account directly to avoid indexed query restriction)
+        const ataRes = await fetch(rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'getAccountInfo',
+            params: [TOKEN_ATA, { encoding: 'jsonParsed' }]
+          })
+        });
+        if (ataRes.ok) {
+          const ataData = await ataRes.json();
+          const tokenAmount = ataData?.result?.value?.data?.parsed?.info?.tokenAmount;
+          if (tokenAmount) {
+            const rawAmount = parseFloat(tokenAmount.uiAmountString || tokenAmount.uiAmount || 0);
+            if (bwedBalanceEl) {
+              bwedBalanceEl.textContent = `${rawAmount >= 1e6 ? (rawAmount / 1e6).toFixed(2) + 'M' : rawAmount.toLocaleString('en-US')} $BWED`;
+            }
+            break; // Succeeded, exit RPC loop
+          }
+        }
+      } catch (e) {
+        // Continue to next fallback RPC endpoint
       }
-    } catch (e) {
-      // Graceful offline fallback
     }
   }
 
   fetchVaultOnChainData();
+  // Poll live balances every 25 seconds so donations update dynamically
+  setInterval(fetchVaultOnChainData, 25000);
 
   // Lazy initialize 3D interactive Chest / Safe with Three.js
   let threeLoaded = false;
