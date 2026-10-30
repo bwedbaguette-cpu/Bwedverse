@@ -152,6 +152,30 @@ export const CONFIG = {
       file: './assets/avatars/shadow-ninja.glb',
       thumb: './assets/avatars/thumbs/shadow-ninja.png',
       scale: 1.15
+    },
+    'hero-of-toast': {
+      id: 'hero-of-toast',
+      name: 'Hero of Toast',
+      role: 'Hero of Time & Flour',
+      file: './assets/avatars/hero-of-toast.glb',
+      thumb: './assets/avatars/thumbs/hero-of-toast.png',
+      scale: 1.15
+    },
+    'toast-wizard': {
+      id: 'toast-wizard',
+      name: 'The Toast Wizard',
+      role: 'Master of Yeast Magic',
+      file: './assets/avatars/toast-wizard.glb',
+      thumb: './assets/avatars/thumbs/toast-wizard.png',
+      scale: 1.15
+    },
+    'honey-knight': {
+      id: 'honey-knight',
+      name: 'Honey Knight',
+      role: 'Paladin of Golden Crust',
+      file: './assets/avatars/honey-knight.glb',
+      thumb: './assets/avatars/thumbs/honey-knight.png',
+      scale: 1.15
     }
   },
 

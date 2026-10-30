@@ -49,7 +49,17 @@ export class WorldEditor {
       { id: 'hazelnut-cup', name: 'Hazelnut Cup', category: 'props', tag: 'GLB', scale: 0.65, rotY: 0, radius: 0.5 },
       { id: 'golden-croissant', name: 'Golden Croissant', category: 'props', tag: 'GLB', scale: 0.9, rotY: 0, radius: 1.6 },
       { id: 'golden-bloom', name: 'Golden Bloom', category: 'props', tag: 'GLB', scale: 0.8, rotY: 0, radius: 1.2 },
-      { id: 'bwed-dice', name: 'Bwed Dice', category: 'props', tag: 'GLB', scale: 1.8, rotY: 0, radius: 1.1 }
+      { id: 'bwed-dice', name: 'Bwed Dice', category: 'props', tag: 'GLB', scale: 1.8, rotY: 0, radius: 1.1 },
+      { id: 'churro-coaster', name: 'Churro Coaster', category: 'buildings', tag: 'Ride', scale: 1.1, rotY: 0, radius: 4.5 },
+      { id: 'snack-cart', name: 'Snack Cart', category: 'props', tag: 'GLB', scale: 1.1, rotY: 0, radius: 1.6 },
+      { id: 'waffle-submarine', name: 'Waffle Submarine', category: 'props', tag: 'Vehicle', scale: 1.1, rotY: 0, radius: 2.2 },
+      { id: 'croissant-ram', name: 'Croissant Ram', category: 'nature', tag: 'Creature', scale: 1.1, rotY: 0, radius: 1.8 },
+      { id: 'pistachio-glow', name: 'Pistachio Glow', category: 'nature', tag: 'GLB', scale: 1.1, rotY: 0, radius: 1.2 },
+      { id: 'bread-cubes', name: 'Bread Cubes', category: 'props', tag: 'GLB', scale: 1.1, rotY: 0, radius: 1.4 },
+      { id: 'crimson-tree', name: 'Crimson Tree', category: 'nature', tag: 'GLB', scale: 1.1, rotY: 0, radius: 1.4 },
+      { id: 'cosmic-blocks', name: 'Cosmic Blocks', category: 'props', tag: 'GLB', scale: 1.1, rotY: 0, radius: 1.5 },
+      { id: 'treasure-chest', name: 'Treasure Chest', category: 'props', tag: 'GLB', scale: 1.0, rotY: 0, radius: 1.2 },
+      { id: 'pastry-dessert', name: 'Pastry Dessert', category: 'props', tag: 'GLB', scale: 1.0, rotY: 0, radius: 1.2 }
     ];
 
     // Placed objects registry
@@ -546,7 +556,17 @@ export class WorldEditor {
       'hazelnut-cup': { url: './assets/props/hazelnut-cup.glb', scale: 0.8 },
       'golden-croissant': { url: './assets/props/golden-croissant.glb', scale: 0.9 },
       'golden-bloom': { url: './assets/props/golden-bloom.glb', scale: 0.8 },
-      'bwed-dice': { url: './assets/props/bwed-dice.glb', scale: 1.5 }
+      'bwed-dice': { url: './assets/props/bwed-dice.glb', scale: 1.5 },
+      'churro-coaster': { url: './assets/props/churro-coaster.glb', scale: 1.1 },
+      'snack-cart': { url: './assets/props/snack-cart.glb', scale: 1.1 },
+      'waffle-submarine': { url: './assets/props/waffle-submarine.glb', scale: 1.1 },
+      'croissant-ram': { url: './assets/props/croissant-ram.glb', scale: 1.1 },
+      'pistachio-glow': { url: './assets/props/pistachio-glow.glb', scale: 1.1 },
+      'bread-cubes': { url: './assets/props/bread-cubes.glb', scale: 1.1 },
+      'crimson-tree': { url: './assets/props/crimson-tree.glb', scale: 1.1 },
+      'cosmic-blocks': { url: './assets/props/cosmic-blocks.glb', scale: 1.1 },
+      'treasure-chest': { url: './assets/props/treasure-chest.glb', scale: 1.0 },
+      'pastry-dessert': { url: './assets/props/pastry-dessert.glb', scale: 1.0 }
     };
 
     if (glbMap[type]) {
