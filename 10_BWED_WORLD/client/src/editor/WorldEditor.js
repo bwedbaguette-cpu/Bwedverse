@@ -10,6 +10,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
    ========================================================================== */
 
 export class WorldEditor {
+  static gltfCache = new Map();
+
   constructor(options = {}) {
     this.scene = options.scene;
     this.camera = options.camera;
@@ -23,7 +25,11 @@ export class WorldEditor {
     this.selectedPropId = 'pistachio-tree';
     this.activeCategory = 'all';
 
-    // Prop definitions catalog
+    // Throttled pointermove variables
+    this.pointerMoveEvent = null;
+    this.pointerMoveRafPending = false;
+
+    // Prop definitions catalog with GLB and ultra-light procedural assets
     this.catalog = [
       { id: 'bakery-house', name: 'Bakery House', category: 'buildings', tag: 'GLB', scale: 1.25, rotY: 0, radius: 5.2 },
       { id: 'honey-cafe', name: 'Honey Cafe', category: 'buildings', tag: 'GLB', scale: 1.25, rotY: 0, radius: 5.2 },
@@ -31,9 +37,13 @@ export class WorldEditor {
       { id: 'waffle-tower', name: 'Waffle Tower', category: 'buildings', tag: 'GLB', scale: 1.1, rotY: 0, radius: 2.6 },
       { id: 'arcade-duel', name: 'Arcade Duel', category: 'buildings', tag: 'GLB', scale: 1.15, rotY: 0, radius: 1.5 },
       { id: 'pistachio-tree', name: 'Pistachio Tree', category: 'nature', tag: 'GLB', scale: 1.1, rotY: 0, radius: 1.4 },
-      { id: 'pastry-tree', name: 'Matcha Pine', category: 'nature', tag: 'Pastry', scale: 1.1, rotY: 0, radius: 1.2 },
-      { id: 'chocolate-boulder', name: 'Cocoa Boulder', category: 'nature', tag: 'Cocoa', scale: 1.2, rotY: 0, radius: 1.3 },
+      { id: 'pastry-tree', name: 'Matcha Pine', category: 'nature', tag: 'Procedural', scale: 1.1, rotY: 0, radius: 1.2 },
+      { id: 'butter-bush', name: 'Butter Bush', category: 'nature', tag: 'Procedural', scale: 1.0, rotY: 0, radius: 0.8 },
+      { id: 'chocolate-boulder', name: 'Cocoa Boulder', category: 'nature', tag: 'Procedural', scale: 1.2, rotY: 0, radius: 1.3 },
+      { id: 'sugar-crystal', name: 'Sugar Crystal', category: 'nature', tag: 'Procedural', scale: 1.1, rotY: 0, radius: 0.8 },
       { id: 'pretzel-bench', name: 'Pretzel Bench', category: 'props', tag: 'GLB', scale: 1.2, rotY: 0, radius: 1.2 },
+      { id: 'macaron-stool', name: 'Macaron Stool', category: 'props', tag: 'Procedural', scale: 1.1, rotY: 0, radius: 0.9 },
+      { id: 'procedural-lantern', name: 'Pastry Lantern', category: 'props', tag: 'Procedural', scale: 1.1, rotY: 0, radius: 0.6 },
       { id: 'honey-lantern', name: 'Honey Lantern', category: 'props', tag: 'GLB', scale: 1.15, rotY: 0, radius: 0.6 },
       { id: 'marshmallow-campfire', name: 'Campfire', category: 'props', tag: 'GLB', scale: 1.1, rotY: 0, radius: 1.4 },
       { id: 'hazelnut-cup', name: 'Hazelnut Cup', category: 'props', tag: 'GLB', scale: 0.65, rotY: 0, radius: 0.5 },
@@ -170,10 +180,19 @@ export class WorldEditor {
     this.dom.btnClone?.addEventListener('click', () => this.cloneSelected());
     this.dom.btnDeleteSelected?.addEventListener('click', () => this.deleteSelected());
 
-    // Viewport pointer events
+    // Viewport pointer events with requestAnimationFrame throttling
     window.addEventListener('pointermove', (e) => {
-      if (!this.isEnabled) return;
-      this.handlePointerMove(e);
+      if (!this.isEnabled || this.currentTool !== 'place') return;
+      this.pointerMoveEvent = e;
+      if (!this.pointerMoveRafPending) {
+        this.pointerMoveRafPending = true;
+        requestAnimationFrame(() => {
+          this.pointerMoveRafPending = false;
+          if (this.pointerMoveEvent && this.isEnabled && this.currentTool === 'place') {
+            this.handlePointerMove(this.pointerMoveEvent);
+          }
+        });
+      }
     });
 
     window.addEventListener('pointerdown', (e) => {
@@ -532,18 +551,30 @@ export class WorldEditor {
 
     if (glbMap[type]) {
       const cfg = glbMap[type];
+
+      const applyModel = (sourceScene) => {
+        const m = sourceScene.clone(true);
+        m.scale.setScalar(cfg.scale);
+        m.traverse((c) => {
+          if (c.isMesh) {
+            c.castShadow = true;
+            c.receiveShadow = true;
+          }
+        });
+        container.add(m);
+      };
+
+      // Memory optimization: reuse cached GLTF hierarchy to avoid re-fetching and parsing heavy assets
+      if (WorldEditor.gltfCache.has(cfg.url)) {
+        applyModel(WorldEditor.gltfCache.get(cfg.url));
+        return;
+      }
+
       this.loader.load(
         cfg.url,
         (gltf) => {
-          const m = gltf.scene;
-          m.scale.setScalar(cfg.scale);
-          m.traverse((c) => {
-            if (c.isMesh) {
-              c.castShadow = true;
-              c.receiveShadow = true;
-            }
-          });
-          container.add(m);
+          WorldEditor.gltfCache.set(cfg.url, gltf.scene);
+          applyModel(gltf.scene);
         },
         undefined,
         () => {
@@ -556,10 +587,19 @@ export class WorldEditor {
       return;
     }
 
+    // Lightweight procedural assets (shared geometries & materials for near-zero GPU overhead)
     if (type === 'pastry-tree') {
       this.world?.buildPastryTree(container, 0, 0, 1.0, 0x4a7c35);
     } else if (type === 'chocolate-boulder') {
       this.world?.buildChocolateBoulder(container, 0, 0, 1.0);
+    } else if (type === 'macaron-stool') {
+      this.world?.buildMacaronStool(container, 0, 0, 1.0);
+    } else if (type === 'procedural-lantern') {
+      this.world?.buildProceduralLantern(container, 0, 0, 1.0);
+    } else if (type === 'butter-bush') {
+      this.world?.buildButterBush(container, 0, 0, 1.0);
+    } else if (type === 'sugar-crystal') {
+      this.world?.buildSugarCrystal(container, 0, 0, 1.0);
     } else {
       const mat = new THREE.MeshStandardMaterial({ color: 0xffd15a, roughness: 0.5 });
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), mat);

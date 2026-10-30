@@ -9,6 +9,9 @@ import { CONFIG } from '../config.js';
    ========================================================================== */
 
 export class AvatarModel {
+  static avatarCache = new Map();
+  static loader = new GLTFLoader();
+
   constructor(avatarId = 'tiny-baker') {
     this.avatarId = avatarId;
 
@@ -54,45 +57,51 @@ export class AvatarModel {
     this.isLoaded = false;
     this.mixer = null;
 
-    const loader = new GLTFLoader();
-    loader.load(
+    const setupModel = (sourceScene, animations = []) => {
+      if (this.avatarId !== avatarId) return;
+
+      const model = sourceScene.clone(true);
+
+      const bbox = new THREE.Box3().setFromObject(model);
+      const size = new THREE.Vector3();
+      bbox.getSize(size);
+
+      const currentHeight = size.y > 0.01 ? size.y : 1.8;
+      const scaleFactor = (this.targetHeight / currentHeight) * this.targetScaleModifier;
+      model.scale.setScalar(scaleFactor);
+
+      const scaledBbox = new THREE.Box3().setFromObject(model);
+      model.position.y = -scaledBbox.min.y;
+
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material) {
+            child.material.roughness = Math.max(0.35, child.material.roughness ?? 0.5);
+          }
+        }
+      });
+
+      this.visualGroup.add(model);
+      this.isLoaded = true;
+
+      if (animations && animations.length > 0) {
+        this.mixer = new THREE.AnimationMixer(model);
+      }
+    };
+
+    if (AvatarModel.avatarCache.has(filePath)) {
+      const cached = AvatarModel.avatarCache.get(filePath);
+      setupModel(cached.scene, cached.animations);
+      return;
+    }
+
+    AvatarModel.loader.load(
       filePath,
       (gltf) => {
-        // Sécurité si l'avatar a changé entre-temps
-        if (this.avatarId !== avatarId) return;
-
-        const model = gltf.scene;
-
-        // Calcul de la boîte englobante pour normaliser la hauteur à 1.8m
-        const bbox = new THREE.Box3().setFromObject(model);
-        const size = new THREE.Vector3();
-        bbox.getSize(size);
-
-        const currentHeight = size.y > 0.01 ? size.y : 1.8;
-        const scaleFactor = (this.targetHeight / currentHeight) * this.targetScaleModifier;
-        model.scale.setScalar(scaleFactor);
-
-        // Recalcul après mise à l'échelle pour aligner la base des pieds à Y = 0
-        const scaledBbox = new THREE.Box3().setFromObject(model);
-        model.position.y = -scaledBbox.min.y;
-
-        // Activation des ombres portées et reçues
-        model.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow = true;
-            child.receiveShadow = true;
-            if (child.material) {
-              child.material.roughness = Math.max(0.35, child.material.roughness ?? 0.5);
-            }
-          }
-        });
-
-        this.visualGroup.add(model);
-        this.isLoaded = true;
-
-        if (gltf.animations && gltf.animations.length > 0) {
-          this.mixer = new THREE.AnimationMixer(model);
-        }
+        AvatarModel.avatarCache.set(filePath, { scene: gltf.scene, animations: gltf.animations || [] });
+        setupModel(gltf.scene, gltf.animations);
       },
       undefined,
       (err) => {

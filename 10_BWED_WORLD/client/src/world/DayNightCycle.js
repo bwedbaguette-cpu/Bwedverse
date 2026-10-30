@@ -86,16 +86,17 @@ export class DayNightCycle {
 
   buildFireflies() {
     this.firefliesGroup = new THREE.Group();
-    const count = 35;
+    const count = 28;
     const geo = new THREE.SphereGeometry(0.12, 6, 6);
-    const mat = new THREE.MeshBasicMaterial({
+    this.fireflyMat = new THREE.MeshBasicMaterial({
       color: 0x9be882,
       transparent: true,
       opacity: 0.0
     });
 
     for (let i = 0; i < count; i++) {
-      const mesh = new THREE.Mesh(geo, mat.clone());
+      // Reuse shared material across all fireflies to avoid duplicate shader instances
+      const mesh = new THREE.Mesh(geo, this.fireflyMat);
       const x = (Math.random() - 0.5) * 60;
       const z = Math.random() * 80 - 10;
       const y = 0.4 + Math.random() * 1.8;
@@ -202,15 +203,15 @@ export class DayNightCycle {
       }
     }
 
-    if (this.firefliesGroup) {
-      const fireflyAlpha = nightLightsIntensity * 0.85;
-      for (let i = 0; i < this.firefliesData.length; i++) {
-        this.firefliesData[i].mesh.material.opacity = fireflyAlpha;
-      }
+    if (this.firefliesGroup && this.fireflyMat) {
+      this.fireflyMat.opacity = nightLightsIntensity * 0.85;
     }
   }
 
   updateFireflies(delta) {
+    // Skip calculations entirely during daytime when fireflies are invisible
+    if (!this.fireflyMat || this.fireflyMat.opacity < 0.05) return;
+
     const now = performance.now() * 0.001;
     for (let i = 0; i < this.firefliesData.length; i++) {
       const f = this.firefliesData[i];

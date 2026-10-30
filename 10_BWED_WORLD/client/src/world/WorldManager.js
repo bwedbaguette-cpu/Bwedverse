@@ -24,13 +24,42 @@ export class WorldManager {
     this.gltfLoader = new GLTFLoader();
     this.gltfCache = new Map();
 
-    // Références pour le fondu d'atmosphère
+    // Shared procedural geometries & materials to minimize draw calls and GPU memory allocations
+    this.sharedGeos = {
+      trunk: new THREE.CylinderGeometry(0.35, 0.5, 2.2, 8),
+      cone0: new THREE.ConeGeometry(2.2, 1.8, 8),
+      cone1: new THREE.ConeGeometry(1.75, 1.8, 8),
+      cone2: new THREE.ConeGeometry(1.3, 1.8, 8),
+      boulder: new THREE.DodecahedronGeometry(1.0),
+      lanternPole: new THREE.CylinderGeometry(0.12, 0.16, 2.6, 8),
+      lanternHead: new THREE.BoxGeometry(0.7, 0.8, 0.7),
+      macaronShell: new THREE.CylinderGeometry(0.9, 0.9, 0.28, 16),
+      macaronCream: new THREE.CylinderGeometry(0.82, 0.82, 0.16, 16),
+      bushCluster: new THREE.DodecahedronGeometry(0.7),
+      sugarSpire: new THREE.ConeGeometry(0.5, 2.4, 6)
+    };
+
+    this.sharedMats = {
+      woodTrunk: new THREE.MeshStandardMaterial({ color: 0x6e4325, roughness: 0.8 }),
+      matchaFoliage: new THREE.MeshStandardMaterial({ color: 0x558a38, roughness: 0.5 }),
+      forestFoliage: new THREE.MeshStandardMaterial({ color: 0x3d5a2b, roughness: 0.5 }),
+      cocoaRock: new THREE.MeshStandardMaterial({ color: 0x3d2417, roughness: 0.75, metalness: 0.1 }),
+      lanternWood: new THREE.MeshStandardMaterial({ color: 0x4a2a16, roughness: 0.7 }),
+      lanternGlow: new THREE.MeshStandardMaterial({ color: 0xffd175, emissive: 0xff9900, emissiveIntensity: 0.9 }),
+      macaronPink: new THREE.MeshStandardMaterial({ color: 0xf49fb6, roughness: 0.4 }),
+      macaronCream: new THREE.MeshStandardMaterial({ color: 0xfff3db, roughness: 0.35 }),
+      butterFlower: new THREE.MeshStandardMaterial({ color: 0xffe279, roughness: 0.4 }),
+      sugarCrystal: new THREE.MeshStandardMaterial({ color: 0x6ee7b7, emissive: 0x059669, emissiveIntensity: 0.35, roughness: 0.2 })
+    };
+
+    // Atmosphere caching & references
     this.ambientLight = null;
     this.sunLight = null;
     this.hemiLight = null;
     this.currentDistrictKey = null;
+    this.lastAtmospherePos = null;
 
-    // Objets animés
+    // Animated objects
     this.animatedProps = [];
     this.groundMesh = null;
 
@@ -91,41 +120,35 @@ export class WorldManager {
   }
 
   buildSweetPollenParticles() {
-    const count = 160;
+    const count = 75;
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
-    const speeds = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 80;
       positions[i * 3 + 1] = 0.5 + Math.random() * 6.0;
       positions[i * 3 + 2] = -25 + Math.random() * 140;
-      speeds[i] = 0.4 + Math.random() * 0.8;
     }
 
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const mat = new THREE.PointsMaterial({
       color: 0xffe8b0,
-      size: 1.4,
+      size: 1.6,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.5,
       depthWrite: false
     });
 
     const particles = new THREE.Points(geo, mat);
     this.worldGroup.add(particles);
 
+    // Optimized transform-level animation: zero CPU vertex iteration, zero GPU buffer re-upload
     this.animatedProps.push({
       mesh: particles,
       update: (delta, elapsed) => {
-        const pos = geo.attributes.position.array;
-        for (let i = 0; i < count; i++) {
-          pos[i * 3 + 1] += Math.sin(elapsed * speeds[i] + i) * 0.008;
-          pos[i * 3] += Math.cos(elapsed * 0.5 + i) * 0.006;
-          if (pos[i * 3 + 1] > 8.0) pos[i * 3 + 1] = 0.5;
-        }
-        geo.attributes.position.needsUpdate = true;
+        particles.rotation.y = elapsed * 0.025;
+        particles.position.y = Math.sin(elapsed * 0.45) * 0.35;
       }
     });
   }
@@ -149,25 +172,25 @@ export class WorldManager {
   }
 
   /* --------------------------------------------------------------------------
-     1. ÉCLAIRAGE ET ATMOSPHÈRE PROGRESSIVE
+     1. ATMOSPHERIC LIGHTING & BIOME PROGRESSION
      -------------------------------------------------------------------------- */
   initAtmosphere() {
     const z1 = CONFIG.biomes['village-center'];
 
-    // Ciel et brouillard
+    // Sky and fog
     this.scene.background = new THREE.Color(z1.skyColor);
     this.scene.fog = new THREE.Fog(z1.fogColor, z1.fogNear, z1.fogFar);
 
-    // Lumière ambiante
+    // Ambient light
     this.ambientLight = new THREE.AmbientLight(z1.ambientColor, z1.ambientIntensity);
     this.worldGroup.add(this.ambientLight);
 
-    // Soleil directionnel doré
+    // Directional golden sun with optimized 1024x1024 shadow map
     this.sunLight = new THREE.DirectionalLight(z1.sunColor, z1.sunIntensity);
     this.sunLight.position.set(...z1.sunPosition);
     this.sunLight.castShadow = true;
-    this.sunLight.shadow.mapSize.width = 2048;
-    this.sunLight.shadow.mapSize.height = 2048;
+    this.sunLight.shadow.mapSize.width = 1024;
+    this.sunLight.shadow.mapSize.height = 1024;
     this.sunLight.shadow.camera.near = 1;
     this.sunLight.shadow.camera.far = 240;
     this.sunLight.shadow.camera.left = -80;
@@ -177,7 +200,7 @@ export class WorldManager {
     this.sunLight.shadow.bias = -0.0006;
     this.worldGroup.add(this.sunLight);
 
-    // Hémisphère
+    // Hemisphere light
     this.hemiLight = new THREE.HemisphereLight(0xfff6ea, 0x4a2a16, 0.65);
     this.worldGroup.add(this.hemiLight);
   }
@@ -185,15 +208,24 @@ export class WorldManager {
   updateAtmosphere(playerPos) {
     if (!playerPos) return;
 
+    // Throttle calculation when player is standing still
+    if (!this.lastAtmospherePos) {
+      this.lastAtmospherePos = new THREE.Vector3();
+    }
+    const distSq = this.lastAtmospherePos.distanceToSquared(playerPos);
+    if (distSq < 0.04) {
+      return;
+    }
+    this.lastAtmospherePos.copy(playerPos);
+
     const z1 = CONFIG.biomes['village-center'];
     const z2 = CONFIG.biomes['cacao-forest'];
 
-    // Ratio de transition linéaire le long du pont (Z = 28 -> Z = 54)
+    // Linear transition along bridge (Z = 28 -> Z = 54)
     const rawRatio = THREE.MathUtils.clamp((playerPos.z - 28) / 26, 0, 1);
-    // Lissage courbe smoothstep
     const t = rawRatio * rawRatio * (3 - 2 * rawRatio);
 
-    // Interpolation ciel & brouillard
+    // Color blending
     const skyCol = new THREE.Color(z1.skyColor).lerp(new THREE.Color(z2.skyColor), t);
     const fogCol = new THREE.Color(z1.fogColor).lerp(new THREE.Color(z2.fogColor), t);
     this.scene.background.copy(skyCol);
@@ -201,17 +233,17 @@ export class WorldManager {
     this.scene.fog.near = THREE.MathUtils.lerp(z1.fogNear, z2.fogNear, t);
     this.scene.fog.far = THREE.MathUtils.lerp(z1.fogFar, z2.fogFar, t);
 
-    // Interpolation lumière ambiante
+    // Ambient light interpolation
     const ambCol = new THREE.Color(z1.ambientColor).lerp(new THREE.Color(z2.ambientColor), t);
     this.ambientLight.color.copy(ambCol);
     this.ambientLight.intensity = THREE.MathUtils.lerp(z1.ambientIntensity, z2.ambientIntensity, t);
 
-    // Interpolation soleil
+    // Sun light interpolation
     const sunCol = new THREE.Color(z1.sunColor).lerp(new THREE.Color(z2.sunColor), t);
     this.sunLight.color.copy(sunCol);
     this.sunLight.intensity = THREE.MathUtils.lerp(z1.sunIntensity, z2.sunIntensity, t);
 
-    // Détection du quartier pour le badge du HUD
+    // District badge detection for HUD
     let newDistrictKey = 'village-center';
     let kicker = 'CENTRAL VILLAGE &middot; HUB';
     let name = 'The Golden Butter Square';
@@ -1155,16 +1187,17 @@ export class WorldManager {
     tree.position.set(x, 0, z);
     tree.scale.setScalar(scale);
 
-    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x6e4325, roughness: 0.8 });
-    const foliageMat = new THREE.MeshStandardMaterial({ color: foliageColor, roughness: 0.5 });
-
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 2.2, 8), trunkMat);
+    // Reuse shared geometries & materials to avoid heap allocations and draw call bloat
+    const trunk = new THREE.Mesh(this.sharedGeos.trunk, this.sharedMats.woodTrunk);
     trunk.position.y = 1.1;
     trunk.castShadow = true;
     tree.add(trunk);
 
+    const mat = foliageColor === 0x3d5a2b ? this.sharedMats.forestFoliage : this.sharedMats.matchaFoliage;
+    const coneGeos = [this.sharedGeos.cone0, this.sharedGeos.cone1, this.sharedGeos.cone2];
+
     for (let i = 0; i < 3; i++) {
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(2.2 - i * 0.45, 1.8, 8), foliageMat);
+      const cone = new THREE.Mesh(coneGeos[i], mat);
       cone.position.y = 2.4 + i * 1.1;
       cone.castShadow = true;
       tree.add(cone);
@@ -1172,17 +1205,97 @@ export class WorldManager {
 
     parent.add(tree);
     this.physics.addObstacle(x, z, 1.2 * scale);
+    return tree;
   }
 
   buildChocolateBoulder(parent, x, z, scale = 1.0) {
-    const mat = new THREE.MeshStandardMaterial({ color: 0x3d2417, roughness: 0.75, metalness: 0.1 });
-    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(1.2 * scale), mat);
+    // Reuse shared dodecahedron geometry and shared cocoa material
+    const rock = new THREE.Mesh(this.sharedGeos.boulder, this.sharedMats.cocoaRock);
     rock.position.set(x, 0.8 * scale, z);
-    rock.scale.set(1.2, 0.85, 1.1);
+    rock.scale.set(1.2 * scale, 0.85 * scale, 1.1 * scale);
     rock.rotation.set(0.4, 0.6, 0.2);
     rock.castShadow = true;
     parent.add(rock);
     this.physics.addObstacle(x, z, 1.3 * scale);
+    return rock;
+  }
+
+  buildMacaronStool(parent, x, z, scale = 1.0) {
+    const stool = new THREE.Group();
+    stool.position.set(x, 0, z);
+    stool.scale.setScalar(scale);
+
+    const bottomShell = new THREE.Mesh(this.sharedGeos.macaronShell, this.sharedMats.macaronPink);
+    bottomShell.position.y = 0.16;
+    bottomShell.castShadow = true;
+    stool.add(bottomShell);
+
+    const cream = new THREE.Mesh(this.sharedGeos.macaronCream, this.sharedMats.macaronCream);
+    cream.position.y = 0.34;
+    stool.add(cream);
+
+    const topShell = new THREE.Mesh(this.sharedGeos.macaronShell, this.sharedMats.macaronPink);
+    topShell.position.y = 0.52;
+    topShell.castShadow = true;
+    stool.add(topShell);
+
+    parent.add(stool);
+    this.physics.addObstacle(x, z, 0.9 * scale);
+    return stool;
+  }
+
+  buildProceduralLantern(parent, x, z, scale = 1.0) {
+    const lantern = new THREE.Group();
+    lantern.position.set(x, 0, z);
+    lantern.scale.setScalar(scale);
+
+    const pole = new THREE.Mesh(this.sharedGeos.lanternPole, this.sharedMats.lanternWood);
+    pole.position.y = 1.3;
+    pole.castShadow = true;
+    lantern.add(pole);
+
+    const head = new THREE.Mesh(this.sharedGeos.lanternHead, this.sharedMats.lanternGlow);
+    head.position.y = 2.7;
+    lantern.add(head);
+
+    parent.add(lantern);
+    this.physics.addObstacle(x, z, 0.5 * scale);
+    return lantern;
+  }
+
+  buildButterBush(parent, x, z, scale = 1.0) {
+    const bush = new THREE.Group();
+    bush.position.set(x, 0, z);
+    bush.scale.setScalar(scale);
+
+    const core = new THREE.Mesh(this.sharedGeos.bushCluster, this.sharedMats.matchaFoliage);
+    core.position.y = 0.5;
+    core.castShadow = true;
+    bush.add(core);
+
+    const flower = new THREE.Mesh(this.sharedGeos.bushCluster, this.sharedMats.butterFlower);
+    flower.position.set(0.3, 0.7, 0.2);
+    flower.scale.setScalar(0.45);
+    bush.add(flower);
+
+    parent.add(bush);
+    this.physics.addObstacle(x, z, 0.7 * scale);
+    return bush;
+  }
+
+  buildSugarCrystal(parent, x, z, scale = 1.0) {
+    const crystal = new THREE.Group();
+    crystal.position.set(x, 0, z);
+    crystal.scale.setScalar(scale);
+
+    const spire = new THREE.Mesh(this.sharedGeos.sugarSpire, this.sharedMats.sugarCrystal);
+    spire.position.y = 1.2;
+    spire.castShadow = true;
+    crystal.add(spire);
+
+    parent.add(crystal);
+    this.physics.addObstacle(x, z, 0.6 * scale);
+    return crystal;
   }
 
   /* --------------------------------------------------------------------------

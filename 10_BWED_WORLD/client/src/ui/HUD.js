@@ -438,16 +438,16 @@ export class HUD {
     });
 
     this.dom.shadowsSettingSelect?.addEventListener('change', (e) => {
-      const enabled = e.target.value === 'true';
+      const level = e.target.value;
       if (this.onToggleShadows) {
-        this.onToggleShadows(enabled);
+        this.onToggleShadows(level);
       }
     });
 
     this.dom.resolutionSettingSelect?.addEventListener('change', (e) => {
-      const isHigh = e.target.value === 'high';
+      const level = e.target.value;
       if (this.onToggleResolution) {
-        this.onToggleResolution(isHigh);
+        this.onToggleResolution(level);
       }
     });
 

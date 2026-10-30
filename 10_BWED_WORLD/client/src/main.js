@@ -119,11 +119,11 @@ class BwedWorldApp {
           this.network.sendUpdate(this.localPlayer.getNetworkPacket());
         }
       },
-      onToggleShadows: (enabled) => {
-        this.engine.setShadowsEnabled(enabled);
+      onToggleShadows: (level) => {
+        this.engine.setShadowsQuality(level);
       },
-      onToggleResolution: (isHigh) => {
-        this.engine.setHighResolution(isHigh);
+      onToggleResolution: (level) => {
+        this.engine.setGraphicsResolution(level);
       },
       onCameraDistance: (dist) => {
         this.cameraController.setDistance(dist);
