@@ -49,7 +49,7 @@ class BwedHubAudio {
 const audio = new BwedHubAudio();
 window.bwedAudio = audio;
 
-// 22 Heroes Catalog (Canon data synced with 3D board game, natural English)
+// 18 Heroes Catalog (Canon data synced with 3D board game, natural English)
 const heroes = [
   {
     id: 'super-hero-bwed',
@@ -88,24 +88,6 @@ const heroes = [
     desc: 'Flour on the cheeks, rolling pin in hand. Whipping up fresh golden loaves right on the board.'
   },
   {
-    id: 'hero-of-toast',
-    name: 'Hero of Toast',
-    role: 'The Hero of Time & Flour',
-    cat: 'adventurers',
-    color: '#2a9d8f',
-    talent: { name: 'MASTER SWORD', cue: 'TIME SLICE +3', desc: 'Slice through time to roll twice with a +3 power boost.' },
-    desc: 'Green tunic, legendary master crust blade, and an endless destiny to rescue the Golden Loaf of Bwedville.'
-  },
-  {
-    id: 'reggae-toast',
-    name: 'Reggae Toast',
-    role: 'Vibes of the Golden Sun',
-    cat: 'adventurers',
-    color: '#52b788',
-    talent: { name: 'SUNNY VIBES', cue: 'GOOD VIBES +3c', desc: 'Spread good vibrations to cleanse penalties and pocket +3 coins.' },
-    desc: 'Knitted rasta beret and laid-back smile. Reminds everyone in Bwedville that every little thing is gonna be golden.'
-  },
-  {
     id: 'crimson-samurai',
     name: 'Crimson Samurai',
     role: 'The Rising Blade',
@@ -140,15 +122,6 @@ const heroes = [
     color: '#495057',
     talent: { name: 'SMOKE BOMB', cue: 'STEAL 2c & ESCAPE', desc: 'Steal 2 coins from the richest rival and take an extra step.' },
     desc: 'Invisible inside the toaster dark slots. The undisputed master of the silent midnight heist.'
-  },
-  {
-    id: 'honey-knight',
-    name: 'Honey Knight',
-    role: 'Paladin of Golden Crust',
-    cat: 'fighters',
-    color: '#e76f51',
-    talent: { name: 'GOLDEN SHIELD', cue: 'SHIELD & +3c', desc: 'Immunity against tile traps and pocket 3 golden honey coins.' },
-    desc: 'Polished honey-glazed armor and valiant spirit. Sworn protector of the sacred bakery hearth.'
   },
   {
     id: 'toast-bandit',
@@ -239,15 +212,6 @@ const heroes = [
     color: '#3a86ff',
     talent: { name: 'WHALE PUMP', cue: '+5 BANK COINS', desc: 'Pump 5 coins straight out of the Bwedbank central reserve.' },
     desc: 'Dressed as the legendary crypto whale. Every step he takes creates a tidal wave in the bank.'
-  },
-  {
-    id: 'toast-wizard',
-    name: 'Toast Wizard',
-    role: 'Master of Yeast Magic',
-    cat: 'mages',
-    color: '#7209b7',
-    talent: { name: 'YEAST TRANSMUTE', cue: 'YEAST WARP', desc: 'Transmute 2 coins into a direct warp to the nearest bonus tile.' },
-    desc: 'Long white crumb beard and cosmic star hat. Commands the secret ancient rites of yeast fermentation.'
   }
 ];
 
@@ -562,10 +526,10 @@ function initCollectorCabinet() {
     `).join('');
   }
 
-  // 22 Figures distributed dynamically across 3 lit shelves
-  const tier1 = heroes.slice(0, 8);
-  const tier2 = heroes.slice(8, 15);
-  const tier3 = heroes.slice(15);
+  // 18 Figures distributed dynamically across 3 lit shelves (6 per shelf)
+  const tier1 = heroes.slice(0, 6);
+  const tier2 = heroes.slice(6, 12);
+  const tier3 = heroes.slice(12, 18);
 
   renderRow(row1, tier1);
   renderRow(row2, tier2);
