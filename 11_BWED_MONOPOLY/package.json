@@ -1,0 +1,19 @@
+{
+  "name": "bwedopoly-3d",
+  "version": "1.0.0",
+  "description": "Monopoly 3D Multijoueur en ligne thématisé Boulangerie (Bwedverse)",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "keywords": ["monopoly", "threejs", "multiplayer", "bwed", "socketio"],
+  "author": "Bwedverse Team",
+  "license": "MIT"
+}

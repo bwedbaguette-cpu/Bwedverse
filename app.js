@@ -212,6 +212,60 @@ const heroes = [
     color: '#3a86ff',
     talent: { name: 'WHALE PUMP', cue: '+5 BANK COINS', desc: 'Pump 5 coins straight out of the Bwedbank central reserve.' },
     desc: 'Dressed as the legendary crypto whale. Every step he takes creates a tidal wave in the bank.'
+  },
+  {
+    id: 'captain-bean',
+    name: 'Capitaine Pirate Bwed',
+    role: 'The Scurvy Rover',
+    cat: 'rogues',
+    color: '#9b5de5',
+    talent: { name: 'PIRATE HEIST', cue: 'LOOT 4c & BOARD', desc: 'Board the nearest player space, pillage 4 coins from the vault, and claim the high seas.' },
+    desc: 'Tricorne hat, golden hook, and an ancient map leading straight to the legendary Golden Loaf.'
+  },
+  {
+    id: 'cozy-shiba',
+    name: 'Cozy Shiba Buddy',
+    role: 'The Loyal Pup',
+    cat: 'adventurers',
+    color: '#ffb703',
+    talent: { name: 'TAIL WAG', cue: 'DOUBLE STEP & COZY', desc: 'Roll with a loyal tail-wag bonus, taking +2 bonus spaces and immunity from trap tiles.' },
+    desc: 'Warm golden fur, baked-bread softness, and an unwavering loyalty to the Bwedverse pack.'
+  },
+  {
+    id: 'hero-of-toast',
+    name: 'Hero of Toast',
+    role: 'The Legendary Baker',
+    cat: 'fighters',
+    color: '#48cae4',
+    talent: { name: 'MASTER BLADE', cue: 'SHIELD & +3c', desc: 'Summon an impenetrable baguette barrier and earn 3 victory coins.' },
+    desc: 'Chosen by the prophecy of the Oven Hearth. Wields the ancient crust with honor and unmatched grace.'
+  },
+  {
+    id: 'honey-knight',
+    name: 'Honey Knight',
+    role: 'The Sweet Guardian',
+    cat: 'fighters',
+    color: '#fb8500',
+    talent: { name: 'AMBER SHIELD', cue: 'DEFEND & +2 LOAVES', desc: 'Shields all allies from rent penalties and collects 2 honey-glazed coins.' },
+    desc: 'Armored in hardened caramelized amber honey. Unbreakable loyalty on every battle tile.'
+  },
+  {
+    id: 'toast-wizard',
+    name: 'Toast Wizard',
+    role: 'The Oven Mage',
+    cat: 'mages',
+    color: '#7209b7',
+    talent: { name: 'YEAST RITUAL', cue: 'WARP TO VAULT', desc: 'Cast a cosmic rising spell that teleports directly to the nearest vault or bonus card.' },
+    desc: 'Keeper of the sacred yeast scrolls and celestial baking spells. Can bend oven heat at will.'
+  },
+  {
+    id: 'reggae-toast',
+    name: 'Reggae Toast',
+    role: 'The Jammin Slice',
+    cat: 'adventurers',
+    color: '#52b788',
+    talent: { name: 'GROOVE VIBE', cue: 'RELAX & SKIP RENT', desc: 'Play sweet acoustic loaf rhythms that let all players waive rent for 1 turn.' },
+    desc: 'Chill beats, positive vibrations, and a crispy attitude that turns bad rolls into pure harmony.'
   }
 ];
 
@@ -526,10 +580,11 @@ function initCollectorCabinet() {
     `).join('');
   }
 
-  // 18 Figures distributed dynamically across 3 lit shelves (6 per shelf)
-  const tier1 = heroes.slice(0, 6);
-  const tier2 = heroes.slice(6, 12);
-  const tier3 = heroes.slice(12, 18);
+  // 24 Figures distributed dynamically across 3 lit shelves (8 per shelf)
+  const perShelf = Math.ceil(heroes.length / 3);
+  const tier1 = heroes.slice(0, perShelf);
+  const tier2 = heroes.slice(perShelf, perShelf * 2);
+  const tier3 = heroes.slice(perShelf * 2, perShelf * 3);
 
   renderRow(row1, tier1);
   renderRow(row2, tier2);
@@ -1653,20 +1708,25 @@ function initCommunityVault() {
       renderer.toneMappingExposure = 1.25;
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
-      camera.position.set(0, 1.6, 3.8);
+      const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+      camera.position.set(0, 0.52, 2.5);
+      camera.lookAt(0, 0.02, 0);
 
       // Warm bakery studio lights
-      const ambLight = new THREE.AmbientLight(0xfff5e6, 1.8);
+      const ambLight = new THREE.AmbientLight(0xfff5e6, 2.0);
       scene.add(ambLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffd15a, 2.5);
-      dirLight.position.set(4, 6, 4);
+      const dirLight = new THREE.DirectionalLight(0xffd15a, 2.8);
+      dirLight.position.set(3, 5, 3.5);
       scene.add(dirLight);
 
-      const rimLight = new THREE.DirectionalLight(0xff8c42, 1.5);
-      rimLight.position.set(-4, 3, -3);
+      const rimLight = new THREE.DirectionalLight(0xff8c42, 1.8);
+      rimLight.position.set(-3, 2.5, -2.5);
       scene.add(rimLight);
+
+      const chestPointLight = new THREE.PointLight(0xffd15a, 2.2, 8);
+      chestPointLight.position.set(0, 1.2, 1.0);
+      scene.add(chestPointLight);
 
       const loader = new GLTFLoader();
       const modelPath = './assets/buildings/prop-treasure-chest.glb';
@@ -1675,16 +1735,16 @@ function initCommunityVault() {
       loader.load(modelPath, (gltf) => {
         modelRoot = gltf.scene;
 
-        // Auto center and scale
+        // Auto center and scale (prominent, centered, filling the vault window majestically)
         const box = new THREE.Box3().setFromObject(modelRoot);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 2.0 / (maxDim || 1);
+        const scale = 3.25 / (maxDim || 1);
 
         modelRoot.scale.setScalar(scale);
         modelRoot.position.sub(center.multiplyScalar(scale));
-        modelRoot.position.y -= 0.15;
+        modelRoot.position.y += 0.04;
 
         scene.add(modelRoot);
       }, undefined, () => {

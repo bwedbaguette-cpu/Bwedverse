@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MONOPOLY 3D — Bwed Collector's Edition</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./style.css?v=7.3.0">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- 3D WebGL Canvas Viewport -->
+  <div id="canvas-container"></div>
+
+  <!-- START SCREEN & LOBBY SETUP MODAL -->
+  <div class="start-screen-overlay" id="start-screen">
+    <div class="lobby-modal glass-panel">
+      
+      <div class="lobby-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="./assets/stickers/bwed-tg-10-smoking-suit.webp" class="lobby-header-sticker" alt="Bwed Boss">
+          <div>
+            <span class="lobby-badge">OFFICIAL RULES &bull; 3D ENGINE</span>
+            <h1 class="lobby-title">MONOPOLY</h1>
+          </div>
+        </div>
+        <p class="lobby-subtitle">Bwed Collector's Edition &bull; 24 Playable Characters &amp; 27 Bakery Monuments</p>
+      </div>
+
+      <!-- Mode Selection -->
+      <div class="mode-switch-group">
+        <div class="mode-card is-active" data-mode="local">
+          <svg class="mode-svg" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          <span class="mode-name">Pass &amp; Play</span>
+          <span class="mode-desc">Local 2-4 Players</span>
+        </div>
+        <div class="mode-card" data-mode="bots">
+          <svg class="mode-svg" viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.38-1 1.72V7h4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3h4V5.72c-.6-.34-1-.98-1-1.72a2 2 0 0 1 2-2zM9 13a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm6 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+          <span class="mode-name">Solo vs AI</span>
+          <span class="mode-desc">Play against smart bots</span>
+        </div>
+        <div class="mode-card" data-mode="online">
+          <svg class="mode-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          <span class="mode-name">Online Lobby</span>
+          <span class="mode-desc">Room Codes &amp; Sync</span>
+        </div>
+      </div>
+
+      <!-- Online Room Configuration Panel (Active when Online Mode is selected) -->
+      <div class="roster-setup-section" id="online-lobby-panel" style="display:none;background:rgba(255,209,90,0.06);border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:12px;">
+        <div class="section-title" style="color:var(--gold);display:flex;justify-content:space-between;align-items:center;">
+          <span>🌐 MULTIPLAYER ROOM CODE</span>
+          <span class="online-status-badge" id="online-peer-status" style="font-size:11px;background:#2b180d;color:#ffd15a;padding:3px 8px;border-radius:12px;border:1px solid #ffd15a;">1 Player (You)</span>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <input type="text" id="input-room-code" value="BWED-77" maxlength="12" style="background:#1c0f08;color:#ffd15a;border:1px solid #d4af37;border-radius:8px;padding:8px 12px;font-weight:900;font-size:16px;letter-spacing:1px;width:150px;text-transform:uppercase;">
+          <button class="btn-deed-action" id="btn-copy-invite" style="background:linear-gradient(135deg,#ffd15a,#f59e0b);color:#1c0f08;font-weight:900;flex:1;">
+            📋 COPY INVITE LINK
+          </button>
+          <button class="btn-deed-action" id="btn-change-room" style="background:#261208;color:#ffd15a;border:1px solid #d4af37;font-weight:700;">
+            JOIN
+          </button>
+        </div>
+        <small style="display:block;margin-top:6px;font-size:11px;color:#a89685;">Share the link with friends to join the same 3D board in real-time!</small>
+      </div>
+
+      <!-- Players Setup -->
+      <div class="roster-setup-section">
+        <div class="section-title">PLAYER ROSTER (2 TO 4 PLAYERS)</div>
+        <div id="player-setup-container" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+
+      <!-- Game Rules Configuration -->
+      <div class="roster-setup-section">
+        <div class="section-title">HOUSE RULES &amp; SETTINGS</div>
+        <div class="rules-config-grid">
+          <div class="rule-pill">
+            <span>Starting Cash</span>
+            <strong style="color:var(--gold);">$1,500</strong>
+          </div>
+          <div class="rule-pill">
+            <span>Free Parking Jackpot</span>
+            <input type="checkbox" id="chk-jackpot" checked style="cursor:pointer;accent-color:var(--gold);">
+          </div>
+          <div class="rule-pill">
+            <span>Double GO Bonus ($400)</span>
+            <input type="checkbox" id="chk-double-go" style="cursor:pointer;accent-color:var(--gold);">
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button class="btn-primary-start" id="btn-start-game">
+        ENTER BOARD &bull; START GAME
+      </button>
+
+    </div>
+  </div>
+
+  <!-- IN-GAME GLASSMORPHIC HUD -->
+  <div class="hud-container" id="in-game-hud" style="display:none;">
+    
+    <!-- Top Header -->
+    <header class="top-header glass-panel">
+      <div class="game-brand">
+        <a href="../../index.html" class="hub-link-pill" title="Return to Bwedverse Hub">← Bwedverse</a>
+        <span class="brand-badge" id="round-badge">ROUND 1</span>
+        <span class="brand-text">MONOPOLY</span>
+      </div>
+
+      <div class="center-turn-indicator">
+        <div class="turn-dot" id="turn-dot"></div>
+        <span class="turn-banner" id="turn-banner">PLAYER 1'S TURN</span>
+      </div>
+
+      <div class="top-right-bar">
+        <div class="jackpot-pill" id="jackpot-counter">
+          <img src="./assets/stickers/bwed-tg-06-chill-coffee-laptop.webp" class="sticker-ico" alt="pot">
+          JACKPOT: $500
+        </div>
+        <button class="hud-btn-icon" id="btn-audio" title="Toggle Music">
+          <svg class="sound-svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mid HUD Row -->
+    <div class="mid-hud-row">
+      <!-- Left: Players Portfolio Cards -->
+      <aside class="players-sidebar" id="players-sidebar"></aside>
+
+      <!-- Right: Camera Pills & Activity Feed -->
+      <div class="right-aux-hud">
+        <div class="cam-pill-group glass-panel">
+          <button class="cam-pill is-active" data-cam="isometric">Board</button>
+          <button class="cam-pill" data-cam="follow">Pawn</button>
+          <button class="cam-pill" data-cam="characters">Characters (24)</button>
+          <button class="cam-pill" data-cam="buildings">Monuments (27)</button>
+          <button class="cam-pill" data-cam="topdown">Top</button>
+          <button class="cam-pill" id="btn-podium-view" style="color:var(--gold);font-weight:900;border:1px solid rgba(255,209,90,0.4);" title="Test 3D Celebration Stage">🏆 Podium</button>
+        </div>
+
+        <div class="activity-feed glass-panel" id="activity-feed"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Action Deck -->
+    <footer class="bottom-action-deck glass-panel">
+      <div class="dice-tray-badge">
+        <div class="die-cube" id="hud-die-1">-</div>
+        <div class="die-cube" id="hud-die-2">-</div>
+      </div>
+
+      <div class="actions-cluster">
+        <button class="btn-game-action btn-roll-dice" id="btn-roll">
+          <svg class="btn-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0-9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 4.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4.5 4.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0-9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+          ROLL DICE
+        </button>
+
+        <button class="btn-game-action btn-buy-prop" id="btn-buy" disabled>
+          <svg class="btn-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+          BUY PROPERTY
+        </button>
+
+        <button class="btn-game-action btn-manage-prop" id="btn-manage">
+          <svg class="btn-svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          PORTFOLIO
+        </button>
+
+        <button class="btn-game-action btn-end-turn" id="btn-end-turn" disabled>
+          <svg class="btn-svg" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+          END TURN
+        </button>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- CHARACTER PICKER MODAL (Browses All 24 Figurines) -->
+  <div class="start-screen-overlay is-hidden" id="character-picker-modal">
+    <div class="lobby-modal glass-panel" style="width:740px;">
+      <div class="lobby-header">
+        <span class="lobby-badge">COLLECTOR FIGURINES</span>
+        <h2 class="lobby-title" style="font-size:28px;">CHOOSE YOUR PAWN</h2>
+        <p class="lobby-subtitle">24 Unique 3D Figurines from the Bwedverse &amp; Village</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;max-height:55vh;overflow-y:auto;padding-right:4px;" id="char-grid"></div>
+
+      <button class="btn-deed-action" id="btn-close-char-picker" style="padding:12px;font-size:14px;background:#24120a;color:#ffd15a;border:1px solid rgba(212,175,55,0.4);margin-top:12px;">
+        CONFIRM SELECTION
+      </button>
+    </div>
+  </div>
+
+  <!-- VICTORY CELEBRATION & PODIUM LEADERBOARD MODAL -->
+  <div class="start-screen-overlay is-hidden" id="endgame-modal">
+    <div class="lobby-modal glass-panel" style="width:580px;text-align:center;border:3px solid var(--gold);box-shadow:0 24px 64px rgba(0,0,0,0.8), 0 0 32px rgba(255,209,90,0.35);">
+      <div class="lobby-header" style="margin-bottom:14px;">
+        <span class="lobby-badge" style="background:#ffd15a;color:#1e0f07;font-weight:900;">🏆 BWED GRAND CHAMPION 🏆</span>
+        <h2 class="lobby-title" style="font-size:32px;color:#fffdf5;margin:8px 0 4px 0;">VICTORY CELEBRATION!</h2>
+        <p class="lobby-subtitle" id="endgame-winner-sub">The Master Baker who conquered all properties!</p>
+      </div>
+
+      <div id="endgame-podium-cards" style="display:flex;flex-direction:column;gap:10px;margin:16px 0;"></div>
+
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button class="btn-primary-start" id="btn-endgame-close" style="flex:1;background:linear-gradient(135deg,#ffd15a,#f59e0b);color:#1e0f07;font-weight:900;">
+          REMATCH &bull; NEW GAME
+        </button>
+        <button class="btn-deed-action" id="btn-endgame-inspect-3d" style="background:#261208;color:#ffd15a;border:1px solid #d4af37;padding:12px 20px;font-weight:700;">
+          VIEW 3D PODIUM
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js?v=7.4.0"></script>
+</body>
+</html>
