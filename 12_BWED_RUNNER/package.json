@@ -1,0 +1,13 @@
+{
+  "name": "12-bwed-runner",
+  "version": "1.0.0",
+  "description": "BWED BUTTER ESCAPE — 3D Endless Runner against the Giant Butter Knife",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "dev": "python3 -m http.server 4173"
+  },
+  "keywords": ["threejs", "endless-runner", "bwedverse", "3d-game"],
+  "author": "Bwedverse Team",
+  "license": "MIT"
+}

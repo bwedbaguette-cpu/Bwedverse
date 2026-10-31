@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>BWED BUTTER ESCAPE — 3D Endless Street Runner</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800;900&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/runner.css" />
+
+    <!-- Three.js Import Map -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- 3D Canvas Viewport -->
+    <div id="canvasContainer"></div>
+
+    <!-- Screen FX Overlays -->
+    <div id="dangerVignette"></div>
+    <div id="turboOverlay"></div>
+
+    <!-- Zone Announcement Banner -->
+    <div id="zoneBanner">
+      <div class="zone-kicker">NEW ZONE</div>
+      <div class="zone-title" id="zoneBannerTitle">Baker's Alley</div>
+    </div>
+
+    <!-- ----------------------------------------------------------------------
+         DISCREET POWER-UPS & 3D FIGURINES GUIDE CARD (REAL ASSETS)
+         ---------------------------------------------------------------------- -->
+    <div id="powerupGuide" class="powerup-guide-wrapper">
+      <button class="powerup-guide-toggle" id="togglePowerupGuideBtn" title="Power-Ups Guide">
+        <svg class="guide-toggle-svg" viewBox="0 0 24 24"><path fill="#ffd700" d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+        <span class="guide-toggle-label">Power-Ups</span>
+      </button>
+
+      <div class="powerup-guide-card" id="powerupGuideCard" style="display: none;">
+        <div class="guide-card-header">
+          <span class="guide-card-title">IN-GAME POWER-UPS & FIGURINES</span>
+          <button class="guide-close-btn" id="closePowerupGuideBtn" title="Close">
+            <svg class="btn-svg" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <div class="guide-items-list">
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/concepts/42-coin-butter-medallion.jpg" alt="Golden Croissant" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">Golden Croissant</span>
+              <span class="guide-item-desc">+100 pts & charges Turbo Rush</span>
+            </div>
+          </div>
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/concepts/44-item-oven-mitt-shield.jpg" alt="Butter Shield" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">Butter Shield</span>
+              <span class="guide-item-desc">Absorbs 1 hazard hit or knife swipe</span>
+            </div>
+          </div>
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/concepts/43-item-espresso-turbo.jpg" alt="Pastry Magnet" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">Pastry Magnet</span>
+              <span class="guide-item-desc">Attracts all croissants on all 3 lanes (10s)</span>
+            </div>
+          </div>
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/concepts/85-tetromino-o-butter-brioche.jpg" alt="Turbo Butter" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">Turbo Butter</span>
+              <span class="guide-item-desc">Invincible hyperspeed & smashes hazards</span>
+            </div>
+          </div>
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/concepts/116-building-marshmallow-cottage.jpg" alt="Brioche Heart" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">Sacred Brioche</span>
+              <span class="guide-item-desc">Restores +1 heart of health</span>
+            </div>
+          </div>
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/concepts/40-chest-lunchbox-treasure.jpg" alt="Mystery Chest" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">3D Mystery Chest</span>
+              <span class="guide-item-desc">+400 pts + instant surprise bonus power-up</span>
+            </div>
+          </div>
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/concepts/39-trophy-golden-crumb.jpg" alt="Croissant Statue" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">3D Golden Croissant</span>
+              <span class="guide-item-desc">+500 pts & 15 bonus croissants</span>
+            </div>
+          </div>
+          <div class="guide-item">
+            <img class="guide-asset-thumb" src="./assets/stickers/bwed-tg-08-baguette-bat-shades.webp" alt="Captain Bean" />
+            <div class="guide-item-info">
+              <span class="guide-item-name">3D Captain Bean</span>
+              <span class="guide-item-desc">+350 pts & instantly recharges 50% Turbo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ----------------------------------------------------------------------
+         TITLE / START SCREEN (SHOWROOM OVERLAY)
+         ---------------------------------------------------------------------- -->
+    <div id="titleScreen">
+      <!-- Title Top Row -->
+      <div class="title-top">
+        <div class="title-badge" id="titleBestScore">
+          #1 GLOBAL: 0 PTS
+        </div>
+        <div class="title-top-actions">
+          <a class="hud-btn" href="../index.html" title="Return to Bwedverse Hub" style="text-decoration: none;">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>Hub</span>
+          </a>
+          <button class="hud-btn" id="titleLeaderboardBtn">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.8-.45 3.19-1.96 3.61-3.96C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2zM5 8V5h2v4.82C5.84 9.4 5 8.78 5 8zm14 0c0 .78-.84 1.4-2 1.82V5h2v3z"/></svg>
+            <span>Ranking</span>
+          </button>
+          <button class="hud-btn" id="titleSettingsBtn">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>Settings</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Title Main Floating Hero Panel -->
+      <div class="title-center-panel">
+        <img class="title-sticker" src="./assets/stickers/bwed-tg-08-baguette-bat-shades.webp" alt="Bwed Mascot" />
+        
+        <h1 class="title-brand-logo">BWED BUTTER ESCAPE</h1>
+        <p class="title-brand-tagline">Flee the giant butter knife down the endless pastry boulevard!</p>
+
+        <!-- Selected Hero Interactive Card -->
+        <div class="selected-hero-pill" id="titleHeroPill" title="Click to choose your hero">
+          <img class="selected-hero-thumb" id="heroPillImg" src="./assets/shiba/cozy-shiba-pfp.jpg" alt="Hero" />
+          <div class="selected-hero-info">
+            <span class="selected-hero-label">Selected Hero</span>
+            <span class="selected-hero-name" id="heroPillName">Cozy Shiba Buddy</span>
+          </div>
+          <span class="pill-change-tag">CHANGE</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="title-action-buttons">
+          <button class="title-play-btn" id="titlePlayBtn">START ESCAPE</button>
+          <button class="title-secondary-btn" id="titleLeaderboardMainBtn">LEADERBOARD & NICKNAME</button>
+        </div>
+      </div>
+
+      <!-- Bottom Hint -->
+      <div class="title-bottom-hint">
+        Tip: Press [Space] or [Up] to jump, [Down] to slide or air-cancel fall!
+      </div>
+    </div>
+
+    <!-- ----------------------------------------------------------------------
+         IN-GAME 2D HUD LAYER
+         ---------------------------------------------------------------------- -->
+    <div class="hud-layer">
+      <header class="hud-top">
+        <div class="hud-group-left">
+          <div class="hud-row">
+            <!-- 3 Hearts Vector Card -->
+            <div class="hearts-card">
+              <span class="heart-slot" id="heart1">
+                <svg class="heart-svg" viewBox="0 0 24 24"><path fill="#ff4757" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              </span>
+              <span class="heart-slot" id="heart2">
+                <svg class="heart-svg" viewBox="0 0 24 24"><path fill="#ff4757" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              </span>
+              <span class="heart-slot" id="heart3">
+                <svg class="heart-svg" viewBox="0 0 24 24"><path fill="#ff4757" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              </span>
+            </div>
+
+            <!-- Distance Card -->
+            <div class="hud-card">
+              <svg class="hud-svg" viewBox="0 0 24 24"><path fill="#ffd700" d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>
+              <div class="hud-value-group">
+                <span class="hud-label">Distance</span>
+                <span class="hud-num" id="distVal">0m</span>
+              </div>
+            </div>
+
+            <!-- Croissants Card -->
+            <div class="hud-card">
+              <img class="hud-asset-icon" src="./assets/concepts/42-coin-butter-medallion.jpg" alt="Croissant" />
+              <div class="hud-value-group">
+                <span class="hud-label">Croissants</span>
+                <span class="hud-num" id="croissantVal">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Powerup Badges Tray -->
+          <div class="powerups-tray">
+            <div class="powerup-badge" id="shieldBadge">
+              <img class="badge-mini-asset" src="./assets/concepts/44-item-oven-mitt-shield.jpg" alt="Shield" />
+              <span>SHIELD ACTIVE</span>
+            </div>
+            <div class="powerup-badge" id="magnetBadge">
+              <img class="badge-mini-asset" src="./assets/concepts/43-item-espresso-turbo.jpg" alt="Magnet" />
+              <span>MAGNET (<span id="magnetTimeText">10s</span>)</span>
+            </div>
+            <div class="powerup-badge" id="turboBadge">
+              <img class="badge-mini-asset" src="./assets/concepts/85-tetromino-o-butter-brioche.jpg" alt="Turbo" />
+              <span>HYPER SPEED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- HUD Action Buttons -->
+        <div class="hud-actions">
+          <div class="hud-card score-card">
+            <div class="hud-value-group">
+              <span class="hud-label">Score</span>
+              <span class="hud-num" id="scoreVal">0</span>
+            </div>
+          </div>
+          <button class="hud-btn" id="hudLeaderboardBtn" title="Leaderboard">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.8-.45 3.19-1.96 3.61-3.96C19.08 11.63 21 9.55 21 7V5c0-1.1-.9-2-2-2zM5 8V5h2v4.82C5.84 9.4 5 8.78 5 8zm14 0c0 .78-.84 1.4-2 1.82V5h2v3z"/></svg>
+          </button>
+          <button class="hud-btn" id="hudGuideBtn" title="Power-Ups Guide">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="#ffd700" d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+          </button>
+          <button class="hud-btn" id="pauseBtn" title="Pause Game">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            <span>Pause</span>
+          </button>
+          <button class="hud-btn" id="avatarBtn" title="Choose Hero">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span>Hero</span>
+          </button>
+          <button class="hud-btn" id="settingsBtn" title="Settings">
+            <svg class="btn-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- HUD Bottom Bar -->
+      <footer class="hud-bottom">
+        <div class="turbo-card">
+          <div class="turbo-header">
+            <span id="turboText">SUGAR RUSH: 0%</span>
+            <span class="turbo-badge-txt">TURBO RUSH</span>
+          </div>
+          <div class="turbo-track">
+            <div class="turbo-fill" id="turboFill"></div>
+          </div>
+          <button class="turbo-ready-btn" id="turboReadyBtn">ACTIVATE TURBO [SHIFT]!</button>
+        </div>
+
+        <div class="touch-controls">
+          <button class="touch-btn" id="touchLeft">LEFT</button>
+          <button class="touch-btn" id="touchJump">JUMP</button>
+          <button class="touch-btn" id="touchSlide">SLIDE</button>
+          <button class="touch-btn" id="touchRight">RIGHT</button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ----------------------------------------------------------------------
+         MODALS
+         ---------------------------------------------------------------------- -->
+
+    <!-- LEADERBOARD MODAL -->
+    <div class="modal-overlay" id="leaderboardModal" style="display: none;">
+      <div class="modal-card" style="max-width: 580px;">
+        <img class="modal-sticker-top" src="./assets/stickers/bwed-tg-03-sunglasses-fingerguns.webp" alt="Leaderboard" />
+        <h2 class="modal-title">BWEDVERSE LEADERBOARD</h2>
+        <p class="modal-subtitle">Top runners escaping the Giant Butter Knife:</p>
+
+        <!-- Nickname registration input -->
+        <div class="pseudo-input-row">
+          <input type="text" id="playerPseudoInput" class="pseudo-input" placeholder="Your Bwed Nickname..." maxlength="16" />
+          <button class="pseudo-save-btn" id="savePseudoBtn">Save</button>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th style="width: 14%;">Rank</th>
+              <th style="text-align: left;">Runner</th>
+              <th style="text-align: right;">Score</th>
+              <th style="text-align: right;">Distance</th>
+              <th style="text-align: center;">Zone</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardTableBody">
+            <!-- Populated dynamically by UI.js -->
+          </tbody>
+        </table>
+
+        <button class="primary-btn" id="closeLeaderboardBtn" style="padding: 11px; font-size: 1rem;">
+          CLOSE LEADERBOARD
+        </button>
+      </div>
+    </div>
+
+    <!-- AVATAR CATALOG MODAL (23 HEROES) -->
+    <div class="modal-overlay" id="avatarModal" style="display: none;">
+      <div class="modal-card" style="max-width: 600px;">
+        <img class="modal-sticker-top" src="./assets/stickers/bwed-tg-05-hold-the-bwed.webp" alt="Bwed" />
+        <h2 class="modal-title">CHOOSE YOUR HERO</h2>
+        <p class="modal-subtitle">Select from 23 legendary citizens of the Bwedverse:</p>
+
+        <div class="avatar-catalog-grid" id="avatarGrid">
+          <!-- Populated dynamically by UI.js -->
+        </div>
+
+        <button class="primary-btn" id="closeAvatarModalBtn" style="padding: 11px; font-size: 1rem;">
+          CONFIRM SELECTION
+        </button>
+      </div>
+    </div>
+
+    <!-- PAUSE MODAL -->
+    <div class="modal-overlay" id="pauseModal" style="display: none;">
+      <div class="modal-card">
+        <img class="modal-sticker-top" src="./assets/stickers/bwed-tg-06-chill-coffee-laptop.webp" alt="Coffee Break" />
+        <h1 class="modal-title" style="font-size: 2rem;">GAME PAUSED</h1>
+        <p class="modal-subtitle">Quick coffee break on the pastry boulevard.</p>
+
+        <button class="primary-btn" id="resumeBtn">RESUME RUN</button>
+        <button class="title-secondary-btn" id="pauseRestartBtn" style="margin-top: 10px;">RESTART RUN</button>
+        <button class="title-secondary-btn" id="pauseSettingsBtn" style="margin-top: 10px;">SETTINGS & AUDIO</button>
+        <a class="title-secondary-btn" href="../index.html" style="margin-top: 10px; text-decoration: none; display: block; text-align: center;">RETURN TO BWEDVERSE HUB</a>
+      </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal-overlay" id="settingsModal" style="display: none;">
+      <div class="modal-card">
+        <h1 class="modal-title" style="font-size: 1.8rem;">GAME SETTINGS</h1>
+        <p class="modal-subtitle">Configure your audio, graphic, and camera preferences:</p>
+
+        <div class="settings-group">
+          <div class="settings-row">
+            <label for="musicSlider">Music Volume</label>
+            <input type="range" id="musicSlider" class="settings-slider" min="0" max="1" step="0.05" value="0.35" />
+          </div>
+
+          <div class="settings-row">
+            <label for="sfxSlider">Sound Effects (SFX)</label>
+            <input type="range" id="sfxSlider" class="settings-slider" min="0" max="1" step="0.05" value="0.8" />
+          </div>
+
+          <div class="settings-row">
+            <label for="cameraSelect">Camera View</label>
+            <select id="cameraSelect" class="settings-select">
+              <option value="dynamic">Dynamic Cinematic</option>
+              <option value="close">Close Action</option>
+              <option value="classic">Classic Isometric</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <label for="fpsSelect">Framerate Limit</label>
+            <select id="fpsSelect" class="settings-select">
+              <option value="30" selected>30 FPS (Battery & Smooth - Recommended)</option>
+              <option value="60">60 FPS</option>
+              <option value="uncapped">Uncapped</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <label for="qualitySelect">Graphics Quality</label>
+            <select id="qualitySelect" class="settings-select">
+              <option value="high">High (Soft Shadows)</option>
+              <option value="medium">Medium</option>
+              <option value="low">Performance (No Shadows)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="primary-btn" id="closeSettingsBtn" style="font-size: 1rem; padding: 11px;">
+          SAVE & CLOSE
+        </button>
+      </div>
+    </div>
+
+    <!-- GAME OVER MODAL -->
+    <div class="modal-overlay" id="gameOverModal" style="display: none;">
+      <div class="modal-card">
+        <img class="modal-sticker-top" src="./assets/stickers/bwed-tg-02-sad-concern.webp" alt="Sad Bwed" />
+        
+        <h1 class="modal-title" style="color: #ff4757; text-shadow: 0 4px 16px rgba(255, 71, 87, 0.5);">
+          SLICED CLEAN!
+        </h1>
+        <p class="modal-subtitle">You ran out of butter hearts on the boulevard...</p>
+
+        <div id="newRecordBadge" style="display: none; background: linear-gradient(135deg, #f1c40f, #e67e22); color: #1a0f08; font-weight: 900; font-size: 0.9rem; padding: 8px 16px; border-radius: 14px; margin-bottom: 14px;">
+          NEW PERSONAL BEST!
+        </div>
+
+        <div style="display: flex; justify-content: space-around; margin: 16px 0; background: rgba(255,255,255,0.06); padding: 14px; border-radius: 16px;">
+          <div>
+            <div class="hud-label">Distance</div>
+            <div class="hud-num" id="finalDist" style="color: #ffd700;">0 m</div>
+          </div>
+          <div>
+            <div class="hud-label">Croissants</div>
+            <div class="hud-num" id="finalCroissants" style="color: #ff9f1a;">0</div>
+          </div>
+          <div>
+            <div class="hud-label">Final Score</div>
+            <div class="hud-num" id="finalScore" style="color: #fff;">0</div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.95rem; color: #ffdda1; margin-bottom: 20px;">
+          Best Record: <strong id="bestScore" style="color: #ffd700;">0</strong> pts
+        </div>
+
+        <button class="primary-btn" id="restartBtn">TRY AGAIN [SPACE]</button>
+        <button class="title-secondary-btn" id="gameOverLeaderboardBtn" style="margin-top: 10px;">VIEW LEADERBOARD</button>
+        <a class="title-secondary-btn" href="../index.html" style="margin-top: 10px; text-decoration: none; display: block; text-align: center;">RETURN TO BWEDVERSE HUB</a>
+      </div>
+    </div>
+
+    <!-- Main Entry Point -->
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
